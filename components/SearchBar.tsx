@@ -52,7 +52,7 @@ export default function SearchBar() {
   }, []);
 
   return (
-    <div ref={ref} className="relative flex-1 max-w-xl">
+    <div ref={ref} className="relative w-full">
       <input
         type="text"
         value={query}

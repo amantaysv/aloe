@@ -1,34 +1,35 @@
 import { supabase } from "@/lib/supabase";
-import Link from "next/link";
+import ProductCarousel from "@/components/ProductCarousel";
+import type { Product } from "@/types";
 
-async function getCategories() {
-  const { data } = await supabase.from("products").select("category, category_id");
-
-  const map = new Map<string, { name: string; id: string; count: number }>();
-  data?.forEach((p) => {
-    if (!map.has(p.category_id)) {
-      map.set(p.category_id, { name: p.category, id: p.category_id, count: 0 });
-    }
-    map.get(p.category_id)!.count++;
-  });
-
-  return Array.from(map.values()).sort((a, b) => b.count - a.count);
+async function getTaggedProducts(flag: "is_popular" | "is_new" | "is_sale" | "is_discount"): Promise<Product[]> {
+  const { data } = await supabase
+    .from("products")
+    .select("*")
+    .eq(flag, true)
+    .limit(20);
+  return data || [];
 }
 
 export default async function HomePage() {
-  const categories = await getCategories();
+  const [popular, newest, onSale, discounted] = await Promise.all([
+    getTaggedProducts("is_popular"),
+    getTaggedProducts("is_new"),
+    getTaggedProducts("is_sale"),
+    getTaggedProducts("is_discount"),
+  ]);
+
+  const hasAny = popular.length || newest.length || onSale.length || discounted.length;
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Каталог товаров</h1>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {categories.map((cat) => (
-          <Link key={cat.id} href={`/catalog/${cat.id}`} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-            <p className="font-medium">{cat.name}</p>
-            <p className="text-sm text-gray-500 mt-1">{cat.count} товаров</p>
-          </Link>
-        ))}
-      </div>
+      {popular.length > 0    && <ProductCarousel title="Популярные товары" href="/popular"  products={popular} />}
+      {newest.length > 0     && <ProductCarousel title="Новинки"           href="/new"      products={newest} />}
+      {onSale.length > 0     && <ProductCarousel title="Акции"             href="/sale"     products={onSale} />}
+      {discounted.length > 0 && <ProductCarousel title="Скидки"            href="/discount" products={discounted} />}
+      {!hasAny && (
+        <p className="text-gray-400 text-sm">Выберите категорию из меню слева</p>
+      )}
     </main>
   );
 }

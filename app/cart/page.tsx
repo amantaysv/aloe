@@ -3,8 +3,10 @@
 import { useCart } from "@/store/cart";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function CartPage() {
+  const router = useRouter();
   const { items, increment, decrement, remove, total, clear } = useCart();
 
   if (items.length === 0) {
@@ -56,7 +58,12 @@ export default function CartPage() {
           <button onClick={clear} className="px-4 py-2 border rounded-lg text-sm text-gray-500 hover:bg-gray-50">
             Очистить
           </button>
-          <button className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">Оформить заказ</button>
+          <button
+            onClick={() => router.push("/checkout")}
+            className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
+          >
+            Оформить заказ
+          </button>
         </div>
       </div>
     </main>

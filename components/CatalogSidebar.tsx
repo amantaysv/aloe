@@ -10,51 +10,64 @@ type Category = {
   parent_id: string | null;
 };
 
+const specials = [
+  { href: "/popular", label: "Популярные" },
+  { href: "/new", label: "Новинки" },
+  { href: "/sale", label: "Акции" },
+  { href: "/discount", label: "Скидки" },
+];
+
 export default function CatalogSidebar({ parents, subcategories }: { parents: Category[]; subcategories: Category[] }) {
   const params = useParams();
   const activeId = params?.id as string;
-
   const activeParent = subcategories.find((s) => s.id === activeId)?.parent_id;
-
   const [openId, setOpenId] = useState<string | null>(activeParent || null);
 
   return (
-    <aside className="w-64 shrink-0">
-      <div className="bg-green-600 text-white font-bold px-4 py-3 rounded-t-lg text-sm uppercase tracking-wide">Каталог товаров</div>
-      <div className="border border-t-0 rounded-b-lg overflow-hidden">
+    <aside className="w-60 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r border-gray-300">
+      <nav className="py-2">
+        {specials.map((s) => (
+          <Link key={s.href} href={s.href} className={`block px-4 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors`}>
+            {s.label}
+          </Link>
+        ))}
+
+        <div className="border-t my-2" />
+
         {parents.map((parent) => {
           const subs = subcategories.filter((s) => s.parent_id === parent.id);
           const isOpen = openId === parent.id;
 
           return (
-            <div key={parent.id} className="border-b last:border-b-0">
+            <div key={parent.id}>
               <button
                 onClick={() => setOpenId(isOpen ? null : parent.id)}
-                className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium hover:bg-gray-50 text-left"
+                className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium hover:bg-gray-50 text-left"
               >
                 <span>{parent.name}</span>
                 <span className="text-green-600 text-lg leading-none">{isOpen ? "−" : "+"}</span>
               </button>
 
               {isOpen && subs.length > 0 && (
-                <div className="bg-gray-50 border-t">
-                  {subs.map((sub) => (
-                    <Link
-                      key={sub.id}
-                      href={`/catalog/${sub.id}`}
-                      className={`block px-6 py-2 text-sm border-b last:border-b-0 hover:text-green-600 transition-colors ${
-                        activeId === sub.id ? "text-green-600 font-medium bg-green-50" : "text-gray-600"
-                      }`}
-                    >
-                      {sub.name}
-                    </Link>
-                  ))}
+                <div className="bg-gray-50 border-t border-b">
+                  {subs.map((sub) => {
+                    console.log("🚀 ~ CatalogSidebar ~ sub:", sub);
+                    return (
+                      <Link
+                        key={sub.id}
+                        href={`/catalog/${sub.id}`}
+                        className={`block px-6 py-2 text-sm hover:text-green-600 transition-colors ${activeId === sub.id ? "text-green-600 font-medium bg-green-50" : "text-gray-600"}`}
+                      >
+                        {sub.name}
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
           );
         })}
-      </div>
+      </nav>
     </aside>
   );
 }

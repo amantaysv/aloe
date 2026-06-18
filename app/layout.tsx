@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Lobster } from "next/font/google";
 import "./globals.css";
 import { supabase } from "@/lib/supabase";
 import CatalogSidebar from "@/components/CatalogSidebar";
@@ -8,6 +8,7 @@ import Toaster from "@/components/Toaster";
 import NextTopLoader from "nextjs-toploader";
 
 const geist = Geist({ subsets: ["latin"] });
+const lobster = Lobster({ subsets: ["latin", "cyrillic"], weight: "400", variable: "--font-lobster" });
 
 export const metadata: Metadata = {
   title: "Aloe.kg",
@@ -30,12 +31,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   );
   return (
     <html lang="ru">
-      <body className={geist.className}>
+      <body className={`${geist.className} ${lobster.variable}`}>
         <NextTopLoader color="#16a34a" showSpinner={false} />
         <Header />
-        <div className="max-w-7xl mx-auto px-4 py-8 flex gap-6">
+        <div className="max-w-7xl mx-auto flex">
           <CatalogSidebar parents={parents} subcategories={subs} />
-          <div className="flex-1 min-w-0">{children}</div>
+          <div className="flex-1 min-w-0 px-6 py-8">{children}</div>
         </div>
         <Toaster />
       </body>

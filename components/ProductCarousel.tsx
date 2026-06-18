@@ -6,17 +6,45 @@ import AddToCart from "./AddToCart";
 import FavoriteButton from "./FavoriteButton";
 import type { Product } from "@/types";
 
-export default function ProductCarousel({ title, products }: { title: string; products: Product[] }) {
+
+function ProductBadges({ p }: { p: Product }) {
+  const badges = [];
+  if (p.is_new)      badges.push({ label: "Новинка",  cls: "bg-blue-500" });
+  if (p.is_sale)     badges.push({ label: "Акция",    cls: "bg-orange-500" });
+  if (p.is_discount) badges.push({ label: "Скидка",   cls: "bg-red-500" });
+  if (p.is_popular)  badges.push({ label: "Хит",      cls: "bg-green-600" });
+  if (!badges.length) return null;
+  return (
+    <div className="absolute top-1.5 left-1.5 flex flex-col gap-1 z-10">
+      {badges.map((b) => (
+        <span key={b.label} className={`${b.cls} text-white text-[10px] font-semibold px-1.5 py-0.5 rounded`}>
+          {b.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export default function ProductCarousel({ title, href, products }: { title: string; href?: string; products: Product[] }) {
   const ref = useRef<HTMLDivElement>(null);
 
   const scroll = (dir: "left" | "right") => {
-    ref.current?.scrollBy({ left: dir === "right" ? 720 : -720, behavior: "smooth" });
+    if (!ref.current) return;
+    const amount = ref.current.clientWidth;
+    ref.current.scrollBy({ left: dir === "right" ? amount : -amount, behavior: "smooth" });
   };
 
   return (
     <section className="mb-10">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xl font-bold">{title}</h2>
+        <div className="flex items-baseline gap-3">
+          <h2 className="text-xl font-bold">{title}</h2>
+          {href && (
+            <Link href={href} className="text-sm text-green-600 hover:underline">
+              Смотреть все →
+            </Link>
+          )}
+        </div>
         <div className="flex gap-1">
           <button
             onClick={() => scroll("left")}
@@ -45,12 +73,18 @@ export default function ProductCarousel({ title, products }: { title: string; pr
             <Link href={`/catalog/${p.category_id}`}>
               <div className="relative aspect-square bg-gray-50">
                 <Image src={p.image_url} alt={p.name} fill className="object-contain p-2" unoptimized />
+                <ProductBadges p={p} />
                 <FavoriteButton productId={p.id} />
               </div>
               <div className="p-2">
                 <p className="text-[11px] text-gray-400 truncate">{p.category}</p>
                 <p className="text-xs font-medium line-clamp-2 leading-4 mt-0.5 h-8">{p.name}</p>
-                <p className="text-sm font-bold mt-1">{p.price} сом</p>
+                <div className="mt-1 flex items-baseline gap-1.5">
+                  <p className="text-sm font-bold">{p.price} сом</p>
+                  {p.old_price && (
+                    <p className="text-xs text-gray-400 line-through">{p.old_price} сом</p>
+                  )}
+                </div>
               </div>
             </Link>
             <div className="px-2 pb-2">

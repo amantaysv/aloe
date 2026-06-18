@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import FavoriteButton from "@/components/FavoriteButton";
+import Pagination from "@/components/Pagination";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -53,33 +54,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             ))}
           </div>
 
-          {totalPages > 1 && (
-            <div className="flex justify-center gap-2 mt-8">
-              {currentPage > 1 && (
-                <Link href={`/search?q=${encodeURIComponent(q)}&page=${currentPage - 1}`} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
-                  ← Назад
-                </Link>
-              )}
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter((p) => Math.abs(p - currentPage) <= 2)
-                .map((p) => (
-                  <Link
-                    key={p}
-                    href={`/search?q=${encodeURIComponent(q)}&page=${p}`}
-                    className={`px-4 py-2 border rounded-lg text-sm ${p === currentPage ? "bg-green-600 text-white border-green-600" : "hover:bg-gray-50"}`}
-                  >
-                    {p}
-                  </Link>
-                ))}
-
-              {currentPage < totalPages && (
-                <Link href={`/search?q=${encodeURIComponent(q)}&page=${currentPage + 1}`} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
-                  Вперёд →
-                </Link>
-              )}
-            </div>
-          )}
+          <Pagination page={currentPage} totalPages={totalPages} basePath="/search" query={{ q }} />
         </>
       )}
     </main>
