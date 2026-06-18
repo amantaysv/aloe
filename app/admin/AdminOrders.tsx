@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { Search } from "lucide-react";
+
 import OrderStatusSelect from "./OrderStatusSelect";
 
 type Order = {
@@ -106,16 +108,7 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
 
       {/* Search */}
       <div className="relative mb-6">
-        <svg
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" />
-        </svg>
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
           value={query}

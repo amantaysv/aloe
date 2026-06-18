@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
+import { useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
+import { LogInIcon, LogOut, User as UserIcon } from "lucide-react";
 import Link from "next/link";
-
 import { createClient } from "@/lib/supabase-browser";
 import { useFavorites } from "@/store/favorites";
 
 export default function AuthButton() {
   const [user, setUser] = useState<User | null>(null);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
   const supabase = createClient();
   const resetFavorites = useFavorites((s) => s.reset);
 
@@ -25,7 +26,18 @@ export default function AuthButton() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
   async function signOut() {
+    setOpen(false);
     await supabase.auth.signOut();
     resetFavorites();
     setUser(null);
@@ -33,20 +45,49 @@ export default function AuthButton() {
 
   if (user) {
     return (
-      <div className="flex items-center gap-3 text-sm">
-        <Link href="/profile" className="text-gray-600 hover:text-green-600">
-          {user.email?.split("@")[0]}
-        </Link>
-        <button onClick={signOut} className="text-gray-400 hover:text-red-500">
-          Выйти
+      <div ref={ref} className="relative">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          title={user.email ?? "Профиль"}
+          className={`p-2 rounded-full flex items-center justify-center transition-colors hover:cursor-pointer ${
+            open ? "bg-green-50 text-green-600" : "text-gray-400 hover:text-green-600"
+          }`}
+        >
+          <UserIcon />
         </button>
+
+        {open && (
+          <div className="absolute right-0 top-full mt-2 w-44 bg-white border border-gray-100 rounded-xl shadow-lg py-1 z-50">
+            <p className="px-3 py-1.5 text-xs text-gray-400 truncate">{user.email}</p>
+            <div className="border-t border-gray-100 my-1" />
+            <Link
+              href="/profile"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            >
+              <UserIcon className=" text-gray-400" />
+              Профиль
+            </Link>
+            <button
+              onClick={signOut}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50"
+            >
+              <LogOut />
+              Выйти
+            </button>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <Link href="/auth" className="text-sm text-gray-600 hover:text-green-600">
-      Войти
+    <Link
+      href="/auth"
+      title="Войти"
+      className="p-2 rounded-full flex items-center justify-center text-gray-400 hover:text-green-600 transition-colors"
+    >
+      <LogInIcon />
     </Link>
   );
 }
