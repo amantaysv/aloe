@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+
 import { createClient } from "@/lib/supabase-server";
+
 import ProfileTabs from "./ProfileTabs";
 
 export const metadata = { title: "Профиль — Aloe.kg" };
@@ -13,17 +15,13 @@ export default async function ProfilePage() {
   if (!user) redirect("/auth");
 
   const [{ data: orders }, { data: profile }] = await Promise.all([
-    supabase
-      .from("orders")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false }),
+    supabase.from("orders").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
     supabase.from("profiles").select("name, phone, address").eq("id", user.id).single(),
   ]);
 
   const initial = {
-    name:    profile?.name    ?? "",
-    phone:   profile?.phone   ?? "",
+    name: profile?.name ?? "",
+    phone: profile?.phone ?? "",
     address: profile?.address ?? "",
   };
 

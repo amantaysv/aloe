@@ -1,14 +1,19 @@
-import AddToCart from "@/components/AddToCart";
-import FavoriteButton from "@/components/FavoriteButton";
-import Pagination from "@/components/Pagination";
-import { supabase } from "@/lib/supabase";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import Pagination from "@/components/Pagination";
+import ProductCard from "@/components/ProductCard";
+import { supabase } from "@/lib/supabase";
+
 const PAGE_SIZE = 20;
 
-export default async function CategoryPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ page?: string }> }) {
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ page?: string }>;
+}) {
   const [{ id }, { page = "1" }] = await Promise.all([params, searchParams]);
   const currentPage = Math.max(1, parseInt(page));
   const from = (currentPage - 1) * PAGE_SIZE;
@@ -35,23 +40,8 @@ export default async function CategoryPage({ params, searchParams }: { params: P
         <span className="text-sm text-gray-400">{count} товаров</span>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {(data || []).map((p) => (
-          <div key={p.id} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-            <div className="relative aspect-square bg-gray-50">
-              <Image src={p.image_url} alt={p.name} fill className="object-contain p-2" unoptimized />
-              <FavoriteButton productId={p.id} />
-            </div>
-            <div className="p-3">
-              <p className="text-sm font-medium line-clamp-2">{p.name}</p>
-              <div className="flex items-baseline gap-1.5 mt-1">
-                <p className="text-base font-bold">{p.price} сом</p>
-                {p.old_price && <p className="text-sm text-gray-400 line-through">{p.old_price} сом</p>}
-              </div>
-            </div>
-            <div className="px-3 pb-3">
-              <AddToCart product={{ id: p.id, name: p.name, price: p.price, image_url: p.image_url }} />
-            </div>
-          </div>
+        {(data || []).map((product) => (
+          <ProductCard key={product.id} product={product} />
         ))}
       </div>
       <Pagination page={currentPage} totalPages={totalPages} basePath={`/catalog/${id}`} />

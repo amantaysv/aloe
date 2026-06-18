@@ -1,12 +1,10 @@
 import Link from "next/link";
 
-export const metadata = { title: "Заказ оформлен — Aloe.kg" };
+export const metadata = {
+  title: "Заказ оформлен — Aloe.kg",
+};
 
-export default async function CheckoutSuccessPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ id?: string }>;
-}) {
+export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const { id } = await searchParams;
   const shortId = id ?? "—";
 

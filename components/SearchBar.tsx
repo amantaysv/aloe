@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { useEffect, useRef, useState } from "react";
+
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+
+import { supabase } from "@/lib/supabase";
 
 type Product = {
   id: number;
@@ -30,7 +32,11 @@ export default function SearchBar() {
 
     const timer = setTimeout(async () => {
       setLoading(true);
-      const { data } = await supabase.from("products").select("id, name, price, image_url, category_id").ilike("name", `%${query}%`).limit(6);
+      const { data } = await supabase
+        .from("products")
+        .select("id, name, price, image_url, category_id")
+        .ilike("name", `%${query}%`)
+        .limit(6);
 
       setResults(data || []);
       setOpen(true);
@@ -101,7 +107,9 @@ export default function SearchBar() {
       )}
 
       {open && results.length === 0 && !loading && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-50 px-4 py-3 text-sm text-gray-500">Ничего не найдено</div>
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-50 px-4 py-3 text-sm text-gray-500">
+          Ничего не найдено
+        </div>
       )}
     </div>
   );

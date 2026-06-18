@@ -19,11 +19,18 @@ export const useToast = create<ToastStore>((set) => ({
 
   show: (message, type = "info") => {
     const id = Math.random().toString(36).slice(2);
-    set((state) => ({ toasts: [...state.toasts, { id, message, type }] }));
+    set((state) => ({
+      toasts: [...state.toasts, { id, message, type }],
+    }));
     setTimeout(() => {
-      set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) }));
+      set((state) => ({
+        toasts: state.toasts.filter((t) => t.id !== id),
+      }));
     }, 3500);
   },
 
-  remove: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
+  remove: (id) =>
+    set((state) => ({
+      toasts: state.toasts.filter((t) => t.id !== id),
+    })),
 }));

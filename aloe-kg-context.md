@@ -1,6 +1,7 @@
 # Проект: aloe.kg — миграция с Joomla на Next.js
 
 ## Контекст
+
 Интернет-магазин бытовой химии и косметики в Бишкеке (Кыргызстан).
 Оригинальный сайт: https://aloe.kg — работает на Joomla 3.10 + JoomShopping (outdated, PHP 7.3).
 Задача: полный rebuild на Next.js + Supabase.
@@ -8,6 +9,7 @@
 ---
 
 ## Стек
+
 - **Frontend:** Next.js 16 (App Router), TypeScript, Tailwind CSS
 - **Backend:** Supabase (PostgreSQL)
 - **Деплой:** пока локально (localhost:3000)
@@ -16,11 +18,13 @@
 ---
 
 ## Supabase
+
 - **Project URL:** `https://dnlburbuchxzxdmhuczu.supabase.co`
 - **Publishable key:** `sb_publishable_a5V96BebxldwU1HnspkUCA_1x31NaVm`
 - **Project name:** aloe-kg
 
 ### Таблицы в БД:
+
 1. **products** — 1128 товаров (спарсены с aloe.kg)
    - id, external_id, name, price, image_url, product_url, category, category_id
    - RLS отключён
@@ -45,6 +49,7 @@
 ---
 
 ## Структура проекта
+
 ```
 aloe/
 ├── proxy.ts                # Supabase session refresh (Next.js 16 аналог middleware)
@@ -91,6 +96,7 @@ aloe/
 ---
 
 ## Что сделано
+
 - [x] Парсинг товаров с aloe.kg (1128 товаров в products.json)
 - [x] Загрузка товаров в Supabase
 - [x] Таблица categories с иерархией (родитель → подкатегории)
@@ -113,6 +119,7 @@ aloe/
 - [x] Toast "Добавлено в корзину" при добавлении товара
 
 ## Что осталось сделать
+
 - [ ] Синхронизация корзины с БД (cart_items) при авторизации
 - [ ] Страница товара /catalog/[id]/[productId] с описанием
 - [ ] Допарсить описания товаров (нужен повторный парсинг product_url)
@@ -127,40 +134,46 @@ aloe/
 ## Важные детали
 
 ### Next.js 16
+
 - Middleware переименован в **Proxy** (`proxy.ts` вместо `middleware.ts`)
 - `params` и `searchParams` в page.tsx — async: `{ params }: { params: Promise<{ id: string }> }`
 
 ### next.config.ts
+
 ```ts
 const nextConfig = {
   images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: 'aloe.kg' },
-    ],
+    remotePatterns: [{ protocol: "https", hostname: "aloe.kg" }],
   },
-}
-export default nextConfig
+};
+export default nextConfig;
 ```
 
 ### .env.local
+
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://dnlburbuchxzxdmhuczu.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_a5V96BebxldwU1HnspkUCA_1x31NaVm
 ```
 
 ### Картинки товаров
+
 Хранятся на aloe.kg: `https://aloe.kg/components/com_jshopping/files/img_products/thumb_*.jpg`
 Загружаются через `<Image unoptimized />` из next/image.
 
 ### Корзина
+
 Zustand store с persist в localStorage. При авторизации нужно будет смержить localStorage корзину с cart_items в Supabase.
 
 ### Избранное
+
 Zustand store (`store/favorites.ts`) — загружает все product_id за один запрос при первом рендере FavoriteButton. Оптимистичное обновление. При выходе из аккаунта (AuthButton) вызывает `reset()`.
 
 ### Тосты
+
 `store/toast.ts` — `show(message, type)`, auto-dismiss 3.5s. Типы: `success` (зелёный), `error` (красный), `info` (серый).
 
 ### Парсер
+
 Файл `parse_aloe.py` — парсит по subcategory ID через `/catalog/category/view/{id}.html`.
 Проблема: берёт только 24 товара (1 страница). Пагинация не работает корректно — нужно доработать.

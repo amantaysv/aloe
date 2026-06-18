@@ -1,13 +1,20 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import { useCart } from "@/store/cart";
+
 import { createOrder } from "./actions";
 
 type Props = {
-  initial?: { name: string; phone: string; address: string };
+  initial?: {
+    name: string;
+    phone: string;
+    address: string;
+  };
 };
 
 export default function CheckoutForm({ initial }: Props) {
@@ -45,7 +52,13 @@ export default function CheckoutForm({ initial }: Props) {
         phone: phone.trim(),
         address: address.trim(),
         comment: comment.trim(),
-        items: items.map((i) => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity, image_url: i.image_url })),
+        items: items.map((i) => ({
+          id: i.id,
+          name: i.name,
+          price: i.price,
+          quantity: i.quantity,
+          image_url: i.image_url,
+        })),
         total: total(),
       });
       clear();
@@ -83,11 +96,7 @@ export default function CheckoutForm({ initial }: Props) {
         </div>
         <div className="mt-2 text-sm text-gray-500">
           Доставка:{" "}
-          {freeDelivery ? (
-            <span className="text-green-600 font-medium">бесплатно 🎉</span>
-          ) : (
-            <span>150 сом</span>
-          )}
+          {freeDelivery ? <span className="text-green-600 font-medium">бесплатно 🎉</span> : <span>150 сом</span>}
         </div>
       </div>
 
@@ -138,9 +147,7 @@ export default function CheckoutForm({ initial }: Props) {
         </div>
       </div>
 
-      {error && (
-        <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
-      )}
+      {error && <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
 
       <button
         type="submit"

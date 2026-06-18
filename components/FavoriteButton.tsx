@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+
 import { useRouter } from "next/navigation";
+
 import { createClient } from "@/lib/supabase-browser";
 import { useFavorites } from "@/store/favorites";
 import { useToast } from "@/store/toast";
@@ -37,7 +39,10 @@ export default function FavoriteButton({ productId }: { productId: number }) {
       show("Удалено из избранного", "info");
     } else {
       add(productId);
-      await supabase.from("favorites").insert({ user_id: user.id, product_id: productId });
+      await supabase.from("favorites").insert({
+        user_id: user.id,
+        product_id: productId,
+      });
       show("Добавлено в избранное", "success");
     }
   }
@@ -49,7 +54,13 @@ export default function FavoriteButton({ productId }: { productId: number }) {
       className={`absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full transition-colors
         ${isFav ? "bg-red-50 text-red-500 hover:bg-red-100" : "bg-white/80 text-gray-400 hover:text-red-400 hover:bg-white"}`}
     >
-      <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" fill={isFav ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2}>
+      <svg
+        viewBox="0 0 24 24"
+        className="w-4.5 h-4.5"
+        fill={isFav ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth={2}
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"

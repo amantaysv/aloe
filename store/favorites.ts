@@ -28,10 +28,16 @@ export const useFavorites = create<FavoritesStore>((set, get) => ({
     }
 
     const { data } = await supabase.from("favorites").select("product_id").eq("user_id", user.id);
-    set({ ids: (data || []).map((f: { product_id: number }) => f.product_id), loaded: true });
+    set({
+      ids: (data || []).map((f: { product_id: number }) => f.product_id),
+      loaded: true,
+    });
   },
 
   add: (id) => set((state) => ({ ids: [...state.ids, id] })),
-  remove: (id) => set((state) => ({ ids: state.ids.filter((i) => i !== id) })),
+  remove: (id) =>
+    set((state) => ({
+      ids: state.ids.filter((i) => i !== id),
+    })),
   reset: () => set({ ids: [], loaded: false }),
 }));

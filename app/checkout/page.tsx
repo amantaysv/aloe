@@ -1,8 +1,12 @@
 import { redirect } from "next/navigation";
+
 import { createClient } from "@/lib/supabase-server";
+
 import CheckoutForm from "./CheckoutForm";
 
-export const metadata = { title: "Оформление заказа — Aloe.kg" };
+export const metadata = {
+  title: "Оформление заказа — Aloe.kg",
+};
 
 export default async function CheckoutPage() {
   const supabase = await createClient();
@@ -12,15 +16,11 @@ export default async function CheckoutPage() {
 
   if (!user) redirect("/auth");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("name, phone, address")
-    .eq("id", user.id)
-    .single();
+  const { data: profile } = await supabase.from("profiles").select("name, phone, address").eq("id", user.id).single();
 
   const initial = {
-    name:    profile?.name    ?? "",
-    phone:   profile?.phone   ?? "",
+    name: profile?.name ?? "",
+    phone: profile?.phone ?? "",
     address: profile?.address ?? "",
   };
 

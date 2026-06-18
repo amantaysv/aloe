@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
+
 import { createClient } from "@/lib/supabase-browser";
 import { useFavorites } from "@/store/favorites";
-import type { User } from "@supabase/supabase-js";
 
 export default function AuthButton() {
   const [user, setUser] = useState<User | null>(null);

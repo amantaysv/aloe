@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
+
 import { createClient } from "@/lib/supabase-server";
+
 import AdminOrders from "./AdminOrders";
 
 export const metadata = { title: "Заказы — Админ" };
@@ -14,10 +16,7 @@ export default async function AdminPage() {
 
   if (!user || user.email !== ADMIN_EMAIL) notFound();
 
-  const { data: orders } = await supabase
-    .from("orders")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const { data: orders } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-8">

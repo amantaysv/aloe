@@ -33,7 +33,9 @@ export const useCart = create<CartStore>()(
               items: state.items.map((i) => (i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i)),
             };
           }
-          return { items: [...state.items, { ...item, quantity: 1 }] };
+          return {
+            items: [...state.items, { ...item, quantity: 1 }],
+          };
         }),
 
       remove: (id) =>
@@ -48,7 +50,9 @@ export const useCart = create<CartStore>()(
 
       decrement: (id) =>
         set((state) => ({
-          items: state.items.map((i) => (i.id === id && i.quantity > 1 ? { ...i, quantity: i.quantity - 1 } : i)).filter((i) => i.quantity > 0),
+          items: state.items
+            .map((i) => (i.id === id && i.quantity > 1 ? { ...i, quantity: i.quantity - 1 } : i))
+            .filter((i) => i.quantity > 0),
         })),
 
       clear: () => set({ items: [] }),
@@ -57,6 +61,6 @@ export const useCart = create<CartStore>()(
 
       count: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
     }),
-    { name: "cart" },
-  ),
+    { name: "cart" }
+  )
 );

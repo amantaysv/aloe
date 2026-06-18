@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import OrderStatusSelect from "./OrderStatusSelect";
 
 type Order = {
@@ -12,15 +13,31 @@ type Order = {
   customer_phone: string | null;
   customer_address: string | null;
   comment: string | null;
-  items: { name: string; quantity: number; price: number }[];
+  items: {
+    name: string;
+    quantity: number;
+    price: number;
+  }[];
 };
 
 const STATUS: Record<string, { label: string; cls: string }> = {
-  new:        { label: "Новый",       cls: "bg-blue-100 text-blue-700" },
-  confirmed:  { label: "Подтверждён", cls: "bg-yellow-100 text-yellow-700" },
-  processing: { label: "В доставке",  cls: "bg-orange-100 text-orange-700" },
-  delivered:  { label: "Доставлен",   cls: "bg-green-100 text-green-700" },
-  cancelled:  { label: "Отменён",     cls: "bg-red-100 text-red-700" },
+  new: { label: "Новый", cls: "bg-blue-100 text-blue-700" },
+  confirmed: {
+    label: "Подтверждён",
+    cls: "bg-yellow-100 text-yellow-700",
+  },
+  processing: {
+    label: "В доставке",
+    cls: "bg-orange-100 text-orange-700",
+  },
+  delivered: {
+    label: "Доставлен",
+    cls: "bg-green-100 text-green-700",
+  },
+  cancelled: {
+    label: "Отменён",
+    cls: "bg-red-100 text-red-700",
+  },
 };
 
 const PAGE_SIZE = 15;
@@ -32,9 +49,7 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
   const [page, setPage] = useState(1);
 
   function handleStatusChange(orderId: number, status: string) {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status } : o))
-    );
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
   }
 
   function toggleStatus(key: string) {
@@ -49,9 +64,7 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
   const q = query.trim().toLowerCase();
   const filtered = orders.filter((o) => {
     const matchesQuery =
-      !q ||
-      o.customer_name?.toLowerCase().includes(q) ||
-      o.customer_phone?.toLowerCase().includes(q);
+      !q || o.customer_name?.toLowerCase().includes(q) || o.customer_phone?.toLowerCase().includes(q);
     const matchesStatus = statusFilter.size === 0 || statusFilter.has(o.status);
     return matchesQuery && matchesStatus;
   });
@@ -59,9 +72,7 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const counts = Object.fromEntries(
-    Object.keys(STATUS).map((s) => [s, orders.filter((o) => o.status === s).length])
-  );
+  const counts = Object.fromEntries(Object.keys(STATUS).map((s) => [s, orders.filter((o) => o.status === s).length]));
 
   return (
     <>
@@ -75,9 +86,7 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
               type="button"
               onClick={() => toggleStatus(key)}
               className={`text-xs font-medium px-2 py-1 rounded transition-all ${cls} ${
-                active
-                  ? "ring-2 ring-offset-1 ring-current"
-                  : "opacity-70 hover:opacity-100"
+                active ? "ring-2 ring-offset-1 ring-current" : "opacity-70 hover:opacity-100"
               }`}
             >
               {label}: {counts[key]}
@@ -99,7 +108,9 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
       <div className="relative mb-6">
         <svg
           className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
-          fill="none" stroke="currentColor" strokeWidth={2}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
           viewBox="0 0 24 24"
         >
           <circle cx="11" cy="11" r="8" />
@@ -108,7 +119,10 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
         <input
           type="text"
           value={query}
-          onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setPage(1);
+          }}
           placeholder="Поиск по имени или телефону..."
           className="w-full border rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
         />
@@ -123,9 +137,7 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
       </div>
 
       {filtered.length === 0 && (
-        <p className="text-gray-400 text-sm">
-          {q ? `Ничего не найдено по запросу «${query}»` : "Заказов пока нет"}
-        </p>
+        <p className="text-gray-400 text-sm">{q ? `Ничего не найдено по запросу «${query}»` : "Заказов пока нет"}</p>
       )}
 
       <div className="space-y-4">
@@ -147,13 +159,15 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
                   <p className="font-semibold mt-1">{order.customer_name ?? "—"}</p>
                   <p className="text-sm text-gray-600">{order.customer_phone ?? "—"}</p>
                   <p className="text-sm text-gray-600">{order.customer_address ?? "—"}</p>
-                  {order.comment && (
-                    <p className="text-sm text-gray-400 italic">💬 {order.comment}</p>
-                  )}
+                  {order.comment && <p className="text-sm text-gray-400 italic">💬 {order.comment}</p>}
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-xl font-bold text-green-600">{order.total} сом</p>
-                  <OrderStatusSelect orderId={order.id} currentStatus={order.status} onStatusChange={handleStatusChange} />
+                  <OrderStatusSelect
+                    orderId={order.id}
+                    currentStatus={order.status}
+                    onStatusChange={handleStatusChange}
+                  />
                 </div>
               </div>
 

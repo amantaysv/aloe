@@ -1,9 +1,10 @@
 "use client";
 
-import { useCart } from "@/store/cart";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+import { useCart } from "@/store/cart";
 
 export default function CartPage() {
   const router = useRouter();
@@ -34,11 +35,17 @@ export default function CartPage() {
               <p className="text-sm text-green-600 font-bold mt-1">{item.price} сом</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <button onClick={() => decrement(item.id)} className="w-8 h-8 border rounded-lg hover:bg-gray-50 flex items-center justify-center font-bold">
+              <button
+                onClick={() => decrement(item.id)}
+                className="w-8 h-8 border rounded-lg hover:bg-gray-50 flex items-center justify-center font-bold"
+              >
                 −
               </button>
               <span className="w-6 text-center text-sm">{item.quantity}</span>
-              <button onClick={() => increment(item.id)} className="w-8 h-8 border rounded-lg hover:bg-gray-50 flex items-center justify-center font-bold">
+              <button
+                onClick={() => increment(item.id)}
+                className="w-8 h-8 border rounded-lg hover:bg-gray-50 flex items-center justify-center font-bold"
+              >
                 +
               </button>
               <button onClick={() => remove(item.id)} className="text-red-400 hover:text-red-600 ml-2 text-xs">

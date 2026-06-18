@@ -1,4 +1,6 @@
-export const metadata = { title: "Доставка и оплата — Aloe.kg" };
+export const metadata = {
+  title: "Доставка и оплата — Aloe.kg",
+};
 
 export default function DeliveryPage() {
   return (
@@ -64,8 +66,8 @@ export default function DeliveryPage() {
       <section className="mb-8">
         <h2 className="text-lg font-semibold mb-3 text-green-700">Возврат товара</h2>
         <p className="text-gray-700">
-          Возврат возможен в течение двух дней — только нового, неиспользованного товара.
-          Расходы по доставке товара до пункта возврата несёт покупатель.
+          Возврат возможен в течение двух дней — только нового, неиспользованного товара. Расходы по доставке товара до
+          пункта возврата несёт покупатель.
         </p>
       </section>
 

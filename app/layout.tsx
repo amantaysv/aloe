@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
 import { Geist, Lobster } from "next/font/google";
-import "./globals.css";
-import { supabase } from "@/lib/supabase";
+import NextTopLoader from "nextjs-toploader";
+
 import CatalogSidebar from "@/components/CatalogSidebar";
 import Header from "@/components/Header";
 import Toaster from "@/components/Toaster";
-import NextTopLoader from "nextjs-toploader";
+import { supabase } from "@/lib/supabase";
+
+import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"] });
-const lobster = Lobster({ subsets: ["latin", "cyrillic"], weight: "400", variable: "--font-lobster" });
+const lobster = Lobster({
+  subsets: ["latin", "cyrillic"],
+  weight: "400",
+  variable: "--font-lobster",
+});
 
 export const metadata: Metadata = {
   title: "Aloe.kg",
@@ -27,7 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   console.log("categories count:", categories.length);
   console.log(
     "parents:",
-    categories.filter((c) => !c.parent_id),
+    categories.filter((c) => !c.parent_id)
   );
   return (
     <html lang="ru">

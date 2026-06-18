@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -24,10 +25,14 @@ export default function CatalogSidebar({ parents, subcategories }: { parents: Ca
   const [openId, setOpenId] = useState<string | null>(activeParent || null);
 
   return (
-    <aside className="w-60 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r border-gray-300">
+    <aside className="w-60 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r border-gray-300 scrollbar-gutter-stable">
       <nav className="py-2">
         {specials.map((s) => (
-          <Link key={s.href} href={s.href} className={`block px-4 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors`}>
+          <Link
+            key={s.href}
+            href={s.href}
+            className={`block px-4 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors`}
+          >
             {s.label}
           </Link>
         ))}

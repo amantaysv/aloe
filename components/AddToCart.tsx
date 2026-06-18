@@ -20,11 +20,17 @@ export default function AddToCart({ product }: Props) {
   if (item) {
     return (
       <div className="flex items-center gap-2 mt-2">
-        <button onClick={() => decrement(product.id)} className="w-8 h-8 border rounded-lg text-lg font-bold hover:bg-gray-50 flex items-center justify-center">
+        <button
+          onClick={() => decrement(product.id)}
+          className="w-8 h-8 border rounded-lg text-lg font-bold hover:bg-gray-50 flex items-center justify-center"
+        >
           −
         </button>
         <span className="text-sm font-medium w-6 text-center">{item.quantity}</span>
-        <button onClick={() => increment(product.id)} className="w-8 h-8 border rounded-lg text-lg font-bold hover:bg-gray-50 flex items-center justify-center">
+        <button
+          onClick={() => increment(product.id)}
+          className="w-8 h-8 border rounded-lg text-lg font-bold hover:bg-gray-50 flex items-center justify-center"
+        >
           +
         </button>
         <button onClick={() => remove(product.id)} className="text-xs text-red-400 hover:text-red-600 ml-1">
@@ -36,7 +42,10 @@ export default function AddToCart({ product }: Props) {
 
   return (
     <button
-      onClick={() => { add(product); show("Добавлено в корзину", "success"); }}
+      onClick={() => {
+        add(product);
+        show("Добавлено в корзину", "success");
+      }}
       className="mt-2 w-full bg-green-600 text-white text-sm font-medium py-1.5 rounded-lg hover:bg-green-700 transition-colors"
     >
       В корзину

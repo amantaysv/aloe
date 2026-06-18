@@ -1,8 +1,8 @@
-import { supabase } from "@/lib/supabase";
-import FavoriteButton from "@/components/FavoriteButton";
-import Pagination from "@/components/Pagination";
-import Image from "next/image";
 import Link from "next/link";
+
+import Pagination from "@/components/Pagination";
+import ProductCard from "@/components/ProductCard";
+import { supabase } from "@/lib/supabase";
 
 const PAGE_SIZE = 24;
 
@@ -10,7 +10,12 @@ async function searchProducts(query: string, page: number) {
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
-  const { data, count } = await supabase.from("products").select("*", { count: "exact" }).ilike("name", `%${query}%`).order("name").range(from, to);
+  const { data, count } = await supabase
+    .from("products")
+    .select("*", { count: "exact" })
+    .ilike("name", `%${query}%`)
+    .order("name")
+    .range(from, to);
 
   return { products: data || [], total: count || 0 };
 }
@@ -41,19 +46,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {products.map((p) => (
-              <div key={p.id} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                <div className="relative aspect-square bg-gray-50">
-                  <Image src={p.image_url} alt={p.name} fill className="object-contain p-2" unoptimized />
-                  <FavoriteButton productId={p.id} />
-                </div>
-                <div className="p-3">
-                  <p className="text-sm font-medium line-clamp-2">{p.name}</p>
-                  <p className="text-base font-bold mt-1">{p.price} сом</p>
-                </div>
-              </div>
+              <ProductCard key={p.id} product={p} />
             ))}
           </div>
-
           <Pagination page={currentPage} totalPages={totalPages} basePath="/search" query={{ q }} />
         </>
       )}

@@ -1,7 +1,13 @@
 "use server";
 import { createClient } from "@/lib/supabase-server";
 
-type CartItem = { id: number; name: string; price: number; quantity: number; image_url: string };
+type CartItem = {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image_url: string;
+};
 
 export async function createOrder({
   name,

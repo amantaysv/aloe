@@ -1,9 +1,8 @@
-import { supabase } from "@/lib/supabase";
-import Image from "next/image";
 import Link from "next/link";
-import AddToCart from "@/components/AddToCart";
-import FavoriteButton from "@/components/FavoriteButton";
+
 import Pagination from "@/components/Pagination";
+import ProductCard from "@/components/ProductCard";
+import { supabase } from "@/lib/supabase";
 import type { Product } from "@/types";
 
 export const metadata = { title: "Скидки — Aloe.kg" };
@@ -18,7 +17,7 @@ export default async function DiscountPage({ searchParams }: { searchParams: Pro
   const { data, count } = await supabase
     .from("products")
     .select("*", { count: "exact" })
-    .eq("is_discount", true)
+    .eq("label", "discount")
     .order("name")
     .range(from, from + PAGE_SIZE - 1);
 
@@ -27,7 +26,9 @@ export default async function DiscountPage({ searchParams }: { searchParams: Pro
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
-      <Link href="/" className="text-sm text-gray-500 hover:text-gray-800 mb-4 inline-block">← Главная</Link>
+      <Link href="/" className="text-sm text-gray-500 hover:text-gray-800 mb-4 inline-block">
+        ← Главная
+      </Link>
       <div className="flex items-baseline gap-3 mb-6">
         <h1 className="text-2xl font-bold">Скидки</h1>
         {count ? <span className="text-sm text-gray-400">{count} товаров</span> : null}
@@ -38,26 +39,7 @@ export default async function DiscountPage({ searchParams }: { searchParams: Pro
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {products.map((p) => (
-              <div key={p.id} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                <div className="relative aspect-square bg-gray-50">
-                  <Image src={p.image_url} alt={p.name} fill className="object-contain p-2" unoptimized />
-                  <div className="absolute top-1.5 left-1.5">
-                    <span className="bg-red-500 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded">Скидка</span>
-                  </div>
-                  <FavoriteButton productId={p.id} />
-                </div>
-                <div className="p-3">
-                  <p className="text-xs text-gray-400 mb-1">{p.category}</p>
-                  <p className="text-sm font-medium line-clamp-2">{p.name}</p>
-                  <div className="flex items-baseline gap-1.5 mt-1">
-                    <p className="text-base font-bold">{p.price} сом</p>
-                    {p.old_price && <p className="text-sm text-gray-400 line-through">{p.old_price} сом</p>}
-                  </div>
-                </div>
-                <div className="px-3 pb-3">
-                  <AddToCart product={{ id: p.id, name: p.name, price: p.price, image_url: p.image_url }} />
-                </div>
-              </div>
+              <ProductCard key={p.id} product={p} />
             ))}
           </div>
           <Pagination page={currentPage} totalPages={totalPages} basePath="/discount" />

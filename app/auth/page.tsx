@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+
 import { useRouter } from "next/navigation";
+
 import { createClient } from "@/lib/supabase-browser";
 
 const ERROR_MAP: Record<string, string> = {
@@ -30,7 +32,10 @@ export default function AuthPage() {
     setLoading(true);
 
     if (mode === "register") {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
       setLoading(false);
       if (error) {
         setError(translateError(error.message));
@@ -40,7 +45,9 @@ export default function AuthPage() {
         setRegistered(true);
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({        email,
+        password,
+      });
       setLoading(false);
       if (error) {
         setError(translateError(error.message));
@@ -60,13 +67,17 @@ export default function AuthPage() {
           </div>
           <h1 className="text-xl font-bold">Подтвердите email</h1>
           <p className="text-sm text-gray-600">
-            Мы отправили письмо на <span className="font-medium text-gray-800">{email}</span>.
+            Мы отправили письмо на <span className="font-medium text-gray-800">{email}</span>
+            .
             <br />
             Перейдите по ссылке в письме, чтобы завершить регистрацию.
           </p>
           <p className="text-xs text-gray-400">Не пришло письмо? Проверьте папку «Спам».</p>
           <button
-            onClick={() => { setRegistered(false); setMode("login"); }}
+            onClick={() => {
+              setRegistered(false);
+              setMode("login");
+            }}
             className="text-sm text-green-600 hover:underline mt-2"
           >
             Войти в аккаунт
@@ -78,9 +89,7 @@ export default function AuthPage() {
 
   return (
     <main className="max-w-sm mx-auto py-16">
-      <h1 className="text-2xl font-bold mb-6 text-center">
-        {mode === "login" ? "Вход" : "Регистрация"}
-      </h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">{mode === "login" ? "Вход" : "Регистрация"}</h1>
 
       <div className="border rounded-xl p-6 flex flex-col gap-4">
         <input
@@ -99,11 +108,7 @@ export default function AuthPage() {
           className="border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-green-500"
         />
 
-        {error && (
-          <p className="text-red-500 text-sm bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-red-500 text-sm bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>}
 
         <button
           onClick={handleSubmit}
@@ -116,7 +121,10 @@ export default function AuthPage() {
         <p className="text-center text-sm text-gray-500">
           {mode === "login" ? "Нет аккаунта?" : "Уже есть аккаунт?"}{" "}
           <button
-            onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); }}
+            onClick={() => {
+              setMode(mode === "login" ? "register" : "login");
+              setError("");
+            }}
             className="text-green-600 hover:underline"
           >
             {mode === "login" ? "Зарегистрироваться" : "Войти"}
