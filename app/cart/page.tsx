@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
 import { useCart } from "@/store/cart";
 
 export default function CartPage() {
@@ -26,7 +25,7 @@ export default function CartPage() {
       <h1 className="text-2xl font-bold mb-6">Корзина</h1>
       <div className="flex flex-col gap-3">
         {items.map((item) => (
-          <div key={item.id} className="flex items-center gap-4 border rounded-lg p-3">
+          <div key={item.id} className="flex items-center gap-4 border border-gray-300 rounded-lg p-3">
             <div className="relative w-16 h-16 shrink-0 bg-gray-50 rounded">
               <Image src={item.image_url} alt={item.name} fill className="object-contain p-1" unoptimized />
             </div>
@@ -37,18 +36,21 @@ export default function CartPage() {
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => decrement(item.id)}
-                className="w-8 h-8 border rounded-lg hover:bg-gray-50 flex items-center justify-center font-bold"
+                className="w-8 h-8 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center font-bold hover:cursor-pointer"
               >
                 −
               </button>
               <span className="w-6 text-center text-sm">{item.quantity}</span>
               <button
                 onClick={() => increment(item.id)}
-                className="w-8 h-8 border rounded-lg hover:bg-gray-50 flex items-center justify-center font-bold"
+                className="w-8 h-8 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center font-bold hover:cursor-pointer"
               >
                 +
               </button>
-              <button onClick={() => remove(item.id)} className="text-red-400 hover:text-red-600 ml-2 text-xs">
+              <button
+                onClick={() => remove(item.id)}
+                className="text-red-400 hover:text-red-600 ml-2 text-xs hover:cursor-pointer"
+              >
                 удалить
               </button>
             </div>
@@ -62,12 +64,15 @@ export default function CartPage() {
           <p className="text-2xl font-bold text-green-600">{total()} сом</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={clear} className="px-4 py-2 border rounded-lg text-sm text-gray-500 hover:bg-gray-50">
+          <button
+            onClick={clear}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 hover:bg-gray-50 hover:cursor-pointer"
+          >
             Очистить
           </button>
           <button
             onClick={() => router.push("/checkout")}
-            className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
+            className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 hover:cursor-pointer"
           >
             Оформить заказ
           </button>

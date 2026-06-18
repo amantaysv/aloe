@@ -70,7 +70,7 @@ export default function AuthButton() {
             </Link>
             <button
               onClick={signOut}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 hover:cursor-pointer"
             >
               <LogOut />
               Выйти

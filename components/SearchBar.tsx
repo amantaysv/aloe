@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-
 import { supabase } from "@/lib/supabase";
 
 type Product = {
@@ -73,7 +71,7 @@ export default function SearchBar() {
       {loading && <div className="absolute right-3 top-2.5 text-gray-400 text-xs">...</div>}
 
       {open && results.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-50 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 overflow-hidden">
           {results.map((p) => (
             <button
               key={p.id}
@@ -82,7 +80,7 @@ export default function SearchBar() {
                 setOpen(false);
                 setQuery("");
               }}
-              className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 text-left"
+              className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 text-left hover:cursor-pointer"
             >
               <div className="relative w-10 h-10 shrink-0 bg-gray-100 rounded">
                 <Image src={p.image_url} alt={p.name} fill className="object-contain p-1" unoptimized />
@@ -99,7 +97,7 @@ export default function SearchBar() {
               router.push(`/search?q=${encodeURIComponent(query)}`);
               setOpen(false);
             }}
-            className="w-full px-4 py-2 text-sm text-green-600 font-medium hover:bg-gray-50 border-t text-center"
+            className="w-full px-4 py-2 text-sm text-green-600 font-medium hover:bg-gray-50 border-t border-gray-300 text-center hover:cursor-pointer"
           >
             Показать все результаты →
           </button>
@@ -107,7 +105,7 @@ export default function SearchBar() {
       )}
 
       {open && results.length === 0 && !loading && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-50 px-4 py-3 text-sm text-gray-500">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 px-4 py-3 text-sm text-gray-500">
           Ничего не найдено
         </div>
       )}

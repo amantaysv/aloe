@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -37,7 +36,7 @@ export default function CatalogSidebar({ parents, subcategories }: { parents: Ca
           </Link>
         ))}
 
-        <div className="border-t my-2" />
+        <div className="border-t border-gray-300 my-2" />
 
         {parents.map((parent) => {
           const subs = subcategories.filter((s) => s.parent_id === parent.id);
@@ -47,21 +46,21 @@ export default function CatalogSidebar({ parents, subcategories }: { parents: Ca
             <div key={parent.id}>
               <button
                 onClick={() => setOpenId(isOpen ? null : parent.id)}
-                className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium hover:bg-gray-50 text-left"
+                className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium hover:bg-gray-50 text-left hover:cursor-pointer"
               >
                 <span>{parent.name}</span>
                 <span className="text-green-600 text-lg leading-none">{isOpen ? "−" : "+"}</span>
               </button>
 
               {isOpen && subs.length > 0 && (
-                <div className="bg-gray-50 border-t border-b">
+                <div className="bg-gray-50 border-t border-b border-gray-300">
                   {subs.map((sub) => {
                     console.log("🚀 ~ CatalogSidebar ~ sub:", sub);
                     return (
                       <Link
                         key={sub.id}
                         href={`/catalog/${sub.id}`}
-                        className={`block px-6 py-2 text-sm hover:text-green-600 transition-colors ${activeId === sub.id ? "text-green-600 font-medium bg-green-50" : "text-gray-600"}`}
+                        className={`block px-6 py-2 text-sm hover:text-green-600 transition-colors ${activeId === sub.id ? "text-green-600" : "text-gray-600"}`}
                       >
                         {sub.name}
                       </Link>

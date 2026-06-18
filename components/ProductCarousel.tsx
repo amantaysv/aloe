@@ -1,10 +1,8 @@
 "use client";
+
 import { useRef } from "react";
-
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
 import type { Product } from "@/types";
-
 import ProductCard from "./ProductCard";
 
 export default function ProductCarousel({
@@ -46,14 +44,14 @@ export default function ProductCarousel({
         <div className="flex gap-1">
           <button
             onClick={() => scroll("left")}
-            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:border-green-600 hover:text-green-600 transition-colors"
+            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:border-green-600 hover:text-green-600 transition-colors hover:cursor-pointer"
             aria-label="Назад"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={() => scroll("right")}
-            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:border-green-600 hover:text-green-600 transition-colors"
+            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:border-green-600 hover:text-green-600 transition-colors hover:cursor-pointer"
             aria-label="Вперёд"
           >
             <ChevronRight className="w-4 h-4" />

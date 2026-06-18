@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-
 import ProfileForm from "./ProfileForm";
 
 type Order = {
@@ -59,7 +58,7 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors hover:cursor-pointer ${
               tab === t ? "border-green-600 text-green-600" : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -80,7 +79,7 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
                 {paginated.map((order) => {
                   const s = STATUS_LABELS[order.status] ?? STATUS_LABELS.new;
                   return (
-                    <div key={order.id} className="border rounded-xl p-4">
+                    <div key={order.id} className="border border-gray-300 rounded-xl p-4">
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <p className="text-xs text-gray-400">
@@ -106,7 +105,7 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
                         ))}
                       </ul>
 
-                      <div className="flex justify-end border-t pt-2">
+                      <div className="flex justify-end border-t border-gray-300 pt-2">
                         <span className="font-semibold text-sm">Итого: {order.total.toLocaleString("ru-RU")} сом</span>
                       </div>
                     </div>
@@ -119,7 +118,7 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
                   <button
                     onClick={() => setPage((p) => p - 1)}
                     disabled={page === 1}
-                    className="px-3 py-1.5 text-sm border rounded-lg disabled:opacity-40 hover:bg-gray-50"
+                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50 hover:cursor-pointer"
                   >
                     ←
                   </button>
@@ -127,7 +126,7 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
                     <button
                       key={p}
                       onClick={() => setPage(p)}
-                      className={`px-3 py-1.5 text-sm border rounded-lg ${
+                      className={`px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:cursor-pointer ${
                         p === page ? "bg-green-600 text-white border-green-600" : "hover:bg-gray-50"
                       }`}
                     >
@@ -137,7 +136,7 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
                   <button
                     onClick={() => setPage((p) => p + 1)}
                     disabled={page === totalPages}
-                    className="px-3 py-1.5 text-sm border rounded-lg disabled:opacity-40 hover:bg-gray-50"
+                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50 hover:cursor-pointer"
                   >
                     →
                   </button>

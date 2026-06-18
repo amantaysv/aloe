@@ -19,7 +19,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
         Мы свяжемся с вами по телефону для подтверждения. Доставка производится в день заказа (при заявке до 15:00).
       </p>
       <div className="flex gap-3 justify-center">
-        <Link href="/" className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
+        <Link href="/" className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
           На главную
         </Link>
         <Link href="/profile" className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">

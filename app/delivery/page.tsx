@@ -15,7 +15,7 @@ export default function DeliveryPage() {
       <section className="mb-8">
         <h2 className="text-lg font-semibold mb-3 text-green-700">Стоимость доставки</h2>
         <div className="space-y-3 text-gray-700">
-          <div className="border rounded-lg p-4 bg-gray-50">
+          <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
             <p className="font-medium">По Бишкеку и ближайшим жилмассивам</p>
             <p className="text-2xl font-bold text-green-600 mt-1">150 сом</p>
             <p className="text-sm text-gray-500 mt-1">Минимальная сумма заказа — 500 сом</p>
@@ -24,7 +24,7 @@ export default function DeliveryPage() {
             <p className="font-bold text-green-800">При заказе свыше 5 000 сом — доставка бесплатно</p>
             <p className="text-sm text-green-700 mt-1">Только по городу Бишкек</p>
           </div>
-          <div className="border rounded-lg p-4 bg-gray-50">
+          <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
             <p className="font-medium">Доставка в регионы</p>
             <p className="text-2xl font-bold mt-1">от 290 сом</p>
             <p className="text-sm text-gray-500 mt-1">
@@ -38,7 +38,7 @@ export default function DeliveryPage() {
         <h2 className="text-lg font-semibold mb-3 text-green-700">Способы оплаты</h2>
         <div className="flex gap-3 flex-wrap">
           {["Наличными", "Элсом", "MegaPay"].map((method) => (
-            <span key={method} className="border rounded-lg px-4 py-2 text-sm font-medium bg-white">
+            <span key={method} className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium bg-white">
               {method}
             </span>
           ))}

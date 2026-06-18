@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-
 import { createClient } from "@/lib/supabase-server";
 
 import CheckoutForm from "./CheckoutForm";
@@ -14,15 +12,16 @@ export default async function CheckoutPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/auth");
+  const initial = { name: "", phone: "", address: "" };
 
-  const { data: profile } = await supabase.from("profiles").select("name, phone, address").eq("id", user.id).single();
-
-  const initial = {
-    name: profile?.name ?? "",
-    phone: profile?.phone ?? "",
-    address: profile?.address ?? "",
-  };
+  if (user) {
+    const { data: profile } = await supabase.from("profiles").select("name, phone, address").eq("id", user.id).single();
+    if (profile) {
+      initial.name = profile.name ?? "";
+      initial.phone = profile.phone ?? "";
+      initial.address = profile.address ?? "";
+    }
+  }
 
   return (
     <main className="max-w-xl mx-auto px-4 py-8">

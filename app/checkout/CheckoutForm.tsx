@@ -1,12 +1,10 @@
 "use client";
-import { useState } from "react";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
 import { useCart } from "@/store/cart";
-
 import { createOrder } from "./actions";
 
 type Props = {
@@ -46,27 +44,27 @@ export default function CheckoutForm({ initial }: Props) {
     }
     setLoading(true);
     setError("");
-    try {
-      const result = await createOrder({
-        name: name.trim(),
-        phone: phone.trim(),
-        address: address.trim(),
-        comment: comment.trim(),
-        items: items.map((i) => ({
-          id: i.id,
-          name: i.name,
-          price: i.price,
-          quantity: i.quantity,
-          image_url: i.image_url,
-        })),
-        total: total(),
-      });
-      clear();
-      router.push(`/checkout/success?id=${result.orderId}`);
-    } catch {
-      setError("Ошибка при оформлении заказа. Попробуйте ещё раз.");
+    const result = await createOrder({
+      name: name.trim(),
+      phone: phone.trim(),
+      address: address.trim(),
+      comment: comment.trim(),
+      items: items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity,
+        image_url: i.image_url,
+      })),
+      total: total(),
+    });
+    if (!result.ok) {
+      setError(result.error);
       setLoading(false);
+      return;
     }
+    clear();
+    router.push(`/checkout/success?id=${result.orderId}`);
   }
 
   const orderTotal = total();
@@ -75,7 +73,7 @@ export default function CheckoutForm({ initial }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Cart summary */}
-      <div className="border rounded-lg p-4 bg-gray-50">
+      <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
         <h2 className="font-semibold mb-3">Ваш заказ</h2>
         <div className="space-y-2">
           {items.map((item) => (
@@ -90,7 +88,7 @@ export default function CheckoutForm({ initial }: Props) {
             </div>
           ))}
         </div>
-        <div className="border-t mt-3 pt-3 flex justify-between font-bold">
+        <div className="border-t border-gray-300 mt-3 pt-3 flex justify-between font-bold">
           <span>Итого:</span>
           <span className="text-green-600">{orderTotal} сом</span>
         </div>
@@ -109,7 +107,7 @@ export default function CheckoutForm({ initial }: Props) {
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="Ваше имя"
           />
         </div>
@@ -130,7 +128,7 @@ export default function CheckoutForm({ initial }: Props) {
           <input
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="Улица, дом, квартира"
           />
         </div>
@@ -140,7 +138,7 @@ export default function CheckoutForm({ initial }: Props) {
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             rows={2}
             placeholder="Дополнительная информация, ориентиры..."
           />
@@ -152,7 +150,7 @@ export default function CheckoutForm({ initial }: Props) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+        className="w-full py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 transition-colors hover:cursor-pointer"
       >
         {loading ? "Оформляем..." : "Подтвердить заказ"}
       </button>

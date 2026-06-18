@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
 import { Search } from "lucide-react";
-
 import OrderStatusSelect from "./OrderStatusSelect";
 
 type Order = {
@@ -87,7 +85,7 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
               key={key}
               type="button"
               onClick={() => toggleStatus(key)}
-              className={`text-xs font-medium px-2 py-1 rounded transition-all ${cls} ${
+              className={`text-xs font-medium px-2 py-1 rounded transition-all hover:cursor-pointer ${cls} ${
                 active ? "ring-2 ring-offset-1 ring-current" : "opacity-70 hover:opacity-100"
               }`}
             >
@@ -99,7 +97,7 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
           <button
             type="button"
             onClick={() => setStatusFilter(new Set())}
-            className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1"
+            className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 hover:cursor-pointer"
           >
             Сбросить ✕
           </button>
@@ -117,12 +115,12 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
             setPage(1);
           }}
           placeholder="Поиск по имени или телефону..."
-          className="w-full border rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="w-full border border-gray-300 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
         />
         {query && (
           <button
             onClick={() => setQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hover:cursor-pointer"
           >
             ✕
           </button>
@@ -144,7 +142,7 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
           });
 
           return (
-            <div key={order.id} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
+            <div key={order.id} className="border border-gray-300 rounded-lg p-4 hover:shadow-sm transition-shadow">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="space-y-0.5">
                   <p className="font-mono text-xs text-gray-400">#{order.id}</p>
@@ -164,7 +162,7 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
                 </div>
               </div>
 
-              <div className="mt-3 border-t pt-3">
+              <div className="mt-3 border-t border-gray-300 pt-3">
                 <div className="space-y-1">
                   {(order.items || []).map((item, i) => (
                     <div key={i} className="flex justify-between text-sm">
@@ -186,7 +184,7 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
           <button
             onClick={() => setPage((p) => p - 1)}
             disabled={page === 1}
-            className="px-3 py-1.5 text-sm border rounded-lg disabled:opacity-40 hover:bg-gray-50"
+            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50 hover:cursor-pointer"
           >
             ←
           </button>
@@ -194,7 +192,7 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
             <button
               key={p}
               onClick={() => setPage(p)}
-              className={`px-3 py-1.5 text-sm border rounded-lg ${
+              className={`px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:cursor-pointer ${
                 p === page ? "bg-green-600 text-white border-green-600" : "hover:bg-gray-50"
               }`}
             >
@@ -204,7 +202,7 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
           <button
             onClick={() => setPage((p) => p + 1)}
             disabled={page === totalPages}
-            className="px-3 py-1.5 text-sm border rounded-lg disabled:opacity-40 hover:bg-gray-50"
+            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50 hover:cursor-pointer"
           >
             →
           </button>

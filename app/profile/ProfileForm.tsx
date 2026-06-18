@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-
 import { saveProfile } from "./actions";
 
 type Props = {
@@ -42,21 +41,21 @@ export default function ProfileForm({ initial }: Props) {
   }
 
   const inputCls = (active: boolean) =>
-    `w-full border rounded-lg px-3 py-2 text-sm transition-colors ${
+    `w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-colors ${
       active
         ? "focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
         : "bg-gray-50 text-gray-500 cursor-default"
     }`;
 
   return (
-    <form onSubmit={handleSubmit} className="border rounded-xl p-5 mb-8 space-y-4">
+    <form onSubmit={handleSubmit} className="border border-gray-300 rounded-xl p-5 mb-8 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Личные данные</h2>
         {!editing && (
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="text-sm text-green-600 hover:text-green-700 font-medium"
+            className="text-sm text-green-600 hover:text-green-700 font-medium hover:cursor-pointer"
           >
             Изменить
           </button>
@@ -111,14 +110,14 @@ export default function ProfileForm({ initial }: Props) {
           <button
             type="submit"
             disabled={isPending}
-            className="px-5 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50"
+            className="px-5 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 hover:cursor-pointer"
           >
             {isPending ? "Сохранение..." : "Сохранить"}
           </button>
           <button
             type="button"
             onClick={handleCancel}
-            className="px-5 py-2 border text-sm font-medium rounded-lg hover:bg-gray-50"
+            className="px-5 py-2 border border-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 hover:cursor-pointer"
           >
             Отмена
           </button>

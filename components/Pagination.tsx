@@ -20,7 +20,7 @@ export default function Pagination({ page, totalPages, basePath, query }: Props)
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1).filter((p) => Math.abs(p - page) <= 2);
 
-  const linkCls = "px-4 py-2 border rounded-lg text-sm hover:bg-gray-50";
+  const linkCls = "px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50";
   const activeCls = "bg-green-600 text-white border-green-600";
 
   return (

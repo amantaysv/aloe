@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
 
+import { useState } from "react";
 import { updateOrderStatus } from "./actions";
 
 const STATUSES = [
@@ -45,7 +45,7 @@ export default function OrderStatusSelect({
         value={currentStatus}
         onChange={handleChange}
         disabled={saving}
-        className="text-xs border rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-green-500"
+        className="text-xs border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-green-500"
       >
         {STATUSES.map((s) => (
           <option key={s.value} value={s.value}>
