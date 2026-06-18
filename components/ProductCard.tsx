@@ -30,27 +30,25 @@ function ProductBadge({ label }: { label: Product["label"] }) {
 }
 
 export default function ProductCard({ product: p, className = "", href }: Props) {
-  const inner = (
-    <>
-      <div className="relative aspect-square bg-gray-50">
-        <Image src={p.image_url} alt={p.name} fill className="object-contain p-2" unoptimized />
-        <ProductBadge label={p.label} />
-        <FavoriteButton productId={p.id} />
-      </div>
-      <div className="p-3">
-        {p.category && <p className="text-xs text-gray-400 mb-1 truncate">{p.category}</p>}
-        <p className="text-sm font-medium line-clamp-2">{p.name}</p>
-        <div className="flex items-baseline gap-1.5 mt-1">
-          <p className="text-base font-bold">{p.price} сом</p>
-          {p.old_price && <p className="text-sm text-gray-400 line-through">{p.old_price} сом</p>}
-        </div>
-      </div>
-    </>
-  );
+  const productHref = href ?? `/product/${p.id}`;
 
   return (
     <div className={`border rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-white ${className}`}>
-      {href ? <Link href={href}>{inner}</Link> : inner}
+      <Link href={productHref}>
+        <div className="relative aspect-square bg-gray-50">
+          <Image src={p.image_url} alt={p.name} fill className="object-contain p-2" unoptimized />
+          <ProductBadge label={p.label} />
+          <FavoriteButton productId={p.id} />
+        </div>
+        <div className="p-3">
+          {p.category && <p className="text-xs text-gray-400 mb-1 truncate">{p.category}</p>}
+          <p className="text-sm font-medium line-clamp-2">{p.name}</p>
+          <div className="flex items-baseline gap-1.5 mt-1">
+            <p className="text-base font-bold">{p.price} сом</p>
+            {p.old_price && <p className="text-sm text-gray-400 line-through">{p.old_price} сом</p>}
+          </div>
+        </div>
+      </Link>
       <div className="px-3 pb-3">
         <AddToCart
           product={{

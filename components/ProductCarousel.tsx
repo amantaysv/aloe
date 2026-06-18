@@ -74,7 +74,7 @@ export default function ProductCarousel({
       <div ref={ref} className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
         {products.map((p) => (
           <div key={p.id} style={{ width: cardWidth }} className="shrink-0">
-            <ProductCard product={p} href={`/catalog/${p.category_id}`} className="h-full" />
+            <ProductCard product={p} className="h-full" />
           </div>
         ))}
       </div>

@@ -1,5 +1,4 @@
 import Link from "next/link";
-
 import AuthButton from "./AuthButton";
 import CartIcon from "./CartIcon";
 import SearchBar from "./SearchBar";
@@ -176,9 +175,6 @@ export default function Header() {
 
         {/* Icons */}
         <div className="flex items-center gap-4 shrink-0 text-sm text-gray-600">
-          <a href="tel:+996312123456" className="hover:text-green-600 hidden lg:block">
-            +996 312 12-34-56
-          </a>
           <Link href="/delivery" className="text-gray-400 hover:text-green-600 transition-colors" title="Доставка">
             <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
               <path

@@ -10,26 +10,29 @@ type Props = {
     price: number;
     image_url: string;
   };
+  large?: boolean;
 };
 
-export default function AddToCart({ product }: Props) {
+export default function AddToCart({ product, large }: Props) {
   const { add, items, increment, decrement, remove } = useCart();
   const { show } = useToast();
   const item = items.find((i) => i.id === product.id);
 
+  const btnSz = large ? "w-10 h-10 text-xl" : "w-8 h-8 text-lg";
+
   if (item) {
     return (
-      <div className="flex items-center gap-2 mt-2">
+      <div className={`flex items-center gap-2 ${large ? "" : "mt-2"}`}>
         <button
           onClick={() => decrement(product.id)}
-          className="w-8 h-8 border rounded-lg text-lg font-bold hover:bg-gray-50 flex items-center justify-center"
+          className={`${btnSz} border rounded-lg font-bold hover:bg-gray-50 flex items-center justify-center`}
         >
           −
         </button>
-        <span className="text-sm font-medium w-6 text-center">{item.quantity}</span>
+        <span className={`${large ? "text-base" : "text-sm"} font-medium w-6 text-center`}>{item.quantity}</span>
         <button
           onClick={() => increment(product.id)}
-          className="w-8 h-8 border rounded-lg text-lg font-bold hover:bg-gray-50 flex items-center justify-center"
+          className={`${btnSz} border rounded-lg font-bold hover:bg-gray-50 flex items-center justify-center`}
         >
           +
         </button>
@@ -46,7 +49,9 @@ export default function AddToCart({ product }: Props) {
         add(product);
         show("Добавлено в корзину", "success");
       }}
-      className="mt-2 w-full bg-green-600 text-white text-sm font-medium py-1.5 rounded-lg hover:bg-green-700 transition-colors"
+      className={`w-full bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors ${
+        large ? "py-3 text-base" : "mt-2 py-1.5 text-sm"
+      }`}
     >
       В корзину
     </button>
