@@ -29,11 +29,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const categories = await getCategories();
   const parents = categories.filter((c) => !c.parent_id);
   const subs = categories.filter((c) => c.parent_id);
-  console.log("categories count:", categories.length);
-  console.log(
-    "parents:",
-    categories.filter((c) => !c.parent_id)
-  );
+
   return (
     <html lang="ru">
       <body className={`${geist.className} ${lobster.variable}`}>

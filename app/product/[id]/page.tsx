@@ -1,10 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
 import AddToCart from "@/components/AddToCart";
 import FavoriteButton from "@/components/FavoriteButton";
 import ProductCard from "@/components/ProductCard";
+import ProductDescription from "@/components/ProductDescription";
 import { supabase } from "@/lib/supabase";
 
 const LABEL_MAP = {
@@ -14,19 +14,12 @@ const LABEL_MAP = {
   discount: { text: "Скидка", cls: "bg-red-500" },
 } as const;
 
-export default async function ProductPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const { data: product } = await supabase
-    .from("products")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data: product } = await supabase.from("products").select("*").eq("id", id).single();
 
+  console.log("🚀 ~ ProductPage ~ product:", product);
   if (!product) notFound();
 
   const { data: related } = await supabase
@@ -45,7 +38,9 @@ export default async function ProductPage({
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
       <nav className="text-sm text-gray-400 mb-6 flex items-center gap-1.5">
-        <Link href="/" className="hover:text-gray-700">Главная</Link>
+        <Link href="/" className="hover:text-gray-700">
+          Главная
+        </Link>
         <span>/</span>
         <Link href={`/catalog/${product.category_id}`} className="hover:text-gray-700">
           {product.category}
@@ -56,35 +51,22 @@ export default async function ProductPage({
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
         <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden">
-          <Image
-            src={product.image_url}
-            alt={product.name}
-            fill
-            className="object-contain p-6"
-            unoptimized
-          />
+          <Image src={product.image_url} alt={product.name} fill className="object-contain p-6" unoptimized />
           {label && (
             <div className="absolute top-3 left-3">
-              <span className={`${label.cls} text-white text-xs font-semibold px-2 py-1 rounded`}>
-                {label.text}
-              </span>
+              <span className={`${label.cls} text-white text-xs font-semibold px-2 py-1 rounded`}>{label.text}</span>
             </div>
           )}
           {discount && (
             <div className="absolute top-3 right-12">
-              <span className="bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
-                −{discount}%
-              </span>
+              <span className="bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">−{discount}%</span>
             </div>
           )}
           <FavoriteButton productId={product.id} />
         </div>
 
         <div className="flex flex-col">
-          <Link
-            href={`/catalog/${product.category_id}`}
-            className="text-sm text-green-600 hover:underline mb-2 w-fit"
-          >
+          <Link href={`/catalog/${product.category_id}`} className="text-sm text-green-600 hover:underline mb-2 w-fit">
             {product.category}
           </Link>
 
@@ -92,12 +74,10 @@ export default async function ProductPage({
 
           <div className="flex items-baseline gap-3 mb-6">
             <span className="text-3xl font-bold">{product.price} сом</span>
-            {product.old_price && (
-              <span className="text-lg text-gray-400 line-through">{product.old_price} сом</span>
-            )}
+            {product.old_price && <span className="text-lg text-gray-400 line-through">{product.old_price} сом</span>}
           </div>
 
-          <div className="mt-auto space-y-3">
+          <div className="mb-6">
             <AddToCart
               product={{
                 id: product.id,
@@ -108,6 +88,8 @@ export default async function ProductPage({
               large
             />
           </div>
+
+          {product.description && <ProductDescription text={product.description} />}
         </div>
       </div>
 

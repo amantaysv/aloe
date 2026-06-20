@@ -54,18 +54,15 @@ export default function CatalogSidebar({ parents, subcategories }: { parents: Ca
 
               {isOpen && subs.length > 0 && (
                 <div className="bg-gray-50 border-t border-b border-gray-300">
-                  {subs.map((sub) => {
-                    console.log("🚀 ~ CatalogSidebar ~ sub:", sub);
-                    return (
-                      <Link
-                        key={sub.id}
-                        href={`/catalog/${sub.id}`}
-                        className={`block px-6 py-2 text-sm hover:text-green-600 transition-colors ${activeId === sub.id ? "text-green-600" : "text-gray-600"}`}
-                      >
-                        {sub.name}
-                      </Link>
-                    );
-                  })}
+                  {subs.map((sub) => (
+                    <Link
+                      key={sub.id}
+                      href={`/catalog/${sub.id}`}
+                      className={`block px-6 py-2 text-sm hover:text-green-600 transition-colors ${activeId === sub.id ? "text-green-600" : "text-gray-600"}`}
+                    >
+                      {sub.name}
+                    </Link>
+                  ))}
                 </div>
               )}
             </div>

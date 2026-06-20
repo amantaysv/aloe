@@ -9,4 +9,5 @@ export type Product = {
   category_id: string;
   label?: "popular" | "new" | "sale" | "discount" | null;
   old_price?: number | null;
+  description?: string | null;
 };
