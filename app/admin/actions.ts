@@ -32,6 +32,8 @@ export type ProductInput = {
   category_id: string;
   label?: "popular" | "new" | "sale" | "discount" | null;
   description?: string | null;
+  manufacturer?: string | null;
+  seo_text?: string | null;
 };
 
 export async function upsertProduct(
@@ -79,6 +81,52 @@ export async function deleteCategory(id: string): Promise<{ ok: true } | { ok: f
   const { error } = await adminDb().from("categories").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
   return { ok: true };
+}
+
+export type BannerInput = {
+  id?: number;
+  image_url: string;
+  sort_order: number;
+  active: boolean;
+};
+
+export async function upsertBanner(
+  data: BannerInput,
+): Promise<{ ok: true; id: number } | { ok: false; error: string }> {
+  await assertAdmin();
+  const db = adminDb();
+  if (data.id) {
+    const { id, ...fields } = data;
+    const { error } = await db.from("banners").update(fields).eq("id", id);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, id };
+  }
+  const { data: row, error } = await db.from("banners").insert(data).select("id").single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, id: row.id };
+}
+
+export async function deleteBanner(id: number): Promise<{ ok: true } | { ok: false; error: string }> {
+  await assertAdmin();
+  const { error } = await adminDb().from("banners").delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function uploadBannerImage(
+  formData: FormData,
+): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+  await assertAdmin();
+  const file = formData.get("file") as File | null;
+  if (!file || !file.size) return { ok: false, error: "Файл не выбран" };
+  const ext = file.name.split(".").pop() ?? "jpg";
+  const path = `banners/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const db = adminDb();
+  const { error } = await db.storage.from("product-images").upload(path, buffer, { contentType: file.type });
+  if (error) return { ok: false, error: error.message };
+  const { data } = db.storage.from("product-images").getPublicUrl(path);
+  return { ok: true, url: data.publicUrl };
 }
 
 export async function uploadProductImage(

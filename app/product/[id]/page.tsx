@@ -1,11 +1,25 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import AddToCart from "@/components/AddToCart";
 import FavoriteButton from "@/components/FavoriteButton";
 import ProductCard from "@/components/ProductCard";
 import ProductDescription from "@/components/ProductDescription";
 import { supabase } from "@/lib/supabase";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const { data: product } = await supabase.from("products").select("name, seo_text").eq("id", id).single();
+  if (!product) return {};
+  const seo = product.seo_text || product.name;
+  return {
+    title: seo,
+    description: seo,
+    keywords: seo,
+    other: { title: seo },
+  };
+}
 
 const LABEL_MAP = {
   popular: { text: "Хит", cls: "bg-green-600" },

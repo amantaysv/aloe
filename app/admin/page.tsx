@@ -12,10 +12,11 @@ export default async function AdminPage() {
 
   if (!user || user.app_metadata?.role !== "admin") notFound();
 
-  const [{ data: orders }, { data: products }, { data: categories }] = await Promise.all([
+  const [{ data: orders }, { data: products }, { data: categories }, { data: banners }] = await Promise.all([
     supabase.from("orders").select("*").order("created_at", { ascending: false }),
     supabase.from("products").select("*").order("id", { ascending: false }),
     supabase.from("categories").select("*").order("name"),
+    supabase.from("banners").select("*").order("sort_order"),
   ]);
 
   return (
@@ -25,6 +26,7 @@ export default async function AdminPage() {
         orders={(orders ?? []) as Parameters<typeof AdminShell>[0]["orders"]}
         products={products ?? []}
         categories={categories ?? []}
+        banners={banners ?? []}
       />
     </main>
   );

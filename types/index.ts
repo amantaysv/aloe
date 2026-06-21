@@ -10,4 +10,6 @@ export type Product = {
   label?: "popular" | "new" | "sale" | "discount" | null;
   old_price?: number | null;
   description?: string | null;
+  manufacturer?: string | null;
+  seo_text?: string | null;
 };

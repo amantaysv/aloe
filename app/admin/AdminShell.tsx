@@ -3,17 +3,20 @@
 import { useState } from "react";
 import cn from "clsx";
 import type { Product } from "@/types";
+import AdminBanners from "./AdminBanners";
 import AdminCategories from "./AdminCategories";
 import AdminOrders from "./AdminOrders";
 import AdminProducts from "./AdminProducts";
 
 type Order = Parameters<typeof AdminOrders>[0]["orders"][number];
 type Category = { id: string; name: string; parent_id: string | null };
+type Banner = { id: number; image_url: string; sort_order: number; active: boolean };
 
 const TABS = [
   { id: "orders", label: "Заказы" },
   { id: "products", label: "Товары" },
   { id: "categories", label: "Категории" },
+  { id: "banners", label: "Баннеры" },
 ] as const;
 
 type Tab = (typeof TABS)[number]["id"];
@@ -28,10 +31,12 @@ export default function AdminShell({
   orders,
   products,
   categories,
+  banners,
 }: {
   orders: Order[];
   products: Product[];
   categories: Category[];
+  banners: Banner[];
 }) {
   const [tab, setTabState] = useState<Tab>(getInitialTab);
 
@@ -63,6 +68,7 @@ export default function AdminShell({
       {tab === "orders" && <AdminOrders orders={orders} />}
       {tab === "products" && <AdminProducts products={products} />}
       {tab === "categories" && <AdminCategories categories={categories} products={products} />}
+      {tab === "banners" && <AdminBanners banners={banners} />}
     </>
   );
 }

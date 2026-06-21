@@ -25,6 +25,8 @@ const empty: ProductInput = {
   label: null,
   description: null,
   external_id: "",
+  manufacturer: null,
+  seo_text: null,
 };
 
 const PAGE_SIZE = 20;
@@ -45,6 +47,8 @@ export default function AdminProducts({ products: initial }: { products: Product
 
   const [products, setProducts] = useState(initial);
   const [query, setQuery] = useState("");
+  const [labelFilter, setLabelFilter] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<"id-desc" | "name-asc" | "price-asc" | "price-desc">("id-desc");
   const [editing, setEditing] = useState<ProductInput | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -56,9 +60,19 @@ export default function AdminProducts({ products: initial }: { products: Product
     .sort((a, b) => a.name.localeCompare(b.name, "ru"));
 
   const q = query.trim().toLowerCase();
-  const filtered = products.filter(
-    (p) => !q || p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)
-  );
+  const filtered = products
+    .filter((p) => !q || p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q))
+    .filter((p) => {
+      if (labelFilter === null) return true;
+      if (labelFilter === "") return !p.label;
+      return p.label === labelFilter;
+    })
+    .sort((a, b) => {
+      if (sortBy === "name-asc") return a.name.localeCompare(b.name, "ru");
+      if (sortBy === "price-asc") return a.price - b.price;
+      if (sortBy === "price-desc") return b.price - a.price;
+      return b.id - a.id;
+    });
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -80,6 +94,8 @@ export default function AdminProducts({ products: initial }: { products: Product
       label: p.label ?? null,
       description: p.description ?? null,
       external_id: p.external_id,
+      manufacturer: p.manufacturer ?? null,
+      seo_text: p.seo_text ?? null,
     });
     setError("");
   }
@@ -187,6 +203,42 @@ export default function AdminProducts({ products: initial }: { products: Product
             ✕
           </button>
         )}
+      </div>
+
+      {/* Filters & Sort */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="flex flex-wrap gap-1 flex-1">
+          {[
+            { value: null, label: "Все" },
+            { value: "popular", label: "Хит" },
+            { value: "new", label: "Новинка" },
+            { value: "sale", label: "Акция" },
+            { value: "discount", label: "Скидка" },
+            { value: "", label: "Без метки" },
+          ].map((l) => (
+            <button
+              key={String(l.value)}
+              onClick={() => { setLabelFilter(l.value); setPage(1); }}
+              className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors hover:cursor-pointer ${
+                labelFilter === l.value
+                  ? "bg-green-600 text-white border-green-600"
+                  : "border-gray-300 text-gray-600 hover:border-green-500 hover:text-green-600"
+              }`}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+        <select
+          value={sortBy}
+          onChange={(e) => { setSortBy(e.target.value as typeof sortBy); setPage(1); }}
+          className="border border-gray-300 rounded-lg px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 hover:cursor-pointer"
+        >
+          <option value="id-desc">Новые первые</option>
+          <option value="name-asc">По алфавиту</option>
+          <option value="price-asc">Цена ↑</option>
+          <option value="price-desc">Цена ↓</option>
+        </select>
       </div>
 
       {/* List */}
@@ -400,6 +452,24 @@ export default function AdminProducts({ products: initial }: { products: Product
                   onChange={(e) => set("description", e.target.value || null)}
                   className={`${inp} min-h-35 resize-y font-mono text-xs`}
                   placeholder={"## Заголовок\n\nОписание товара..."}
+                />
+              </Field>
+
+              <Field label="Производитель">
+                <input
+                  value={editing.manufacturer ?? ""}
+                  onChange={(e) => set("manufacturer", e.target.value || null)}
+                  className={inp}
+                  placeholder="Например: Samsung, Apple..."
+                />
+              </Field>
+
+              <Field label="SEO текст (keywords / title / description)">
+                <textarea
+                  value={editing.seo_text ?? ""}
+                  onChange={(e) => set("seo_text", e.target.value || null)}
+                  className={`${inp} min-h-24 resize-y text-xs`}
+                  placeholder="Текст для мета-тегов keywords, title и description"
                 />
               </Field>
 
