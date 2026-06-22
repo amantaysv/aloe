@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ProfileForm from "./ProfileForm";
+import Pagination from "@/components/Pagination";
 
 type Order = {
   id: number;
@@ -113,35 +114,7 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
                 })}
               </div>
 
-              {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-1 mt-6">
-                  <button
-                    onClick={() => setPage((p) => p - 1)}
-                    disabled={page === 1}
-                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50 hover:cursor-pointer"
-                  >
-                    ←
-                  </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      className={`px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:cursor-pointer ${
-                        p === page ? "bg-green-600 text-white border-green-600" : "hover:bg-gray-50"
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => setPage((p) => p + 1)}
-                    disabled={page === totalPages}
-                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50 hover:cursor-pointer"
-                  >
-                    →
-                  </button>
-                </div>
-              )}
+              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
             </>
           )}
         </>

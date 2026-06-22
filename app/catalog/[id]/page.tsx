@@ -1,6 +1,6 @@
+import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
 import { supabase } from "@/lib/supabase";
@@ -32,8 +32,8 @@ export default async function CategoryPage({
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
-      <Link href="/" className="text-sm text-gray-500 hover:text-gray-800 mb-4 inline-block">
-        ← На главную
+      <Link href="/" className="flex text-sm text-gray-500 hover:text-gray-800 mb-4">
+        <ChevronLeft /> На главную
       </Link>
       <div className="flex items-baseline gap-3 mb-6">
         <h1 className="text-2xl font-bold">{categoryName}</h1>

@@ -3,18 +3,16 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2, X, ChevronRight } from "lucide-react";
 import { upsertCategory, deleteCategory, type CategoryInput } from "./actions";
-import type { Product } from "@/types";
-
 type Category = { id: string; name: string; parent_id: string | null };
 
 const empty: CategoryInput = { id: "", name: "", parent_id: null };
 
 export default function AdminCategories({
   categories: initial,
-  products,
+  usedCategoryIds: usedIds,
 }: {
   categories: Category[];
-  products: Product[];
+  usedCategoryIds: string[];
 }) {
   const [categories, setCategories] = useState(initial);
   const [editing, setEditing] = useState<(CategoryInput & { isNew: boolean }) | null>(null);
@@ -23,7 +21,7 @@ export default function AdminCategories({
 
   const parents = categories.filter((c) => !c.parent_id);
   const subs = categories.filter((c) => c.parent_id);
-  const usedCategoryIds = new Set(products.map((p) => p.category_id));
+  const usedCategoryIds = new Set(usedIds);
 
   function openNew(parentId: string | null = null) {
     setEditing({ ...empty, parent_id: parentId, isNew: true });

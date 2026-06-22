@@ -1,44 +1,107 @@
+"use client";
+
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 type Props = {
   page: number;
   totalPages: number;
-  basePath: string;
-  query?: Record<string, string>;
-};
+} & (
+  | { onPageChange: (page: number) => void; basePath?: never; query?: never }
+  | { basePath: string; query?: Record<string, string>; onPageChange?: never }
+);
 
-function buildUrl(basePath: string, page: number, query: Record<string, string> = {}) {
-  const params = new URLSearchParams({
-    ...query,
-    page: String(page),
-  });
-  return `${basePath}?${params}`;
+function getWindows(current: number, total: number): (number | null)[] {
+  if (total <= 1) return [];
+  const delta = 3;
+  const lo = Math.max(2, current - delta);
+  const hi = Math.min(total - 1, current + delta);
+  const items: (number | null)[] = [1];
+  if (lo > 3) items.push(null);
+  else if (lo === 3) items.push(2);
+  for (let p = lo; p <= hi; p++) items.push(p);
+  if (hi < total - 2) items.push(null);
+  else if (hi === total - 2) items.push(total - 1);
+  items.push(total);
+  return items;
 }
 
-export default function Pagination({ page, totalPages, basePath, query }: Props) {
+const btnCls = (active: boolean, disabled = false) =>
+  `px-2.5 py-1.5 text-sm border rounded-lg transition-colors hover:cursor-pointer flex items-center justify-center ${
+    active
+      ? "bg-green-600 text-white border-green-600"
+      : disabled
+        ? "border-gray-300 text-gray-300 cursor-not-allowed"
+        : "border-gray-300 hover:bg-gray-50 text-gray-700"
+  }`;
+
+export default function Pagination({ page, totalPages, ...rest }: Props) {
   if (totalPages <= 1) return null;
 
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1).filter((p) => Math.abs(p - page) <= 2);
+  const onPageChange = "onPageChange" in rest ? rest.onPageChange : undefined;
+  const toHref =
+    "basePath" in rest
+      ? (p: number) => {
+          const params = new URLSearchParams({ ...rest.query, page: String(p) });
+          return `${rest.basePath}?${params}`;
+        }
+      : undefined;
 
-  const linkCls = "px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50";
-  const activeCls = "bg-green-600 text-white border-green-600";
+  const windows = getWindows(page, totalPages);
+
+  const prevDisabled = page === 1;
+  const nextDisabled = page === totalPages;
 
   return (
-    <div className="flex justify-center gap-2 mt-8">
-      {page > 1 && (
-        <Link href={buildUrl(basePath, page - 1, query)} className={linkCls}>
-          ← Назад
-        </Link>
+    <div className="flex items-center gap-1 flex-wrap justify-center mt-6">
+      {/* Prev */}
+      {toHref ? (
+        prevDisabled ? (
+          <span className={btnCls(false, true)}>
+            <ChevronLeft />
+          </span>
+        ) : (
+          <Link href={toHref(page - 1)} className={btnCls(false)}>
+            <ChevronLeft />
+          </Link>
+        )
+      ) : (
+        <button onClick={() => onPageChange!(page - 1)} disabled={prevDisabled} className={btnCls(false, prevDisabled)}>
+          <ChevronLeft />
+        </button>
       )}
-      {pages.map((p) => (
-        <Link key={p} href={buildUrl(basePath, p, query)} className={`${linkCls} ${p === page ? activeCls : ""}`}>
-          {p}
-        </Link>
-      ))}
-      {page < totalPages && (
-        <Link href={buildUrl(basePath, page + 1, query)} className={linkCls}>
-          Вперёд →
-        </Link>
+
+      {windows.map((p, i) =>
+        p === null ? (
+          <span key={`e-${i}`} className="px-2 py-1.5 text-sm text-gray-400 select-none">
+            …
+          </span>
+        ) : toHref ? (
+          <Link key={p} href={toHref(p)} className={btnCls(p === page)}>
+            {p}
+          </Link>
+        ) : (
+          <button key={p} onClick={() => onPageChange!(p)} className={btnCls(p === page)}>
+            {p}
+          </button>
+        )
+      )}
+
+      {/* Next */}
+      {toHref ? (
+        nextDisabled ? (
+          <span className={btnCls(false, true)}>
+            <ChevronRight />
+          </span>
+        ) : (
+          <Link href={toHref(page + 1)} className={btnCls(false)}>
+            <ChevronRight />
+          </Link>
+        )
+      ) : (
+        <button onClick={() => onPageChange!(page + 1)} disabled={nextDisabled} className={btnCls(false, nextDisabled)}>
+          <ChevronRight />
+        </button>
       )}
     </div>
   );

@@ -30,12 +30,28 @@ function getInitialTab(): Tab {
 export default function AdminShell({
   orders,
   products,
+  productsPage,
+  productsTotalPages,
+  productsTotal,
+  productsQ,
+  productsLabel,
+  productsSort,
   categories,
+  manufacturers,
+  usedCategoryIds,
   banners,
 }: {
   orders: Order[];
   products: Product[];
+  productsPage: number;
+  productsTotalPages: number;
+  productsTotal: number;
+  productsQ: string;
+  productsLabel: string;
+  productsSort: "id-desc" | "name-asc" | "price-asc" | "price-desc";
   categories: Category[];
+  manufacturers: string[];
+  usedCategoryIds: string[];
   banners: Banner[];
 }) {
   const [tab, setTabState] = useState<Tab>(getInitialTab);
@@ -56,8 +72,8 @@ export default function AdminShell({
             key={t.id}
             onClick={() => setTab(t.id)}
             className={cn(
-              "px-4 py-2 text-sm font-medium  hover:cursor-pointer -mb-px border-b-2",
-              tab === t.id ? "border-green-600 text-green-600" : "border-transparent text-gray-500 hover:text-gray-700"
+              "px-4 py-2 text-sm font-medium hover:cursor-pointer -mb-px border-b-2",
+              tab === t.id ? "border-green-600 text-green-600" : "border-transparent text-gray-500 hover:text-gray-700",
             )}
           >
             {t.label}
@@ -66,8 +82,20 @@ export default function AdminShell({
       </div>
 
       {tab === "orders" && <AdminOrders orders={orders} />}
-      {tab === "products" && <AdminProducts products={products} />}
-      {tab === "categories" && <AdminCategories categories={categories} products={products} />}
+      {tab === "products" && (
+        <AdminProducts
+          products={products}
+          page={productsPage}
+          totalPages={productsTotalPages}
+          total={productsTotal}
+          q={productsQ}
+          label={productsLabel}
+          sort={productsSort}
+          categories={categories}
+          manufacturers={manufacturers}
+        />
+      )}
+      {tab === "categories" && <AdminCategories categories={categories} usedCategoryIds={usedCategoryIds} />}
       {tab === "banners" && <AdminBanners banners={banners} />}
     </>
   );

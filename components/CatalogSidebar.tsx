@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -46,10 +47,12 @@ export default function CatalogSidebar({ parents, subcategories }: { parents: Ca
             <div key={parent.id}>
               <button
                 onClick={() => setOpenId(isOpen ? null : parent.id)}
-                className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium hover:bg-gray-50 text-left hover:cursor-pointer"
+                className="w-full flex items-center justify-between gap-1 px-4 py-2.5 text-sm font-medium hover:bg-gray-50 text-left hover:cursor-pointer"
               >
                 <span>{parent.name}</span>
-                <span className="text-green-600 text-lg leading-none">{isOpen ? "−" : "+"}</span>
+                <span className="text-green-600 text-lg leading-none">
+                  {isOpen ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                </span>
               </button>
 
               {isOpen && subs.length > 0 && (

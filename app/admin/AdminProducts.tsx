@@ -1,10 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ImagePlus, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import type { Product } from "@/types";
 import { deleteProduct, uploadProductImage, upsertProduct, type ProductInput } from "./actions";
+import Pagination from "@/components/Pagination";
 
 const LABELS = [
   { value: "", label: "Нет" },
@@ -29,52 +31,61 @@ const empty: ProductInput = {
   seo_text: null,
 };
 
-const PAGE_SIZE = 20;
+type SortBy = "id-desc" | "name-asc" | "price-asc" | "price-desc";
 
-export default function AdminProducts({ products: initial }: { products: Product[] }) {
-  const [page, setPageState] = useState(() => {
-    if (typeof window === "undefined") return 1;
-    return Math.max(1, Number(new URLSearchParams(window.location.search).get("page")) || 1);
-  });
+type Props = {
+  products: Product[];
+  page: number;
+  totalPages: number;
+  total: number;
+  q: string;
+  label: string;
+  sort: SortBy;
+  categories: { id: string; name: string }[];
+  manufacturers: string[];
+};
 
-  function setPage(next: number | ((p: number) => number)) {
-    const resolved = typeof next === "function" ? next(page) : next;
-    setPageState(resolved);
-    const params = new URLSearchParams(window.location.search);
-    params.set("page", String(resolved));
-    window.history.replaceState(null, "", `?${params.toString()}`);
-  }
+export default function AdminProducts({ products, page, totalPages, total, q, label, sort, categories, manufacturers }: Props) {
+  const router = useRouter();
+  const [searchInput, setSearchInput] = useState(q);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [products, setProducts] = useState(initial);
-  const [query, setQuery] = useState("");
-  const [labelFilter, setLabelFilter] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"id-desc" | "name-asc" | "price-asc" | "price-desc">("id-desc");
+
   const [editing, setEditing] = useState<ProductInput | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const categories = Array.from(new Map(products.map((p) => [p.category_id, p.category])).entries())
-    .map(([id, name]) => ({ id, name }))
-    .sort((a, b) => a.name.localeCompare(b.name, "ru"));
+  function navigate(updates: { q?: string; label?: string; sort?: string; page?: number }) {
+    const params = new URLSearchParams(window.location.search);
+    if ("q" in updates) {
+      if (updates.q) params.set("q", updates.q!);
+      else params.delete("q");
+      params.delete("page");
+    }
+    if ("label" in updates) {
+      if (updates.label) params.set("label", updates.label!);
+      else params.delete("label");
+      params.delete("page");
+    }
+    if ("sort" in updates) {
+      if (updates.sort && updates.sort !== "id-desc") params.set("sort", updates.sort!);
+      else params.delete("sort");
+      params.delete("page");
+    }
+    if ("page" in updates) {
+      if (updates.page && updates.page > 1) params.set("page", String(updates.page));
+      else params.delete("page");
+    }
+    router.replace(`?${params.toString()}`);
+  }
 
-  const q = query.trim().toLowerCase();
-  const filtered = products
-    .filter((p) => !q || p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q))
-    .filter((p) => {
-      if (labelFilter === null) return true;
-      if (labelFilter === "") return !p.label;
-      return p.label === labelFilter;
-    })
-    .sort((a, b) => {
-      if (sortBy === "name-asc") return a.name.localeCompare(b.name, "ru");
-      if (sortBy === "price-asc") return a.price - b.price;
-      if (sortBy === "price-desc") return b.price - a.price;
-      return b.id - a.id;
-    });
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  function handleSearch(value: string) {
+    setSearchInput(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => navigate({ q: value }), 400);
+  }
 
   function openNew() {
     setEditing({ ...empty });
@@ -116,10 +127,7 @@ export default function AdminProducts({ products: initial }: { products: Product
     fd.append("file", file);
     const result = await uploadProductImage(fd);
     setUploading(false);
-    if (!result.ok) {
-      setError(result.error);
-      return;
-    }
+    if (!result.ok) { setError(result.error); return; }
     set("image_url", result.url);
   }
 
@@ -141,35 +149,23 @@ export default function AdminProducts({ products: initial }: { products: Product
     setError("");
     const result = await upsertProduct(editing);
     setSaving(false);
-    if (!result.ok) {
-      setError(result.error);
-      return;
-    }
-    if (editing.id) {
-      setProducts((prev) => prev.map((p) => (p.id === editing.id ? { ...p, ...(editing as Product) } : p)));
-    } else {
-      setProducts((prev) => [{ ...editing, id: result.id } as Product, ...prev]);
-    }
+    if (!result.ok) { setError(result.error); return; }
     close();
+    router.refresh();
   }
 
   async function handleDelete(id: number) {
     if (!confirm("Удалить товар?")) return;
     const result = await deleteProduct(id);
-    if (!result.ok) {
-      alert(result.error);
-      return;
-    }
-    setProducts((prev) => prev.filter((p) => p.id !== id));
+    if (!result.ok) { alert(result.error); return; }
+    router.refresh();
   }
 
   return (
     <>
       {/* Toolbar */}
       <div className="flex justify-between items-center mb-4">
-        <p className="text-sm text-gray-500">
-          {q ? `Найдено: ${filtered.length} из ${products.length}` : `Товаров: ${products.length}`}
-        </p>
+        <p className="text-sm text-gray-500">Товаров: {total}</p>
         <button
           onClick={openNew}
           className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors hover:cursor-pointer"
@@ -184,23 +180,17 @@ export default function AdminProducts({ products: initial }: { products: Product
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setPage(1);
-          }}
+          value={searchInput}
+          onChange={(e) => handleSearch(e.target.value)}
           placeholder="Поиск по названию или категории..."
           className="w-full border border-gray-300 rounded-lg pl-9 pr-9 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
         />
-        {query && (
+        {searchInput && (
           <button
-            onClick={() => {
-              setQuery("");
-              setPage(1);
-            }}
+            onClick={() => { setSearchInput(""); navigate({ q: "" }); }}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hover:cursor-pointer"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -209,18 +199,18 @@ export default function AdminProducts({ products: initial }: { products: Product
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="flex flex-wrap gap-1 flex-1">
           {[
-            { value: null, label: "Все" },
+            { value: "", label: "Все" },
             { value: "popular", label: "Хит" },
             { value: "new", label: "Новинка" },
             { value: "sale", label: "Акция" },
             { value: "discount", label: "Скидка" },
-            { value: "", label: "Без метки" },
+            { value: "none", label: "Без метки" },
           ].map((l) => (
             <button
-              key={String(l.value)}
-              onClick={() => { setLabelFilter(l.value); setPage(1); }}
+              key={l.value}
+              onClick={() => navigate({ label: l.value })}
               className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors hover:cursor-pointer ${
-                labelFilter === l.value
+                label === l.value
                   ? "bg-green-600 text-white border-green-600"
                   : "border-gray-300 text-gray-600 hover:border-green-500 hover:text-green-600"
               }`}
@@ -230,8 +220,8 @@ export default function AdminProducts({ products: initial }: { products: Product
           ))}
         </div>
         <select
-          value={sortBy}
-          onChange={(e) => { setSortBy(e.target.value as typeof sortBy); setPage(1); }}
+          value={sort}
+          onChange={(e) => navigate({ sort: e.target.value })}
           className="border border-gray-300 rounded-lg px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 hover:cursor-pointer"
         >
           <option value="id-desc">Новые первые</option>
@@ -243,12 +233,10 @@ export default function AdminProducts({ products: initial }: { products: Product
 
       {/* List */}
       <div className="space-y-2">
-        {paginated.length === 0 && (
-          <p className="text-sm text-gray-400 py-6 text-center">
-            {q ? `Ничего не найдено по запросу «${query}»` : "Товаров пока нет"}
-          </p>
+        {products.length === 0 && (
+          <p className="text-sm text-gray-400 py-6 text-center">Ничего не найдено</p>
         )}
-        {paginated.map((p) => (
+        {products.map((p) => (
           <div key={p.id} className="flex items-center gap-3 border border-gray-200 rounded-lg p-3 hover:bg-gray-50">
             <div className="relative w-12 h-12 shrink-0 bg-gray-100 rounded overflow-hidden">
               {p.image_url && <Image src={p.image_url} alt={p.name} fill className="object-contain p-1" unoptimized />}
@@ -277,42 +265,7 @@ export default function AdminProducts({ products: initial }: { products: Product
         ))}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-1 mt-6">
-          <button
-            onClick={() => setPage((p) => p - 1)}
-            disabled={page === 1}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50 hover:cursor-pointer"
-          >
-            ←
-          </button>
-          {getPageWindows(page, totalPages).map((p, i) =>
-            p === null ? (
-              <span key={`ellipsis-${i}`} className="px-2 py-1.5 text-sm text-gray-400 select-none">
-                …
-              </span>
-            ) : (
-              <button
-                key={p}
-                onClick={() => setPage(p)}
-                className={`px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:cursor-pointer ${
-                  p === page ? "bg-green-600 text-white border-green-600" : "hover:bg-gray-50"
-                }`}
-              >
-                {p}
-              </button>
-            )
-          )}
-          <button
-            onClick={() => setPage((p) => p + 1)}
-            disabled={page === totalPages}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50 hover:cursor-pointer"
-          >
-            →
-          </button>
-        </div>
-      )}
+      <Pagination page={page} totalPages={totalPages} onPageChange={(p) => navigate({ page: p })} />
 
       {/* Edit / Add drawer */}
       {editing && (
@@ -386,6 +339,51 @@ export default function AdminProducts({ products: initial }: { products: Product
                 />
               </Field>
 
+              <Field label="Производитель">
+                <input
+                  list="manufacturers-list"
+                  value={editing.manufacturer ?? ""}
+                  onChange={(e) => set("manufacturer", e.target.value || null)}
+                  className={inp}
+                  placeholder="Выберите или введите нового"
+                />
+                <datalist id="manufacturers-list">
+                  {manufacturers.map((m) => (
+                    <option key={m} value={m} />
+                  ))}
+                </datalist>
+              </Field>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Категория *">
+                  <select
+                    value={editing.category_id}
+                    onChange={(e) => {
+                      const cat = categories.find((c) => c.id === e.target.value);
+                      if (cat) { set("category_id", cat.id); set("category", cat.name); }
+                    }}
+                    className={inp}
+                  >
+                    <option value="" disabled>Выберите</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </Field>
+
+                <Field label="Метка">
+                  <select
+                    value={editing.label ?? ""}
+                    onChange={(e) => set("label", (e.target.value as ProductInput["label"]) || null)}
+                    className={inp}
+                  >
+                    {LABELS.map((l) => (
+                      <option key={l.value} value={l.value}>{l.label}</option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Цена *">
                   <input
@@ -409,58 +407,12 @@ export default function AdminProducts({ products: initial }: { products: Product
                 </Field>
               </div>
 
-              <Field label="Категория *">
-                <select
-                  value={editing.category_id}
-                  onChange={(e) => {
-                    const cat = categories.find((c) => c.id === e.target.value);
-                    if (cat) {
-                      set("category_id", cat.id);
-                      set("category", cat.name);
-                    }
-                  }}
-                  className={inp}
-                >
-                  <option value="" disabled>
-                    Выберите категорию
-                  </option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
-              <Field label="Метка">
-                <select
-                  value={editing.label ?? ""}
-                  onChange={(e) => set("label", (e.target.value as ProductInput["label"]) || null)}
-                  className={inp}
-                >
-                  {LABELS.map((l) => (
-                    <option key={l.value} value={l.value}>
-                      {l.label}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
               <Field label="Описание (Markdown)">
                 <textarea
                   value={editing.description ?? ""}
                   onChange={(e) => set("description", e.target.value || null)}
                   className={`${inp} min-h-35 resize-y font-mono text-xs`}
                   placeholder={"## Заголовок\n\nОписание товара..."}
-                />
-              </Field>
-
-              <Field label="Производитель">
-                <input
-                  value={editing.manufacturer ?? ""}
-                  onChange={(e) => set("manufacturer", e.target.value || null)}
-                  className={inp}
-                  placeholder="Например: Samsung, Apple..."
                 />
               </Field>
 
@@ -473,23 +425,24 @@ export default function AdminProducts({ products: initial }: { products: Product
                 />
               </Field>
 
-              <Field label="Ссылка на товар">
-                <input
-                  value={editing.product_url ?? ""}
-                  onChange={(e) => set("product_url", e.target.value)}
-                  className={inp}
-                  placeholder="https://..."
-                />
-              </Field>
-
-              <Field label="External ID">
-                <input
-                  value={editing.external_id ?? ""}
-                  onChange={(e) => set("external_id", e.target.value)}
-                  className={inp}
-                  placeholder="опционально"
-                />
-              </Field>
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Ссылка на товар">
+                  <input
+                    value={editing.product_url ?? ""}
+                    onChange={(e) => set("product_url", e.target.value)}
+                    className={inp}
+                    placeholder="https://..."
+                  />
+                </Field>
+                <Field label="External ID">
+                  <input
+                    value={editing.external_id ?? ""}
+                    onChange={(e) => set("external_id", e.target.value)}
+                    className={inp}
+                    placeholder="опционально"
+                  />
+                </Field>
+              </div>
             </div>
 
             <div className="px-6 py-4 border-t border-gray-200 sticky bottom-0 bg-white">
@@ -510,21 +463,6 @@ export default function AdminProducts({ products: initial }: { products: Product
 
 const inp =
   "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500";
-
-function getPageWindows(current: number, total: number): (number | null)[] {
-  if (total <= 1) return [];
-  const delta = 3;
-  const lo = Math.max(2, current - delta);
-  const hi = Math.min(total - 1, current + delta);
-  const items: (number | null)[] = [1];
-  if (lo > 3) items.push(null);
-  else if (lo === 3) items.push(2);
-  for (let p = lo; p <= hi; p++) items.push(p);
-  if (hi < total - 2) items.push(null);
-  else if (hi === total - 2) items.push(total - 1);
-  items.push(total);
-  return items;
-}
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (

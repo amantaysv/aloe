@@ -32,21 +32,21 @@ export default function ProductCard({ product: p, className = "", href }: Props)
 
   return (
     <div
-      className={`border border-gray-300 rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-white ${className}`}
+      className={`flex flex-col border border-gray-300 rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-white ${className}`}
     >
-      <Link href={productHref}>
+      <Link className="flex-1 flex flex-col" href={productHref}>
         <div className="relative aspect-square bg-gray-50">
           <Image src={p.image_url} alt={p.name} fill className="object-contain p-2" unoptimized />
           <ProductBadge label={p.label} />
           <FavoriteButton productId={p.id} />
         </div>
-        <div className="p-3">
+        <div className="flex-1 flex flex-col p-3">
           {p.category && (
             <p className="text-xs text-gray-400 mb-1 truncate" title={p.category}>
               {p.category}
             </p>
           )}
-          <p className="text-sm font-medium line-clamp-2" title={p.name}>
+          <p className="flex-1 text-sm font-medium line-clamp-3" title={p.name}>
             {p.name}
           </p>
           <div className="flex items-baseline gap-1.5 mt-1">
