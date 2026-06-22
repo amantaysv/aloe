@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Search } from "lucide-react";
-import OrderStatusSelect from "./OrderStatusSelect";
+import { useRef, useState } from "react";
+import { Search, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import Button from "@/components/Button";
 import Pagination from "@/components/Pagination";
+import OrderStatusSelect from "./OrderStatusSelect";
 
 type Order = {
   id: number;
@@ -23,117 +25,137 @@ type Order = {
 
 const STATUS: Record<string, { label: string; cls: string }> = {
   new: { label: "Новый", cls: "bg-blue-100 text-blue-700" },
-  confirmed: {
-    label: "Подтверждён",
-    cls: "bg-yellow-100 text-yellow-700",
-  },
-  processing: {
-    label: "В доставке",
-    cls: "bg-orange-100 text-orange-700",
-  },
-  delivered: {
-    label: "Доставлен",
-    cls: "bg-green-100 text-green-700",
-  },
-  cancelled: {
-    label: "Отменён",
-    cls: "bg-red-100 text-red-700",
-  },
+  confirmed: { label: "Подтверждён", cls: "bg-yellow-100 text-yellow-700" },
+  processing: { label: "В доставке", cls: "bg-orange-100 text-orange-700" },
+  delivered: { label: "Доставлен", cls: "bg-green-100 text-green-700" },
+  cancelled: { label: "Отменён", cls: "bg-red-100 text-red-700" },
 };
 
-const PAGE_SIZE = 15;
+type Props = {
+  orders: Order[];
+  page: number;
+  totalPages: number;
+  total: number;
+  q: string;
+  statusFilter: string;
+  statusCounts: Record<string, number>;
+};
 
-export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
-  const [orders, setOrders] = useState(initial);
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
-  const [page, setPage] = useState(1);
+export default function AdminOrders({
+  orders: initial,
+  page,
+  totalPages,
+  total,
+  q,
+  statusFilter,
+  statusCounts,
+}: Props) {
+  const router = useRouter();
+  const [localStatus, setLocalStatus] = useState<Record<number, string>>({});
+  const [searchInput, setSearchInput] = useState(q);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function handleStatusChange(orderId: number, status: string) {
-    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
+  const orders = initial.map((o) => ({ ...o, status: localStatus[o.id] ?? o.status }));
+
+  const activeStatuses = new Set(statusFilter ? statusFilter.split(",") : []);
+
+  function navigate(updates: { q?: string; status?: string; page?: number }) {
+    const params = new URLSearchParams(window.location.search);
+    if ("q" in updates) {
+      if (updates.q) params.set("q", updates.q!);
+      else params.delete("q");
+      params.delete("page");
+    }
+    if ("status" in updates) {
+      if (updates.status) params.set("status", updates.status!);
+      else params.delete("status");
+      params.delete("page");
+    }
+    if ("page" in updates) {
+      if (updates.page && updates.page > 1) params.set("page", String(updates.page));
+      else params.delete("page");
+    }
+    router.replace(`?${params.toString()}`);
+  }
+
+  function handleSearch(value: string) {
+    setSearchInput(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => navigate({ q: value }), 400);
   }
 
   function toggleStatus(key: string) {
-    setStatusFilter((prev) => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
-    setPage(1);
+    const next = new Set(activeStatuses);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    navigate({ status: [...next].join(",") });
   }
 
-  const q = query.trim().toLowerCase();
-  const filtered = orders.filter((o) => {
-    const matchesQuery =
-      !q || o.customer_name?.toLowerCase().includes(q) || o.customer_phone?.toLowerCase().includes(q);
-    const matchesStatus = statusFilter.size === 0 || statusFilter.has(o.status);
-    return matchesQuery && matchesStatus;
-  });
-
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  const counts = Object.fromEntries(Object.keys(STATUS).map((s) => [s, orders.filter((o) => o.status === s).length]));
+  function handleStatusChange(orderId: number, status: string) {
+    setLocalStatus((prev) => ({ ...prev, [orderId]: status }));
+  }
 
   return (
     <>
       {/* Status badges / filters */}
       <div className="flex gap-2 flex-wrap mb-5">
         {Object.entries(STATUS).map(([key, { label, cls }]) => {
-          const active = statusFilter.has(key);
+          const active = activeStatuses.has(key);
           return (
-            <button
+            <Button
               key={key}
               type="button"
               onClick={() => toggleStatus(key)}
-              className={`text-xs font-medium px-2 py-1 rounded transition-all hover:cursor-pointer ${cls} ${
+              className={`text-xs font-medium px-2 py-1 rounded transition-all ${cls} ${
                 active ? "ring-2 ring-offset-1 ring-current" : "opacity-70 hover:opacity-100"
               }`}
             >
-              {label}: {counts[key]}
-            </button>
+              {label}: {statusCounts[key] ?? 0}
+            </Button>
           );
         })}
-        {statusFilter.size > 0 && (
-          <button
+        {activeStatuses.size > 0 && (
+          <Button
             type="button"
-            onClick={() => setStatusFilter(new Set())}
-            className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 hover:cursor-pointer"
+            onClick={() => navigate({ status: "" })}
+            className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1"
           >
             Сбросить ✕
-          </button>
+          </Button>
         )}
       </div>
 
       {/* Search */}
-      <div className="relative mb-6">
+      <div className="relative mb-5">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setPage(1);
-          }}
+          value={searchInput}
+          onChange={(e) => handleSearch(e.target.value)}
           placeholder="Поиск по имени или телефону..."
-          className="w-full border border-gray-300 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="w-full border border-gray-300 rounded-lg pl-9 pr-9 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
         />
-        {query && (
-          <button
-            onClick={() => setQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hover:cursor-pointer"
+        {searchInput && (
+          <Button
+            onClick={() => {
+              setSearchInput("");
+              navigate({ q: "" });
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
-            ✕
-          </button>
+            <X className="w-4 h-4" />
+          </Button>
         )}
       </div>
 
-      {filtered.length === 0 && (
-        <p className="text-gray-400 text-sm">{q ? `Ничего не найдено по запросу «${query}»` : "Заказов пока нет"}</p>
+      <p className="text-sm text-gray-500 mb-4">Заказов: {total}</p>
+
+      {orders.length === 0 && (
+        <p className="text-gray-400 text-sm">{q ? `Ничего не найдено по запросу «${q}»` : "Заказов пока нет"}</p>
       )}
 
       <div className="space-y-4">
-        {paginated.map((order) => {
+        {orders.map((order) => {
           const date = new Date(order.created_at).toLocaleString("ru-RU", {
             day: "2-digit",
             month: "2-digit",
@@ -180,7 +202,7 @@ export default function AdminOrders({ orders: initial }: { orders: Order[] }) {
         })}
       </div>
 
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={(p) => navigate({ page: p })} />
     </>
   );
 }

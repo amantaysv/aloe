@@ -1,5 +1,7 @@
 "use client";
 
+import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import Button from "@/components/Button";
 import { useCart } from "@/store/cart";
 import { useToast } from "@/store/toast";
 
@@ -14,49 +16,47 @@ type Props = {
 };
 
 export default function AddToCart({ product, large }: Props) {
-  const { add, items, increment, decrement, remove } = useCart();
+  const { add, items, increment, decrement } = useCart();
   const { show } = useToast();
   const item = items.find((i) => i.id === product.id);
 
-  const btnSz = large ? "w-10 h-10 text-xl" : "w-8 h-8 text-lg";
-
   if (item) {
     return (
-      <div className={`flex items-center gap-2 ${large ? "" : "mt-2"}`}>
-        <button
+      <div className={`flex items-center justify-between gap-2`}>
+        <Button
           onClick={() => decrement(product.id)}
-          className={`${btnSz} border border-gray-300 rounded-lg font-bold hover:bg-gray-50 flex items-center justify-center hover:cursor-pointer`}
+          variant="icon"
+          className={`border border-gray-300 rounded-lg font-bold hover:bg-gray-50`}
+          size={large ? "lg" : "md"}
         >
-          −
-        </button>
-        <span className={`${large ? "text-base" : "text-sm"} font-medium w-6 text-center`}>{item.quantity}</span>
-        <button
+          {item.quantity === 1 ? <Trash2Icon className="size-4" /> : <MinusIcon className="size-4" />}
+        </Button>
+        <span className={`${large ? "text-base" : "text-sm"} font-medium w-6 text-center whitespace-nowrap`}>
+          {`${item.quantity} шт`}
+        </span>
+        <Button
           onClick={() => increment(product.id)}
-          className={`${btnSz} border border-gray-300 rounded-lg font-bold hover:bg-gray-50 flex items-center justify-center hover:cursor-pointer`}
+          variant="icon"
+          className={`border border-gray-300 rounded-lg font-bold hover:bg-gray-50`}
+          size={large ? "lg" : "md"}
         >
-          +
-        </button>
-        <button
-          onClick={() => remove(product.id)}
-          className="text-xs text-red-400 hover:text-red-600 ml-1 hover:cursor-pointer"
-        >
-          удалить
-        </button>
+          <PlusIcon className="size-4" />
+        </Button>
       </div>
     );
   }
 
   return (
-    <button
+    <Button
+      variant="primary"
       onClick={() => {
         add(product);
         show("Добавлено в корзину", "success");
       }}
-      className={`w-full bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors hover:cursor-pointer ${
-        large ? "py-3 text-base" : "mt-2 py-1.5 text-sm"
-      }`}
+      className={`w-full`}
+      size={large ? "lg" : "md"}
     >
       В корзину
-    </button>
+    </Button>
   );
 }

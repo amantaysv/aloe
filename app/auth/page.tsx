@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
+import Button from "@/components/Button";
 
 const ERROR_MAP: Record<string, string> = {
   "Invalid login credentials": "Неверный email или пароль",
@@ -69,15 +70,16 @@ export default function AuthPage() {
             Перейдите по ссылке в письме, чтобы завершить регистрацию.
           </p>
           <p className="text-xs text-gray-400">Не пришло письмо? Проверьте папку «Спам».</p>
-          <button
+          <Button
+            variant="ghost"
             onClick={() => {
               setRegistered(false);
               setMode("login");
             }}
-            className="text-sm text-green-600 hover:underline mt-2 hover:cursor-pointer"
+            className="text-sm mt-2 hover:underline"
           >
             Войти в аккаунт
-          </button>
+          </Button>
         </div>
       </main>
     );
@@ -106,25 +108,27 @@ export default function AuthPage() {
 
         {error && <p className="text-red-500 text-sm bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>}
 
-        <button
+        <Button
+          variant="primary"
           onClick={handleSubmit}
           disabled={loading}
-          className="bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 hover:cursor-pointer"
+          className="w-full py-2"
         >
           {loading ? "Загрузка..." : mode === "login" ? "Войти" : "Зарегистрироваться"}
-        </button>
+        </Button>
 
         <p className="text-center text-sm text-gray-500">
           {mode === "login" ? "Нет аккаунта?" : "Уже есть аккаунт?"}{" "}
-          <button
+          <Button
+            variant="ghost"
             onClick={() => {
               setMode(mode === "login" ? "register" : "login");
               setError("");
             }}
-            className="text-green-600 hover:underline hover:cursor-pointer"
+            className="hover:underline"
           >
             {mode === "login" ? "Зарегистрироваться" : "Войти"}
-          </button>
+          </Button>
         </p>
       </div>
     </main>

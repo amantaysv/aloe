@@ -177,10 +177,10 @@ export default function Header() {
         {/* Icons */}
         <div className="flex items-center gap-2 shrink-0  text-gray-600">
           <Link href="/delivery" className="p-2 text-gray-400 hover:text-green-600 transition-colors" title="Доставка">
-            <Truck />
+            <Truck className="size-5" />
           </Link>
           <Link href="/favorites" className="p-2 text-gray-400 hover:text-red-400 transition-colors" title="Избранное">
-            <Heart />
+            <Heart className="size-5" />
           </Link>
           <CartIcon />
           <AuthButton />

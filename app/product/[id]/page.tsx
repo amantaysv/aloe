@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AddToCart from "@/components/AddToCart";
+import Breadcrumb from "@/components/Breadcrumb";
 import FavoriteButton from "@/components/FavoriteButton";
 import ProductCard from "@/components/ProductCard";
 import ProductDescription from "@/components/ProductDescription";
@@ -35,12 +36,33 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   if (!product) notFound();
 
-  const { data: related } = await supabase
-    .from("products")
-    .select("*")
-    .eq("category_id", product.category_id)
-    .neq("id", product.id)
-    .limit(4);
+  const [{ data: related }, { data: allCategories }] = await Promise.all([
+    supabase.from("products").select("*").eq("category_id", product.category_id).neq("id", product.id).limit(4),
+    supabase.from("categories").select("id, name, parent_id, slug"),
+  ]);
+
+  const productCategory = allCategories?.find((c) => c.id === product.category_id);
+  const parentCategory = productCategory?.parent_id
+    ? allCategories?.find((c) => c.id === productCategory.parent_id)
+    : null;
+
+  const catalogHref = parentCategory
+    ? `/catalog/${parentCategory.slug}/${productCategory?.slug}`
+    : `/catalog/${product.category_id}`;
+  console.log("🚀 ~ ProductPage ~ catalogHref:", catalogHref);
+
+  const breadcrumbs = parentCategory
+    ? [
+        { label: "Главная", href: "/" },
+        { label: parentCategory.name, href: `/catalog/${parentCategory.slug}` },
+        { label: productCategory?.name, href: catalogHref },
+        { label: product.name },
+      ]
+    : [
+        { label: "Главная", href: "/" },
+        { label: productCategory?.name ?? product.category, href: catalogHref },
+        { label: product.name },
+      ];
 
   const label = product.label ? LABEL_MAP[product.label as keyof typeof LABEL_MAP] : null;
   const discount =
@@ -50,17 +72,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
-      <nav className="text-sm text-gray-400 mb-6 flex items-center gap-1.5">
-        <Link href="/" className="hover:text-gray-700">
-          Главная
-        </Link>
-        <span>/</span>
-        <Link href={`/catalog/${product.category_id}`} className="hover:text-gray-700">
-          {product.category}
-        </Link>
-        <span>/</span>
-        <span className="text-gray-600 truncate max-w-xs">{product.name}</span>
-      </nav>
+      <Breadcrumb crumbs={breadcrumbs} />
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
         <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden">
@@ -79,7 +91,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         </div>
 
         <div className="flex flex-col">
-          <Link href={`/catalog/${product.category_id}`} className="text-sm text-green-600 hover:underline mb-2 w-fit">
+          <Link href={catalogHref} className="text-sm text-green-600 hover:underline mb-2 w-fit">
             {product.category}
           </Link>
 

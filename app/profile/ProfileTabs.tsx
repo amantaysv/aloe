@@ -3,6 +3,7 @@
 import { useState } from "react";
 import ProfileForm from "./ProfileForm";
 import Pagination from "@/components/Pagination";
+import Button from "@/components/Button";
 
 type Order = {
   id: number;
@@ -56,15 +57,15 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
       {/* Tabs */}
       <div className="flex border-b mb-6">
         {(["profile", "orders"] as const).map((t) => (
-          <button
+          <Button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors hover:cursor-pointer ${
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === t ? "border-green-600 text-green-600" : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
             {t === "profile" ? "Личные данные" : `История заказов${orders.length > 0 ? ` (${orders.length})` : ""}`}
-          </button>
+          </Button>
         ))}
       </div>
 

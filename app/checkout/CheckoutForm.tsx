@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/store/cart";
 import { createOrder } from "./actions";
+import Button from "@/components/Button";
 
 type Props = {
   initial?: {
@@ -147,13 +148,9 @@ export default function CheckoutForm({ initial }: Props) {
 
       {error && <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 transition-colors hover:cursor-pointer"
-      >
+      <Button type="submit" variant="primary" disabled={loading} className="w-full py-3">
         {loading ? "Оформляем..." : "Подтвердить заказ"}
-      </button>
+      </Button>
     </form>
   );
 }

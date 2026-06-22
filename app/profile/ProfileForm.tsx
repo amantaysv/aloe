@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { saveProfile } from "./actions";
+import Button from "@/components/Button";
 
 type Props = {
   initial: { name: string; phone: string; address: string };
@@ -52,13 +53,14 @@ export default function ProfileForm({ initial }: Props) {
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Личные данные</h2>
         {!editing && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => setEditing(true)}
-            className="text-sm text-green-600 hover:text-green-700 font-medium hover:cursor-pointer"
+            className="text-sm font-medium"
           >
             Изменить
-          </button>
+          </Button>
         )}
       </div>
 
@@ -107,20 +109,12 @@ export default function ProfileForm({ initial }: Props) {
 
       {editing && (
         <div className="flex gap-2">
-          <button
-            type="submit"
-            disabled={isPending}
-            className="px-5 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 hover:cursor-pointer"
-          >
+          <Button type="submit" variant="primary" disabled={isPending} className="px-5">
             {isPending ? "Сохранение..." : "Сохранить"}
-          </button>
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="px-5 py-2 border border-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 hover:cursor-pointer"
-          >
+          </Button>
+          <Button type="button" variant="secondary" onClick={handleCancel} className="px-5">
             Отмена
-          </button>
+          </Button>
         </div>
       )}
     </form>

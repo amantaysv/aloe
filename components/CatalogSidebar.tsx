@@ -4,11 +4,13 @@ import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import Button from "@/components/Button";
 
 type Category = {
-  id: string;
+  id: number;
   name: string;
-  parent_id: string | null;
+  parent_id: number | null;
+  slug: string;
 };
 
 const specials = [
@@ -20,9 +22,9 @@ const specials = [
 
 export default function CatalogSidebar({ parents, subcategories }: { parents: Category[]; subcategories: Category[] }) {
   const params = useParams();
-  const activeId = params?.id as string;
-  const activeParent = subcategories.find((s) => s.id === activeId)?.parent_id;
-  const [openId, setOpenId] = useState<string | null>(activeParent || null);
+  const activeParentSlug = params?.slug as string | undefined;
+  const activeSubSlug = params?.subSlug as string | undefined;
+  const [openSlug, setOpenSlug] = useState<string | null>(activeParentSlug ?? null);
 
   return (
     <aside className="w-60 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r border-gray-300 scrollbar-gutter-stable">
@@ -41,27 +43,27 @@ export default function CatalogSidebar({ parents, subcategories }: { parents: Ca
 
         {parents.map((parent) => {
           const subs = subcategories.filter((s) => s.parent_id === parent.id);
-          const isOpen = openId === parent.id;
+          const isOpen = openSlug === parent.slug;
 
           return (
             <div key={parent.id}>
-              <button
-                onClick={() => setOpenId(isOpen ? null : parent.id)}
-                className="w-full flex items-center justify-between gap-1 px-4 py-2.5 text-sm font-medium hover:bg-gray-50 text-left hover:cursor-pointer"
+              <Button
+                onClick={() => setOpenSlug(isOpen ? null : parent.slug)}
+                className="w-full flex items-center justify-between gap-1 px-4 py-2.5 text-sm font-medium hover:bg-gray-50 text-left"
               >
                 <span>{parent.name}</span>
                 <span className="text-green-600 text-lg leading-none">
                   {isOpen ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                 </span>
-              </button>
+              </Button>
 
               {isOpen && subs.length > 0 && (
                 <div className="bg-gray-50 border-t border-b border-gray-300">
                   {subs.map((sub) => (
                     <Link
                       key={sub.id}
-                      href={`/catalog/${sub.id}`}
-                      className={`block px-6 py-2 text-sm hover:text-green-600 transition-colors ${activeId === sub.id ? "text-green-600" : "text-gray-600"}`}
+                      href={`/catalog/${parent.slug}/${sub.slug}`}
+                      className={`block px-6 py-2 text-sm hover:text-green-600 transition-colors ${activeSubSlug === sub.slug ? "text-green-600" : "text-gray-600"}`}
                     >
                       {sub.name}
                     </Link>

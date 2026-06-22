@@ -1,5 +1,4 @@
 import Link from "next/link";
-
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
 import { supabase } from "@/lib/supabase";
@@ -38,8 +37,8 @@ export default async function DiscountPage({ searchParams }: { searchParams: Pro
       ) : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {products.map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {products.map((p, i) => (
+              <ProductCard key={p.id} product={p} priority={i === 0} />
             ))}
           </div>
           <Pagination page={currentPage} totalPages={totalPages} basePath="/discount" />

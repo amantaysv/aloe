@@ -31,7 +31,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="ru">
-      <body className={`${geist.className} ${lobster.variable}`}>
+      <body className={`${geist.className} ${lobster.variable}`} suppressHydrationWarning>
         <NextTopLoader color="#16a34a" showSpinner={false} />
         <Header />
         <div className="max-w-7xl mx-auto flex">

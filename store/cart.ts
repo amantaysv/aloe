@@ -51,7 +51,7 @@ export const useCart = create<CartStore>()(
       decrement: (id) =>
         set((state) => ({
           items: state.items
-            .map((i) => (i.id === id && i.quantity > 1 ? { ...i, quantity: i.quantity - 1 } : i))
+            .map((i) => (i.id === id ? { ...i, quantity: i.quantity - 1 } : i))
             .filter((i) => i.quantity > 0),
         })),
 

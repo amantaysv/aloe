@@ -6,6 +6,7 @@ import { LogInIcon, LogOut, User as UserIcon } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase-browser";
 import { useFavorites } from "@/store/favorites";
+import Button from "@/components/Button";
 
 export default function AuthButton() {
   const [user, setUser] = useState<User | null>(null);
@@ -46,15 +47,15 @@ export default function AuthButton() {
   if (user) {
     return (
       <div ref={ref} className="relative">
-        <button
+        <Button
           onClick={() => setOpen((v) => !v)}
           title={user.email ?? "Профиль"}
-          className={`p-2 rounded-full flex items-center justify-center transition-colors hover:cursor-pointer ${
+          className={`p-2 rounded-full flex items-center justify-center transition-colors ${
             open ? "bg-green-50 text-green-600" : "text-gray-400 hover:text-green-600"
           }`}
         >
-          <UserIcon />
-        </button>
+          <UserIcon className="size-5" />
+        </Button>
 
         {open && (
           <div className="absolute right-0 top-full mt-2 w-44 bg-white border border-gray-100 rounded-xl shadow-lg py-1 z-50">
@@ -65,16 +66,16 @@ export default function AuthButton() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
             >
-              <UserIcon className=" text-gray-400" />
+              <UserIcon className="size-4 text-gray-400" />
               Профиль
             </Link>
-            <button
+            <Button
               onClick={signOut}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 hover:cursor-pointer"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50"
             >
-              <LogOut />
+              <LogOut className="size-4" />
               Выйти
-            </button>
+            </Button>
           </div>
         )}
       </div>

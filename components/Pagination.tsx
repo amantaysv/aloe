@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import Button from "@/components/Button";
 
 type Props = {
   page: number;
@@ -66,9 +67,9 @@ export default function Pagination({ page, totalPages, ...rest }: Props) {
           </Link>
         )
       ) : (
-        <button onClick={() => onPageChange!(page - 1)} disabled={prevDisabled} className={btnCls(false, prevDisabled)}>
+        <Button onClick={() => onPageChange!(page - 1)} disabled={prevDisabled} className={btnCls(false, prevDisabled)}>
           <ChevronLeft />
-        </button>
+        </Button>
       )}
 
       {windows.map((p, i) =>
@@ -81,9 +82,9 @@ export default function Pagination({ page, totalPages, ...rest }: Props) {
             {p}
           </Link>
         ) : (
-          <button key={p} onClick={() => onPageChange!(p)} className={btnCls(p === page)}>
+          <Button key={p} onClick={() => onPageChange!(p)} className={btnCls(p === page)}>
             {p}
-          </button>
+          </Button>
         )
       )}
 
@@ -99,9 +100,9 @@ export default function Pagination({ page, totalPages, ...rest }: Props) {
           </Link>
         )
       ) : (
-        <button onClick={() => onPageChange!(page + 1)} disabled={nextDisabled} className={btnCls(false, nextDisabled)}>
+        <Button onClick={() => onPageChange!(page + 1)} disabled={nextDisabled} className={btnCls(false, nextDisabled)}>
           <ChevronRight />
-        </button>
+        </Button>
       )}
     </div>
   );

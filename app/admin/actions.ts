@@ -29,7 +29,7 @@ export type ProductInput = {
   image_url: string;
   product_url?: string;
   category: string;
-  category_id: string;
+  category_id: number;
   label?: "popular" | "new" | "sale" | "discount" | null;
   description?: string | null;
   manufacturer?: string | null;
@@ -62,21 +62,29 @@ export async function deleteProduct(id: number): Promise<{ ok: true } | { ok: fa
 }
 
 export type CategoryInput = {
-  id: string;
+  id?: number;
   name: string;
-  parent_id: string | null;
+  parent_id: number | null;
+  slug: string;
 };
 
 export async function upsertCategory(
   data: CategoryInput,
-): Promise<{ ok: true } | { ok: false; error: string }> {
+): Promise<{ ok: true; id: number } | { ok: false; error: string }> {
   await assertAdmin();
-  const { error } = await adminDb().from("categories").upsert(data, { onConflict: "id" });
+  const db = adminDb();
+  const fields = { name: data.name, parent_id: data.parent_id, slug: data.slug };
+  if (data.id) {
+    const { error } = await db.from("categories").update(fields).eq("id", data.id);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, id: data.id };
+  }
+  const { data: row, error } = await db.from("categories").insert(fields).select("id").single();
   if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  return { ok: true, id: row.id };
 }
 
-export async function deleteCategory(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function deleteCategory(id: number): Promise<{ ok: true } | { ok: false; error: string }> {
   await assertAdmin();
   const { error } = await adminDb().from("categories").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -127,6 +135,20 @@ export async function uploadBannerImage(
   if (error) return { ok: false, error: error.message };
   const { data } = db.storage.from("product-images").getPublicUrl(path);
   return { ok: true, url: data.publicUrl };
+}
+
+export async function getManufacturers(): Promise<{ ok: true; data: string[] } | { ok: false; error: string }> {
+  await assertAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select("manufacturer")
+    .not("manufacturer", "is", null);
+  if (error) return { ok: false, error: error.message };
+  const manufacturers = [...new Set(data.map((p) => p.manufacturer as string))].sort((a, b) =>
+    a.localeCompare(b, "ru"),
+  );
+  return { ok: true, data: manufacturers };
 }
 
 export async function uploadProductImage(

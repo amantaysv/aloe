@@ -8,6 +8,7 @@ type Props = {
   product: Product;
   className?: string;
   href?: string;
+  priority?: boolean;
 };
 
 const LABEL_MAP = {
@@ -27,7 +28,7 @@ function ProductBadge({ label }: { label: Product["label"] }) {
   );
 }
 
-export default function ProductCard({ product: p, className = "", href }: Props) {
+export default function ProductCard({ product: p, className = "", href, priority = false }: Props) {
   const productHref = href ?? `/product/${p.id}`;
 
   return (
@@ -36,7 +37,7 @@ export default function ProductCard({ product: p, className = "", href }: Props)
     >
       <Link className="flex-1 flex flex-col" href={productHref}>
         <div className="relative aspect-square bg-gray-50">
-          <Image src={p.image_url} alt={p.name} fill className="object-contain p-2" unoptimized />
+          <Image src={p.image_url} alt={p.name} fill className="object-contain p-2" unoptimized priority={priority} />
           <ProductBadge label={p.label} />
           <FavoriteButton productId={p.id} />
         </div>

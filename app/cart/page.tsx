@@ -1,13 +1,15 @@
 "use client";
 
+import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/store/cart";
+import Button from "@/components/Button";
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, increment, decrement, remove, total, clear } = useCart();
+  const { items, increment, decrement, total, clear } = useCart();
 
   if (items.length === 0) {
     return (
@@ -34,25 +36,19 @@ export default function CartPage() {
               <p className="text-sm text-green-600 font-bold mt-1">{item.price} сом</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <button
+              <Button
                 onClick={() => decrement(item.id)}
-                className="w-8 h-8 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center font-bold hover:cursor-pointer"
+                className="w-8 h-8 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center font-bold"
               >
-                −
-              </button>
+                {item.quantity === 1 ? <Trash2Icon className="size-4" /> : <MinusIcon className="size-4" />}
+              </Button>
               <span className="w-6 text-center text-sm">{item.quantity}</span>
-              <button
+              <Button
                 onClick={() => increment(item.id)}
-                className="w-8 h-8 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center font-bold hover:cursor-pointer"
+                className="w-8 h-8 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center font-bold"
               >
-                +
-              </button>
-              <button
-                onClick={() => remove(item.id)}
-                className="text-red-400 hover:text-red-600 ml-2 text-xs hover:cursor-pointer"
-              >
-                удалить
-              </button>
+                <PlusIcon className="size-4" />
+              </Button>
             </div>
           </div>
         ))}
@@ -64,18 +60,12 @@ export default function CartPage() {
           <p className="text-2xl font-bold text-green-600">{total()} сом</p>
         </div>
         <div className="flex gap-3">
-          <button
-            onClick={clear}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 hover:bg-gray-50 hover:cursor-pointer"
-          >
+          <Button variant="secondary" onClick={clear}>
             Очистить
-          </button>
-          <button
-            onClick={() => router.push("/checkout")}
-            className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 hover:cursor-pointer"
-          >
+          </Button>
+          <Button variant="primary" onClick={() => router.push("/checkout")} className="px-6">
             Оформить заказ
-          </button>
+          </Button>
         </div>
       </div>
     </main>

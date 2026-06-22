@@ -5,8 +5,9 @@ import { ImagePlus, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-reac
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Pagination from "@/components/Pagination";
+import Button from "@/components/Button";
 import type { Product } from "@/types";
-import { deleteProduct, uploadProductImage, upsertProduct, type ProductInput } from "./actions";
+import { deleteProduct, getManufacturers, uploadProductImage, upsertProduct, type ProductInput } from "./actions";
 
 const LABELS = [
   { value: "", label: "Нет" },
@@ -23,7 +24,7 @@ const empty: ProductInput = {
   image_url: "",
   product_url: "",
   category: "",
-  category_id: "",
+  category_id: 0,
   label: null,
   description: null,
   external_id: "",
@@ -41,8 +42,7 @@ type Props = {
   q: string;
   label: string;
   sort: SortBy;
-  categories: { id: string; name: string }[];
-  manufacturers: string[];
+  categories: { id: number; name: string }[];
 };
 
 export default function AdminProducts({
@@ -54,7 +54,6 @@ export default function AdminProducts({
   label,
   sort,
   categories,
-  manufacturers,
 }: Props) {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState(q);
@@ -65,6 +64,8 @@ export default function AdminProducts({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const [manufacturers, setManufacturers] = useState<string[]>([]);
+  const manufacturersLoadedRef = useRef(false);
 
   function navigate(updates: { q?: string; label?: string; sort?: string; page?: number }) {
     const params = new URLSearchParams(window.location.search);
@@ -96,12 +97,21 @@ export default function AdminProducts({
     debounceRef.current = setTimeout(() => navigate({ q: value }), 400);
   }
 
+  async function loadManufacturers() {
+    if (manufacturersLoadedRef.current) return;
+    manufacturersLoadedRef.current = true;
+    const result = await getManufacturers();
+    if (result.ok) setManufacturers(result.data);
+  }
+
   function openNew() {
     setEditing({ ...empty });
     setError("");
+    loadManufacturers();
   }
 
   function openEdit(p: Product) {
+    loadManufacturers();
     setEditing({
       id: p.id,
       name: p.name,
@@ -184,13 +194,10 @@ export default function AdminProducts({
       {/* Toolbar */}
       <div className="flex justify-between items-center mb-4">
         <p className="text-sm text-gray-500">Товаров: {total}</p>
-        <button
-          onClick={openNew}
-          className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors hover:cursor-pointer"
-        >
+        <Button variant="primary" onClick={openNew} className="flex items-center gap-1.5">
           <Plus className="w-4 h-4" />
           Добавить товар
-        </button>
+        </Button>
       </div>
 
       {/* Search */}
@@ -204,15 +211,15 @@ export default function AdminProducts({
           className="w-full border border-gray-300 rounded-lg pl-9 pr-9 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
         />
         {searchInput && (
-          <button
+          <Button
             onClick={() => {
               setSearchInput("");
               navigate({ q: "" });
             }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hover:cursor-pointer"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
             <X className="w-4 h-4" />
-          </button>
+          </Button>
         )}
       </div>
 
@@ -227,17 +234,17 @@ export default function AdminProducts({
             { value: "discount", label: "Скидка" },
             { value: "none", label: "Без метки" },
           ].map((l) => (
-            <button
+            <Button
               key={l.value}
               onClick={() => navigate({ label: l.value })}
-              className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors hover:cursor-pointer ${
+              className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
                 label === l.value
                   ? "bg-green-600 text-white border-green-600"
                   : "border-gray-300 text-gray-600 hover:border-green-500 hover:text-green-600"
               }`}
             >
               {l.label}
-            </button>
+            </Button>
           ))}
         </div>
         <select
@@ -267,18 +274,12 @@ export default function AdminProducts({
               </p>
             </div>
             <div className="flex gap-1 shrink-0">
-              <button
-                onClick={() => openEdit(p)}
-                className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-200 text-gray-500 hover:text-gray-700 hover:cursor-pointer"
-              >
+              <Button variant="icon" onClick={() => openEdit(p)}>
                 <Pencil className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => handleDelete(p.id)}
-                className="w-8 h-8 flex items-center justify-center rounded hover:bg-red-100 text-gray-400 hover:text-red-600 hover:cursor-pointer"
-              >
+              </Button>
+              <Button variant="icon" iconColor="danger" onClick={() => handleDelete(p.id)}>
                 <Trash2 className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </div>
         ))}
@@ -293,9 +294,9 @@ export default function AdminProducts({
           <div className="relative ml-auto w-full max-w-lg bg-white h-full overflow-y-auto shadow-xl flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
               <h2 className="text-lg font-bold">{editing.id ? "Редактировать товар" : "Добавить товар"}</h2>
-              <button onClick={close} className="hover:cursor-pointer text-gray-400 hover:text-gray-700">
+              <Button onClick={close} className="text-gray-400 hover:text-gray-700">
                 <X className="w-5 h-5" />
-              </button>
+              </Button>
             </div>
 
             <div className="flex-1 px-6 py-5 space-y-4">
@@ -312,13 +313,13 @@ export default function AdminProducts({
                   >
                     <Image src={editing.image_url} alt="" fill className="object-contain p-3" unoptimized />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                      <button
+                      <Button
                         onClick={() => fileRef.current?.click()}
                         disabled={uploading}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity bg-white text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg shadow hover:cursor-pointer"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity bg-white text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg shadow"
                       >
                         {uploading ? "Загрузка..." : "Заменить"}
-                      </button>
+                      </Button>
                     </div>
                     {uploading && (
                       <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
@@ -378,7 +379,7 @@ export default function AdminProducts({
                   <select
                     value={editing.category_id}
                     onChange={(e) => {
-                      const cat = categories.find((c) => c.id === e.target.value);
+                      const cat = categories.find((c) => String(c.id) === e.target.value);
                       if (cat) {
                         set("category_id", cat.id);
                         set("category", cat.name);
@@ -474,13 +475,15 @@ export default function AdminProducts({
             </div>
 
             <div className="px-6 py-4 border-t border-gray-200 sticky bottom-0 bg-white">
-              <button
+              <Button
+                variant="primary"
+                size="lg"
                 onClick={save}
                 disabled={saving || uploading || !editing.name || !editing.price}
-                className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition-colors hover:cursor-pointer"
+                className="w-full"
               >
                 {saving ? "Сохранение..." : "Сохранить"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

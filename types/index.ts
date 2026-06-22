@@ -6,7 +6,7 @@ export type Product = {
   image_url: string;
   product_url: string;
   category: string;
-  category_id: string;
+  category_id: number;
   label?: "popular" | "new" | "sale" | "discount" | null;
   old_price?: number | null;
   description?: string | null;
