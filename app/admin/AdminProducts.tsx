@@ -1,12 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ImagePlus, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import Pagination from "@/components/Pagination";
 import type { Product } from "@/types";
 import { deleteProduct, uploadProductImage, upsertProduct, type ProductInput } from "./actions";
-import Pagination from "@/components/Pagination";
 
 const LABELS = [
   { value: "", label: "Нет" },
@@ -45,11 +45,20 @@ type Props = {
   manufacturers: string[];
 };
 
-export default function AdminProducts({ products, page, totalPages, total, q, label, sort, categories, manufacturers }: Props) {
+export default function AdminProducts({
+  products,
+  page,
+  totalPages,
+  total,
+  q,
+  label,
+  sort,
+  categories,
+  manufacturers,
+}: Props) {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState(q);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
 
   const [editing, setEditing] = useState<ProductInput | null>(null);
   const [saving, setSaving] = useState(false);
@@ -127,7 +136,10 @@ export default function AdminProducts({ products, page, totalPages, total, q, la
     fd.append("file", file);
     const result = await uploadProductImage(fd);
     setUploading(false);
-    if (!result.ok) { setError(result.error); return; }
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
     set("image_url", result.url);
   }
 
@@ -149,7 +161,10 @@ export default function AdminProducts({ products, page, totalPages, total, q, la
     setError("");
     const result = await upsertProduct(editing);
     setSaving(false);
-    if (!result.ok) { setError(result.error); return; }
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
     close();
     router.refresh();
   }
@@ -157,7 +172,10 @@ export default function AdminProducts({ products, page, totalPages, total, q, la
   async function handleDelete(id: number) {
     if (!confirm("Удалить товар?")) return;
     const result = await deleteProduct(id);
-    if (!result.ok) { alert(result.error); return; }
+    if (!result.ok) {
+      alert(result.error);
+      return;
+    }
     router.refresh();
   }
 
@@ -187,7 +205,10 @@ export default function AdminProducts({ products, page, totalPages, total, q, la
         />
         {searchInput && (
           <button
-            onClick={() => { setSearchInput(""); navigate({ q: "" }); }}
+            onClick={() => {
+              setSearchInput("");
+              navigate({ q: "" });
+            }}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hover:cursor-pointer"
           >
             <X className="w-4 h-4" />
@@ -233,9 +254,7 @@ export default function AdminProducts({ products, page, totalPages, total, q, la
 
       {/* List */}
       <div className="space-y-2">
-        {products.length === 0 && (
-          <p className="text-sm text-gray-400 py-6 text-center">Ничего не найдено</p>
-        )}
+        {products.length === 0 && <p className="text-sm text-gray-400 py-6 text-center">Ничего не найдено</p>}
         {products.map((p) => (
           <div key={p.id} className="flex items-center gap-3 border border-gray-200 rounded-lg p-3 hover:bg-gray-50">
             <div className="relative w-12 h-12 shrink-0 bg-gray-100 rounded overflow-hidden">
@@ -360,13 +379,20 @@ export default function AdminProducts({ products, page, totalPages, total, q, la
                     value={editing.category_id}
                     onChange={(e) => {
                       const cat = categories.find((c) => c.id === e.target.value);
-                      if (cat) { set("category_id", cat.id); set("category", cat.name); }
+                      if (cat) {
+                        set("category_id", cat.id);
+                        set("category", cat.name);
+                      }
                     }}
                     className={inp}
                   >
-                    <option value="" disabled>Выберите</option>
+                    <option value="" disabled>
+                      Выберите
+                    </option>
                     {categories.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
                     ))}
                   </select>
                 </Field>
@@ -378,7 +404,9 @@ export default function AdminProducts({ products, page, totalPages, total, q, la
                     className={inp}
                   >
                     {LABELS.map((l) => (
-                      <option key={l.value} value={l.value}>{l.label}</option>
+                      <option key={l.value} value={l.value}>
+                        {l.label}
+                      </option>
                     ))}
                   </select>
                 </Field>

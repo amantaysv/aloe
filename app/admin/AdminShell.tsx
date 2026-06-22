@@ -73,7 +73,7 @@ export default function AdminShell({
             onClick={() => setTab(t.id)}
             className={cn(
               "px-4 py-2 text-sm font-medium hover:cursor-pointer -mb-px border-b-2",
-              tab === t.id ? "border-green-600 text-green-600" : "border-transparent text-gray-500 hover:text-gray-700",
+              tab === t.id ? "border-green-600 text-green-600" : "border-transparent text-gray-500 hover:text-gray-700"
             )}
           >
             {t.label}

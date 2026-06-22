@@ -1,7 +1,7 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { Metadata } from "next";
 import AddToCart from "@/components/AddToCart";
 import FavoriteButton from "@/components/FavoriteButton";
 import ProductCard from "@/components/ProductCard";
@@ -33,7 +33,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   const { data: product } = await supabase.from("products").select("*").eq("id", id).single();
 
-  console.log("🚀 ~ ProductPage ~ product:", product);
   if (!product) notFound();
 
   const { data: related } = await supabase
