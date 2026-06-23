@@ -4,7 +4,7 @@ import ProductCard from "@/components/ProductCard";
 import SeeAllProducts from "@/components/SeeAllProducts";
 import SortSelect, { type SortValue } from "@/components/SortSelect";
 import { supabase } from "@/lib/supabase";
-import { getCategoriesWithSlug } from "@/services/category.service";
+import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { getSubcategorySection } from "@/services/product.service";
 
 const SECTION_LIMIT = 8;
@@ -20,7 +20,7 @@ export default async function CategoryPage({
   const sortParam = (sp.sort ?? "name") as SortValue;
   const validSort: SortValue = ["name", "price_asc", "price_desc"].includes(sortParam) ? sortParam : "name";
 
-  const allCategories = await getCategoriesWithSlug(supabase);
+  const allCategories = await getCachedCategoriesWithSlug();
 
   const category = allCategories?.find((c) => c.slug === slug);
   if (!category) notFound();

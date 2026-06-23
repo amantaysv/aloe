@@ -3,9 +3,7 @@ import type { Metadata } from "next";
 import Breadcrumb from "@/components/Breadcrumb";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
-import { createClient } from "@/lib/supabase-server";
-import { getBrandBySlug, getBrandNameBySlug } from "@/services/brand.service";
-import { getProductsByBrand } from "@/services/product.service";
+import { getCachedBrandBySlug, getCachedProductsByBrand } from "@/lib/cached-queries";
 
 const PAGE_SIZE = 24;
 
@@ -15,8 +13,7 @@ export async function generateMetadata({
   params: Promise<{ brand: string }>;
 }): Promise<Metadata> {
   const { brand } = await params;
-  const supabase = await createClient();
-  const data = await getBrandNameBySlug(supabase, brand);
+  const data = await getCachedBrandBySlug(brand);
   if (!data) return {};
   return { title: `${data.name} — Бренды — Aloe.kg` };
 }
@@ -31,15 +28,15 @@ export default async function BrandPage({
   const [{ brand }, { page = "1" }] = await Promise.all([params, searchParams]);
   const currentPage = Math.max(1, parseInt(page));
 
-  const supabase = await createClient();
-  const brandData = await getBrandBySlug(supabase, brand);
+  const brandData = await getCachedBrandBySlug(brand);
 
   if (!brandData) notFound();
 
-  const { products: rawProducts, total } = await getProductsByBrand(supabase, brandData.id, {
-    page: currentPage,
-    pageSize: PAGE_SIZE,
-  });
+  const { products: rawProducts, total } = await getCachedProductsByBrand(
+    brandData.id,
+    currentPage,
+    PAGE_SIZE,
+  );
 
   if (!total && currentPage === 1) notFound();
 

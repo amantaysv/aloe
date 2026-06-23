@@ -5,7 +5,7 @@ import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
 import SortSelect, { type SortValue } from "@/components/SortSelect";
 import { supabase } from "@/lib/supabase";
-import { getCategoriesWithSlug } from "@/services/category.service";
+import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { getBrandsForSubcategory, getSubcategoryProducts } from "@/services/product.service";
 
 const PAGE_SIZE = 20;
@@ -23,7 +23,7 @@ export default async function SubcategoryPage({
   const sortParam = (sp.sort ?? "name") as SortValue;
   const validSort: SortValue = ["name", "price_asc", "price_desc"].includes(sortParam) ? sortParam : "name";
 
-  const allCategories = await getCategoriesWithSlug(supabase);
+  const allCategories = await getCachedCategoriesWithSlug();
 
   const parentCategory = allCategories?.find((c) => c.slug === slug && c.parent_id === null);
   if (!parentCategory) notFound();

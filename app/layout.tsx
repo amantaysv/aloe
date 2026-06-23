@@ -5,8 +5,7 @@ import AuthSync from "@/components/AuthSync";
 import CatalogSidebar from "@/components/CatalogSidebar";
 import Header from "@/components/Header";
 import Toaster from "@/components/Toaster";
-import { supabase } from "@/lib/supabase";
-import { getCategories } from "@/services/category.service";
+import { getCachedCategories } from "@/lib/cached-queries";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"] });
@@ -22,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const categories = await getCategories(supabase);
+  const categories = await getCachedCategories();
   const parents = categories.filter((c) => !c.parent_id);
   const subs = categories.filter((c) => c.parent_id);
 

@@ -11,7 +11,7 @@ import FavoriteButton from "@/components/FavoriteButton";
 import ProductCard from "@/components/ProductCard";
 import ProductDescription from "@/components/ProductDescription";
 import { supabase } from "@/lib/supabase";
-import { getCategoriesWithSlug } from "@/services/category.service";
+import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { getProduct, getRelatedProducts } from "@/services/product.service";
 
 const getCachedProduct = cache((id: string) => getProduct(supabase, id));
@@ -48,7 +48,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   const [related, allCategories] = await Promise.all([
     getRelatedProducts(supabase, String(product.category_id), id),
-    getCategoriesWithSlug(supabase),
+    getCachedCategoriesWithSlug(),
   ]);
 
   const productCategory = allCategories?.find((c) => c.id === product.category_id);

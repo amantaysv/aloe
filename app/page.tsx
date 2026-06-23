@@ -1,18 +1,20 @@
 import BannerCarousel from "@/components/BannerCarousel";
 import ProductCarousel from "@/components/ProductCarousel";
-import { supabase } from "@/lib/supabase";
-import { getActiveBanners } from "@/services/banner.service";
-import { getCategoriesWithSlug } from "@/services/category.service";
-import { getProductsByCategories, getProductsByLabel } from "@/services/product.service";
+import {
+  getCachedActiveBanners,
+  getCachedCategoriesWithSlug,
+  getCachedProductsByCategories,
+  getCachedProductsByLabel,
+} from "@/lib/cached-queries";
 
 export default async function HomePage() {
   const [popular, newest, onSale, discounted, banners, allCategories] = await Promise.all([
-    getProductsByLabel(supabase, "popular"),
-    getProductsByLabel(supabase, "new"),
-    getProductsByLabel(supabase, "sale"),
-    getProductsByLabel(supabase, "discount"),
-    getActiveBanners(supabase),
-    getCategoriesWithSlug(supabase),
+    getCachedProductsByLabel("popular"),
+    getCachedProductsByLabel("new"),
+    getCachedProductsByLabel("sale"),
+    getCachedProductsByLabel("discount"),
+    getCachedActiveBanners(),
+    getCachedCategoriesWithSlug(),
   ]);
 
   const topCategories = allCategories.filter((c) => !c.parent_id);
@@ -28,7 +30,7 @@ export default async function HomePage() {
   const categoryProducts = await Promise.all(
     topCategories.map(async (cat) => {
       const ids = [cat.id, ...(subsByParent.get(cat.id) ?? [])];
-      const { products, total } = await getProductsByCategories(supabase, ids);
+      const { products, total } = await getCachedProductsByCategories(ids);
       return { cat, products, total };
     }),
   );
