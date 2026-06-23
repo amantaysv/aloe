@@ -158,7 +158,7 @@ export default function AdminBanners({ banners: initial }: { banners: Banner[] }
           >
             <GripVerticalIcon className="size-4 text-gray-400 shrink-0 cursor-grab active:cursor-grabbing" />
             <div className="relative w-40 h-16 shrink-0 bg-gray-100 rounded-lg overflow-hidden">
-              <Image src={b.image_url} alt={`Баннер ${i + 1}`} fill className="object-cover" unoptimized />
+              <Image src={b.image_url} alt={`Баннер ${i + 1}`} fill className="object-cover" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-700">Баннер {i + 1}</p>

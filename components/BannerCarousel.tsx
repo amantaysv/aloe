@@ -41,7 +41,6 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
                 alt={`Баннер ${i + 1}`}
                 fill
                 className="object-cover"
-                unoptimized
                 priority={i === 0}
               />
             </div>

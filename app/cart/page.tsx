@@ -29,7 +29,7 @@ export default function CartPage() {
         {items.map((item) => (
           <div key={item.id} className="flex items-center gap-4 border border-gray-300 rounded-lg p-3">
             <div className="relative w-16 h-16 shrink-0 bg-gray-50 rounded">
-              <Image src={item.image_url} alt={item.name} fill className="object-contain p-1" unoptimized />
+              <Image src={item.image_url} alt={item.name} fill className="object-contain p-1" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium line-clamp-2">{item.name}</p>

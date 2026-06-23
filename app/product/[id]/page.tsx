@@ -85,7 +85,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
         <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden">
-          <Image src={product.image_url} alt={product.name} fill className="object-contain p-6" unoptimized />
+          <Image src={product.image_url} alt={product.name} fill className="object-contain p-6" priority />
           {label && (
             <div className="absolute top-3 left-3">
               <span className={`${label.cls} text-white text-xs font-semibold px-2 py-1 rounded`}>{label.text}</span>

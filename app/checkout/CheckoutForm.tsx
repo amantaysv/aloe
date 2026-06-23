@@ -80,7 +80,7 @@ export default function CheckoutForm({ initial }: Props) {
           {items.map((item) => (
             <div key={item.id} className="flex items-center gap-3">
               <div className="relative w-10 h-10 shrink-0 bg-white rounded border">
-                <Image src={item.image_url} alt={item.name} fill className="object-contain p-0.5" unoptimized />
+                <Image src={item.image_url} alt={item.name} fill className="object-contain p-0.5" />
               </div>
               <p className="flex-1 text-sm line-clamp-1">{item.name}</p>
               <p className="text-sm shrink-0 text-gray-600">
