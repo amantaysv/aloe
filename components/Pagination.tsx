@@ -9,7 +9,7 @@ type Props = {
   totalPages: number;
 } & (
   | { onPageChange: (page: number) => void; basePath?: never; query?: never }
-  | { basePath: string; query?: Record<string, string>; onPageChange?: never }
+  | { basePath: string; query?: Record<string, string | string[]>; onPageChange?: never }
 );
 
 function getWindows(current: number, total: number): (number | null)[] {
@@ -43,7 +43,12 @@ export default function Pagination({ page, totalPages, ...rest }: Props) {
   const toHref =
     "basePath" in rest
       ? (p: number) => {
-          const params = new URLSearchParams({ ...rest.query, page: String(p) });
+          const params = new URLSearchParams();
+          Object.entries(rest.query ?? {}).forEach(([k, v]) => {
+            if (Array.isArray(v)) v.forEach((val) => params.append(k, val));
+            else params.set(k, v);
+          });
+          params.set("page", String(p));
           return `${rest.basePath}?${params}`;
         }
       : undefined;

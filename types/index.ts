@@ -1,3 +1,9 @@
+export type Brand = {
+  id: number;
+  name: string;
+  slug: string;
+};
+
 export type Product = {
   id: number;
   external_id: string;
@@ -10,6 +16,6 @@ export type Product = {
   label?: "popular" | "new" | "sale" | "discount" | null;
   old_price?: number | null;
   description?: string | null;
-  manufacturer?: string | null;
+  brand_id?: number | null;
   seo_text?: string | null;
 };

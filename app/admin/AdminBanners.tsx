@@ -4,26 +4,29 @@ import { useRef, useState } from "react";
 import { EyeIcon, EyeOffIcon, GripVerticalIcon, ImagePlusIcon, Loader2Icon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import Button from "@/components/Button";
-import { deleteBanner, uploadBannerImage, upsertBanner } from "./actions";
+import { deleteBanner, reorderBanners, uploadBannerImage, upsertBanner } from "./actions";
+import { useToast } from "@/store/toast";
 
 type Banner = { id: number; image_url: string; sort_order: number; active: boolean };
 
 export default function AdminBanners({ banners: initial }: { banners: Banner[] }) {
   const [banners, setBanners] = useState(() => [...initial].sort((a, b) => a.sort_order - b.sort_order));
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [dragOverId, setDragOverId] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const dragIndex = useRef<number | null>(null);
+  const { show } = useToast();
 
   async function handleFile(file: File) {
     if (!file.type.startsWith("image/")) return;
     setUploading(true);
-    setError("");
     const fd = new FormData();
     fd.append("file", file);
     const upload = await uploadBannerImage(fd);
     if (!upload.ok) {
       setUploading(false);
-      setError(upload.error);
+      show(upload.error, "error");
       return;
     }
 
@@ -31,10 +34,11 @@ export default function AdminBanners({ banners: initial }: { banners: Banner[] }
     const result = await upsertBanner({ image_url: upload.url, sort_order, active: true });
     setUploading(false);
     if (!result.ok) {
-      setError(result.error);
+      show(result.error, "error");
       return;
     }
     setBanners((prev) => [...prev, { id: result.id, image_url: upload.url, sort_order, active: true }]);
+    show("Баннер добавлен", "success");
   }
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -46,7 +50,7 @@ export default function AdminBanners({ banners: initial }: { banners: Banner[] }
   async function toggleActive(banner: Banner) {
     const result = await upsertBanner({ ...banner, active: !banner.active });
     if (!result.ok) {
-      alert(result.error);
+      show(result.error, "error");
       return;
     }
     setBanners((prev) => prev.map((b) => (b.id === banner.id ? { ...b, active: !b.active } : b)));
@@ -56,16 +60,51 @@ export default function AdminBanners({ banners: initial }: { banners: Banner[] }
     if (!confirm("Удалить баннер?")) return;
     const result = await deleteBanner(id);
     if (!result.ok) {
-      alert(result.error);
+      show(result.error, "error");
       return;
     }
     setBanners((prev) => prev.filter((b) => b.id !== id));
+    show("Баннер удалён", "info");
+  }
+
+  function onDragStart(index: number) {
+    dragIndex.current = index;
+  }
+
+  function onDragOver(e: React.DragEvent, id: number) {
+    e.preventDefault();
+    setDragOverId(id);
+  }
+
+  async function onDrop(dropIndex: number) {
+    const from = dragIndex.current;
+    dragIndex.current = null;
+    setDragOverId(null);
+    if (from === null || from === dropIndex) return;
+
+    const next = [...banners];
+    const [moved] = next.splice(from, 1);
+    next.splice(dropIndex, 0, moved);
+    const reordered = next.map((b, i) => ({ ...b, sort_order: i }));
+    setBanners(reordered);
+
+    setSaving(true);
+    const result = await reorderBanners(reordered.map(({ id, sort_order }) => ({ id, sort_order })));
+    setSaving(false);
+    if (!result.ok) {
+      show(result.error, "error");
+    } else {
+      show("Порядок сохранён", "success");
+    }
   }
 
   return (
     <>
       <div className="flex justify-between items-center mb-5">
-        <p className="text-sm text-gray-500">Баннеров: {banners.length}</p>
+        <p className="text-sm text-gray-500">
+          Баннеров: {banners.length}
+          {saving && <span className="ml-2 text-gray-400">Сохранение...</span>}
+        </p>
         <input ref={fileRef} type="file" accept="image/*" onChange={onFileChange} className="hidden" />
         <Button
           variant="primary"
@@ -77,8 +116,6 @@ export default function AdminBanners({ banners: initial }: { banners: Banner[] }
           {uploading ? "Загрузка..." : "Добавить баннер"}
         </Button>
       </div>
-
-      {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
 
       <div
         onDragOver={(e) => e.preventDefault()}
@@ -105,9 +142,21 @@ export default function AdminBanners({ banners: initial }: { banners: Banner[] }
         {banners.map((b, i) => (
           <div
             key={b.id}
-            className={`flex items-center gap-3 border rounded-xl p-3 ${b.active ? "border-gray-200" : "border-gray-100 bg-gray-50"}`}
+            draggable
+            onDragStart={() => onDragStart(i)}
+            onDragOver={(e) => onDragOver(e, b.id)}
+            onDragLeave={() => setDragOverId(null)}
+            onDrop={() => onDrop(i)}
+            onDragEnd={() => { dragIndex.current = null; setDragOverId(null); }}
+            className={`flex items-center gap-3 border rounded-xl p-3 transition-colors ${
+              dragOverId === b.id
+                ? "border-green-400 bg-green-50"
+                : b.active
+                ? "border-gray-200"
+                : "border-gray-100 bg-gray-50"
+            }`}
           >
-            <GripVerticalIcon className="size-4 text-gray-300 shrink-0" />
+            <GripVerticalIcon className="size-4 text-gray-400 shrink-0 cursor-grab active:cursor-grabbing" />
             <div className="relative w-40 h-16 shrink-0 bg-gray-100 rounded-lg overflow-hidden">
               <Image src={b.image_url} alt={`Баннер ${i + 1}`} fill className="object-cover" unoptimized />
             </div>

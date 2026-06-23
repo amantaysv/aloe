@@ -32,7 +32,7 @@ export type ProductInput = {
   category_id: number;
   label?: "popular" | "new" | "sale" | "discount" | null;
   description?: string | null;
-  manufacturer?: string | null;
+  brand_id?: number | null;
   seo_text?: string | null;
 };
 
@@ -121,6 +121,19 @@ export async function deleteBanner(id: number): Promise<{ ok: true } | { ok: fal
   return { ok: true };
 }
 
+export async function reorderBanners(
+  items: { id: number; sort_order: number }[],
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  await assertAdmin();
+  const db = adminDb();
+  const results = await Promise.all(
+    items.map(({ id, sort_order }) => db.from("banners").update({ sort_order }).eq("id", id)),
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) return { ok: false, error: failed.error.message };
+  return { ok: true };
+}
+
 export async function uploadBannerImage(
   formData: FormData,
 ): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
@@ -137,18 +150,12 @@ export async function uploadBannerImage(
   return { ok: true, url: data.publicUrl };
 }
 
-export async function getManufacturers(): Promise<{ ok: true; data: string[] } | { ok: false; error: string }> {
+export async function getBrands(): Promise<{ ok: true; data: { id: number; name: string }[] } | { ok: false; error: string }> {
   await assertAdmin();
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select("manufacturer")
-    .not("manufacturer", "is", null);
+  const { data, error } = await supabase.from("brands").select("id, name").order("name");
   if (error) return { ok: false, error: error.message };
-  const manufacturers = [...new Set(data.map((p) => p.manufacturer as string))].sort((a, b) =>
-    a.localeCompare(b, "ru"),
-  );
-  return { ok: true, data: manufacturers };
+  return { ok: true, data: data ?? [] };
 }
 
 export async function uploadProductImage(

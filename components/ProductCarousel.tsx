@@ -3,6 +3,7 @@
 import useEmblaCarousel from "embla-carousel-react";
 import type { Product } from "@/types";
 import ProductCard from "./ProductCard";
+import SeeAllProducts from "./SeeAllProducts";
 
 export default function ProductCarousel({
   title,
@@ -29,11 +30,7 @@ export default function ProductCarousel({
     <section className="mb-10">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-xl font-bold">{title}</h2>
-        {hiddenCount > 0 && seeAllHref && (
-          <a href={seeAllHref} className="text-sm text-gray-400 hover:text-green-600 transition-colors">
-            +{hiddenCount} ещё
-          </a>
-        )}
+        {hiddenCount > 0 && seeAllHref && <SeeAllProducts href={seeAllHref} count={hiddenCount} />}
       </div>
 
       <div ref={emblaRef} className="overflow-hidden">

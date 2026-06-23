@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import Pagination from "@/components/Pagination";
 import Button from "@/components/Button";
 import type { Product } from "@/types";
-import { deleteProduct, getManufacturers, uploadProductImage, upsertProduct, type ProductInput } from "./actions";
+import { deleteProduct, getBrands, uploadProductImage, upsertProduct, type ProductInput } from "./actions";
 
 const LABELS = [
   { value: "", label: "Нет" },
@@ -28,7 +28,7 @@ const empty: ProductInput = {
   label: null,
   description: null,
   external_id: "",
-  manufacturer: null,
+  brand_id: null,
   seo_text: null,
 };
 
@@ -64,8 +64,8 @@ export default function AdminProducts({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
-  const [manufacturers, setManufacturers] = useState<string[]>([]);
-  const manufacturersLoadedRef = useRef(false);
+  const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
+  const brandsLoadedRef = useRef(false);
 
   function navigate(updates: { q?: string; label?: string; sort?: string; page?: number }) {
     const params = new URLSearchParams(window.location.search);
@@ -97,21 +97,21 @@ export default function AdminProducts({
     debounceRef.current = setTimeout(() => navigate({ q: value }), 400);
   }
 
-  async function loadManufacturers() {
-    if (manufacturersLoadedRef.current) return;
-    manufacturersLoadedRef.current = true;
-    const result = await getManufacturers();
-    if (result.ok) setManufacturers(result.data);
+  async function loadBrands() {
+    if (brandsLoadedRef.current) return;
+    brandsLoadedRef.current = true;
+    const result = await getBrands();
+    if (result.ok) setBrands(result.data);
   }
 
   function openNew() {
     setEditing({ ...empty });
     setError("");
-    loadManufacturers();
+    loadBrands();
   }
 
   function openEdit(p: Product) {
-    loadManufacturers();
+    loadBrands();
     setEditing({
       id: p.id,
       name: p.name,
@@ -124,7 +124,7 @@ export default function AdminProducts({
       label: p.label ?? null,
       description: p.description ?? null,
       external_id: p.external_id,
-      manufacturer: p.manufacturer ?? null,
+      brand_id: p.brand_id ?? null,
       seo_text: p.seo_text ?? null,
     });
     setError("");
@@ -360,18 +360,16 @@ export default function AdminProducts({
               </Field>
 
               <Field label="Производитель">
-                <input
-                  list="manufacturers-list"
-                  value={editing.manufacturer ?? ""}
-                  onChange={(e) => set("manufacturer", e.target.value || null)}
+                <select
+                  value={editing.brand_id ?? ""}
+                  onChange={(e) => set("brand_id", e.target.value ? Number(e.target.value) : null)}
                   className={inp}
-                  placeholder="Выберите или введите нового"
-                />
-                <datalist id="manufacturers-list">
-                  {manufacturers.map((m) => (
-                    <option key={m} value={m} />
+                >
+                  <option value="">Не указан</option>
+                  {brands.map((b) => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
                   ))}
-                </datalist>
+                </select>
               </Field>
 
               <div className="grid grid-cols-2 gap-4">

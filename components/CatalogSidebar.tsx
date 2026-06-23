@@ -18,6 +18,7 @@ const specials = [
   { href: "/new", label: "Новинки" },
   { href: "/sale", label: "Акции" },
   { href: "/discount", label: "Скидки" },
+  { href: "/brands", label: "Бренды" },
 ];
 
 export default function CatalogSidebar({ parents, subcategories }: { parents: Category[]; subcategories: Category[] }) {
@@ -57,17 +58,25 @@ export default function CatalogSidebar({ parents, subcategories }: { parents: Ca
                 </span>
               </Button>
 
-              {isOpen && subs.length > 0 && (
-                <div className="bg-gray-50 border-t border-b border-gray-300">
-                  {subs.map((sub) => (
-                    <Link
-                      key={sub.id}
-                      href={`/catalog/${parent.slug}/${sub.slug}`}
-                      className={`block px-6 py-2 text-sm hover:text-green-600 transition-colors ${activeSubSlug === sub.slug ? "text-green-600" : "text-gray-600"}`}
-                    >
-                      {sub.name}
-                    </Link>
-                  ))}
+              {subs.length > 0 && (
+                <div
+                  className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
+                    isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                  }`}
+                >
+                  <div className="overflow-hidden min-h-0">
+                    <div className="bg-gray-50 border-t border-b border-gray-300">
+                      {subs.map((sub) => (
+                        <Link
+                          key={sub.id}
+                          href={`/catalog/${parent.slug}/${sub.slug}`}
+                          className={`block px-6 py-2 text-sm hover:text-green-600 transition-colors ${activeSubSlug === sub.slug ? "text-green-600" : "text-gray-600"}`}
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

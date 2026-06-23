@@ -1,23 +1,22 @@
-import { ChevronRight } from "lucide-react";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumb";
 import ProductCard from "@/components/ProductCard";
+import SeeAllProducts from "@/components/SeeAllProducts";
 import { supabase } from "@/lib/supabase";
 
 const SECTION_LIMIT = 8;
 
-export default async function CategoryPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
 
   const { data: allCategories } = await supabase.from("categories").select("id, name, parent_id, slug");
 
-  const category = allCategories?.find((c) => c.slug === id);
+  const category = allCategories?.find((c) => c.slug === slug);
   if (!category) notFound();
 
   if (category.parent_id) {
     const parent = allCategories?.find((c) => c.id === category.parent_id);
-    redirect(`/catalog/${parent?.slug ?? id}/${id}`);
+    redirect(`/catalog/${parent?.slug ?? slug}/${slug}`);
   }
 
   const subcategories = (allCategories ?? []).filter((c) => c.parent_id === category.id);
@@ -53,13 +52,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ id: s
           <div key={s.id}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">{s.name}</h2>
-              <Link
-                href={`/catalog/${id}/${s.slug}`}
-                className="flex items-center gap-1 text-sm text-gray-500 hover:text-green-600 transition-colors"
-              >
-                +{total - SECTION_LIMIT} ещё
-                <ChevronRight className="w-4 h-4" />
-              </Link>
+              <SeeAllProducts href={`/catalog/${slug}/${s.slug}`} count={total - nonEmpty.length} />
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {products.map((product, i) => (
