@@ -33,7 +33,7 @@ export default function CatalogSidebar({ parents, subcategories }: { parents: Ca
   }, [activeParentSlug]);
 
   return (
-    <aside className="w-60 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r border-gray-300 scrollbar-gutter-stable">
+    <aside className="hidden lg:block w-60 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r border-gray-300 scrollbar-gutter-stable">
       <nav className="py-2">
         {specials.map((s) => (
           <Link

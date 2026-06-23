@@ -2,15 +2,19 @@ import { Heart, Truck } from "lucide-react";
 import Link from "next/link";
 import AuthButton from "./AuthButton";
 import CartIcon from "./CartIcon";
+import MobileMenuButton from "./MobileMenuButton";
 import SearchBar from "./SearchBar";
 
 export default function Header() {
   return (
-    <header className="h-16 bg-white border-b border-gray-300 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 h-full flex items-center gap-4">
-        {/* Logo — same width as sidebar */}
-        <Link href="/" className="flex items-center gap-2 shrink-0 w-56">
-          <svg width="48" viewBox="0 0 246 195" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <header className="h-14 lg:h-16 bg-white border-b border-gray-300 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-3 lg:px-4 h-full flex items-center gap-2 lg:gap-4">
+        {/* Hamburger — mobile only */}
+        <MobileMenuButton />
+
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 shrink-0 lg:w-56">
+          <svg width="36" className="lg:w-12" viewBox="0 0 246 195" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M245.335 107.37C245.335 107.37 234.21 110.597 216.71 119.667L216.708 119.657L216.193 116.59L214.78 119.362L213.865 121.162C190.49 133.64 156.965 156.022 123.368 193.902C123.368 193.902 143.638 193.06 173.915 169.267C180.39 164.182 186.66 158.497 192.565 152.535C195.248 149.827 199.443 145.67 204.61 140.8L207.423 140.137L210.45 139.42L207.59 138.195L207.458 138.137C214.708 131.415 223.483 123.687 232.563 116.63L233.038 116.517L236.065 115.802L234.508 115.132C238.108 112.387 241.743 109.762 245.335 107.37"
               fill="url(#h_p0)"
@@ -48,110 +52,47 @@ export default function Header() {
               fill="url(#h_p8)"
             />
             <defs>
-              <linearGradient
-                id="h_p0"
-                x1="123.368"
-                y1="150.637"
-                x2="245.334"
-                y2="150.637"
-                gradientUnits="userSpaceOnUse"
-              >
+              <linearGradient id="h_p0" x1="123.368" y1="150.637" x2="245.334" y2="150.637" gradientUnits="userSpaceOnUse">
                 <stop stopColor="#7FCB2D" />
                 <stop offset="0.550209" stopColor="#2A9540" />
                 <stop offset="1" stopColor="#226933" />
               </linearGradient>
-              <linearGradient
-                id="h_p1"
-                x1="0.665283"
-                y1="150.637"
-                x2="122.632"
-                y2="150.637"
-                gradientUnits="userSpaceOnUse"
-              >
+              <linearGradient id="h_p1" x1="0.665283" y1="150.637" x2="122.632" y2="150.637" gradientUnits="userSpaceOnUse">
                 <stop stopColor="#7FCB2D" />
                 <stop offset="0.550209" stopColor="#2A9540" />
                 <stop offset="1" stopColor="#226933" />
               </linearGradient>
-              <linearGradient
-                id="h_p2"
-                x1="56.5396"
-                y1="112.597"
-                x2="125.345"
-                y2="112.597"
-                gradientUnits="userSpaceOnUse"
-              >
+              <linearGradient id="h_p2" x1="56.5396" y1="112.597" x2="125.345" y2="112.597" gradientUnits="userSpaceOnUse">
                 <stop stopColor="#7FCB2D" />
                 <stop offset="0.550209" stopColor="#2A9540" />
                 <stop offset="1" stopColor="#226933" />
               </linearGradient>
-              <linearGradient
-                id="h_p3"
-                x1="120.655"
-                y1="112.597"
-                x2="189.46"
-                y2="112.597"
-                gradientUnits="userSpaceOnUse"
-              >
+              <linearGradient id="h_p3" x1="120.655" y1="112.597" x2="189.46" y2="112.597" gradientUnits="userSpaceOnUse">
                 <stop stopColor="#7FCB2D" />
                 <stop offset="0.550209" stopColor="#2A9540" />
                 <stop offset="1" stopColor="#226933" />
               </linearGradient>
-              <linearGradient
-                id="h_p4"
-                x1="133.228"
-                y1="168.397"
-                x2="201.789"
-                y2="196.19"
-                gradientUnits="userSpaceOnUse"
-              >
+              <linearGradient id="h_p4" x1="133.228" y1="168.397" x2="201.789" y2="196.19" gradientUnits="userSpaceOnUse">
                 <stop stopColor="#7FCB2D" />
                 <stop offset="0.550209" stopColor="#2A9540" />
                 <stop offset="1" stopColor="#226933" />
               </linearGradient>
-              <linearGradient
-                id="h_p5"
-                x1="123.468"
-                y1="133.067"
-                x2="225.702"
-                y2="133.067"
-                gradientUnits="userSpaceOnUse"
-              >
+              <linearGradient id="h_p5" x1="123.468" y1="133.067" x2="225.702" y2="133.067" gradientUnits="userSpaceOnUse">
                 <stop stopColor="#7FCB2D" />
                 <stop offset="0.550209" stopColor="#2A9540" />
                 <stop offset="1" stopColor="#226933" />
               </linearGradient>
-              <linearGradient
-                id="h_p6"
-                x1="112.773"
-                y1="168.397"
-                x2="44.2113"
-                y2="196.19"
-                gradientUnits="userSpaceOnUse"
-              >
+              <linearGradient id="h_p6" x1="112.773" y1="168.397" x2="44.2113" y2="196.19" gradientUnits="userSpaceOnUse">
                 <stop stopColor="#7FCB2D" />
                 <stop offset="0.550209" stopColor="#2A9540" />
                 <stop offset="1" stopColor="#226933" />
               </linearGradient>
-              <linearGradient
-                id="h_p7"
-                x1="122.532"
-                y1="133.067"
-                x2="20.2983"
-                y2="133.067"
-                gradientUnits="userSpaceOnUse"
-              >
+              <linearGradient id="h_p7" x1="122.532" y1="133.067" x2="20.2983" y2="133.067" gradientUnits="userSpaceOnUse">
                 <stop stopColor="#7FCB2D" />
                 <stop offset="0.550209" stopColor="#2A9540" />
                 <stop offset="1" stopColor="#226933" />
               </linearGradient>
-              <linearGradient
-                id="h_p8"
-                x1="96.978"
-                y1="97.1874"
-                x2="149.958"
-                y2="97.1874"
-                gradientUnits="userSpaceOnUse"
-              >
+              <linearGradient id="h_p8" x1="96.978" y1="97.1874" x2="149.958" y2="97.1874" gradientUnits="userSpaceOnUse">
                 <stop stopColor="#7FCB2D" />
                 <stop offset="0.550209" stopColor="#2A9540" />
                 <stop offset="1" stopColor="#226933" />
@@ -159,32 +100,33 @@ export default function Header() {
             </defs>
           </svg>
           <span
-            className="text-3xl leading-none"
-            style={{
-              fontFamily: "var(--font-lobster), cursive",
-              color: "#2A9540",
-            }}
+            className="text-2xl lg:text-3xl leading-none"
+            style={{ fontFamily: "var(--font-lobster), cursive", color: "#2A9540" }}
           >
             Алоэ
           </span>
         </Link>
 
-        {/* Search */}
-        <div className="flex-1">
+        {/* Search — desktop only */}
+        <div className="hidden lg:flex flex-1">
           <SearchBar />
         </div>
 
-        {/* Icons */}
-        <div className="flex items-center gap-2 shrink-0  text-gray-600">
+        {/* Spacer — mobile only */}
+        <div className="flex-1 lg:hidden" />
+
+        {/* Desktop-only action icons */}
+        <div className="hidden lg:flex items-center gap-2 text-gray-600">
           <Link href="/delivery" className="p-2 text-gray-400 hover:text-green-600 transition-colors" title="Доставка">
             <Truck className="size-5" />
           </Link>
           <Link href="/favorites" className="p-2 text-gray-400 hover:text-red-400 transition-colors" title="Избранное">
             <Heart className="size-5" />
           </Link>
-          <CartIcon />
-          <AuthButton />
         </div>
+
+        <CartIcon />
+        <AuthButton />
       </div>
     </header>
   );

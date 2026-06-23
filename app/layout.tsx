@@ -4,6 +4,8 @@ import NextTopLoader from "nextjs-toploader";
 import AuthSync from "@/components/AuthSync";
 import CatalogSidebar from "@/components/CatalogSidebar";
 import Header from "@/components/Header";
+import MobileBottomNav from "@/components/MobileBottomNav";
+import MobileMenu from "@/components/MobileMenu";
 import Toaster from "@/components/Toaster";
 import { getCachedCategories } from "@/lib/cached-queries";
 import "./globals.css";
@@ -31,10 +33,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <NextTopLoader color="#16a34a" showSpinner={false} />
         <AuthSync />
         <Header />
+        <MobileMenu parents={parents} subcategories={subs} />
         <div className="max-w-7xl mx-auto flex">
           <CatalogSidebar parents={parents} subcategories={subs} />
-          <div className="flex-1 min-w-0 px-6 py-8">{children}</div>
+          <div className="flex-1 min-w-0 px-3 lg:px-6 py-4 lg:py-8 pb-20 lg:pb-8">{children}</div>
         </div>
+        <MobileBottomNav />
         <Toaster />
       </body>
     </html>
