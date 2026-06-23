@@ -49,7 +49,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const catalogHref = parentCategory
     ? `/catalog/${parentCategory.slug}/${productCategory?.slug}`
     : `/catalog/${product.category_id}`;
-  console.log("🚀 ~ ProductPage ~ catalogHref:", catalogHref);
 
   const breadcrumbs = parentCategory
     ? [

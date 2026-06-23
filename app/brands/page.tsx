@@ -7,7 +7,6 @@ export const metadata = { title: "Бренды — Aloe.kg" };
 export default async function BrandsPage() {
   const supabase = await createClient();
   const { data: brands } = await supabase.from("brands").select("id, name, slug").order("name");
-  console.log("🚀 ~ BrandsPage ~ brands:", brands);
 
   const list = brands ?? [];
 
