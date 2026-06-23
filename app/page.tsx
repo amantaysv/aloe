@@ -3,7 +3,7 @@ import ProductCarousel from "@/components/ProductCarousel";
 import {
   getCachedActiveBanners,
   getCachedCategoriesWithSlug,
-  getCachedProductsByCategories,
+  getCachedHomePageCategoryProducts,
   getCachedProductsByLabel,
 } from "@/lib/cached-queries";
 
@@ -27,13 +27,16 @@ export default async function HomePage() {
     }
   }
 
-  const categoryProducts = await Promise.all(
-    topCategories.map(async (cat) => {
-      const ids = [cat.id, ...(subsByParent.get(cat.id) ?? [])];
-      const { products, total } = await getCachedProductsByCategories(ids);
-      return { cat, products, total };
-    }),
-  );
+  const groups = topCategories.map((cat) => ({
+    topId: cat.id,
+    allIds: [cat.id, ...(subsByParent.get(cat.id) ?? [])],
+  }));
+  const categoryResults = await getCachedHomePageCategoryProducts(groups);
+  const categoryProducts = topCategories.map((cat, i) => ({
+    cat,
+    products: categoryResults[i].products,
+    total: categoryResults[i].total,
+  }));
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">

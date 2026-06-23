@@ -33,6 +33,29 @@ export async function getProductsByCategories(
   return { products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
 }
 
+export async function getHomePageCategoryProducts(
+  supabase: SupabaseClient,
+  groups: Array<{ topId: string; allIds: string[] }>,
+  limitPerCategory = 10,
+) {
+  const allIds = [...new Set(groups.flatMap((g) => g.allIds))];
+  if (allIds.length === 0) return groups.map((g) => ({ topId: g.topId, products: [], total: 0 }));
+
+  const { data } = await supabase
+    .from("products")
+    .select("*, brands(name)")
+    .eq("published", true)
+    .in("category_id", allIds)
+    .order("name");
+
+  const allProducts = withBrandName((data ?? []) as unknown as ProductRow[]);
+
+  return groups.map(({ topId, allIds: ids }) => {
+    const grouped = allProducts.filter((p) => ids.includes(String(p.category_id)));
+    return { topId, products: grouped.slice(0, limitPerCategory), total: grouped.length };
+  });
+}
+
 export async function getProduct(supabase: SupabaseClient, id: string) {
   return supabase.from("products").select("*, brands(name, slug)").eq("id", id).eq("published", true).single();
 }

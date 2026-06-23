@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { getActiveBanners } from "@/services/banner.service";
 import { getBrandBySlug, getBrands } from "@/services/brand.service";
 import { getCategories, getCategoriesWithSlug } from "@/services/category.service";
-import { getProductsByCategories, getProductsByLabel, getProductsByBrand } from "@/services/product.service";
+import { getHomePageCategoryProducts, getProductsByCategories, getProductsByLabel, getProductsByBrand } from "@/services/product.service";
 
 export const getCachedCategories = unstable_cache(
   () => getCategories(supabase),
@@ -33,6 +33,13 @@ export const getCachedProductsByLabel = unstable_cache(
 export const getCachedProductsByCategories = unstable_cache(
   (categoryIds: string[], limit?: number) => getProductsByCategories(supabase, categoryIds, limit),
   ["products-by-categories"],
+  { revalidate: 60, tags: ["products"] },
+);
+
+export const getCachedHomePageCategoryProducts = unstable_cache(
+  (groups: Array<{ topId: string; allIds: string[] }>, limitPerCategory?: number) =>
+    getHomePageCategoryProducts(supabase, groups, limitPerCategory),
+  ["home-category-products"],
   { revalidate: 60, tags: ["products"] },
 );
 
