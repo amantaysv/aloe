@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { LogInIcon, LogOut, User as UserIcon } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
 import Button from "@/components/Button";
 
@@ -12,6 +13,7 @@ export default function AuthButton() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const supabase = createClient();
+  const router = useRouter();
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
 
@@ -38,6 +40,8 @@ export default function AuthButton() {
     setOpen(false);
     await supabase.auth.signOut();
     setUser(null);
+    router.push("/");
+    router.refresh();
   }
 
   if (user) {

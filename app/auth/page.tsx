@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase-browser";
+import { FcGoogle } from "react-icons/fc";
+import { useRouter, useSearchParams } from "next/navigation";
 import Button from "@/components/Button";
+import { createClient } from "@/lib/supabase-browser";
 
 const ERROR_MAP: Record<string, string> = {
   "Invalid login credentials": "Неверный email или пароль",
@@ -24,7 +25,19 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const confirmed = searchParams.get("confirmed") === "true";
+  const confirmError = searchParams.get("error") === "confirmation_failed";
   const supabase = createClient();
+
+  async function handleGoogleSignIn() {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/confirm?next=/`,
+      },
+    });
+  }
 
   async function handleSubmit() {
     setError("");
@@ -34,6 +47,9 @@ export default function AuthPage() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+        },
       });
       setLoading(false);
       if (error) {
@@ -87,6 +103,18 @@ export default function AuthPage() {
 
   return (
     <main className="max-w-sm mx-auto py-16">
+      {confirmed && (
+        <div className="mb-4 flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+          <span className="text-green-500 text-base">✓</span>
+          Email успешно подтверждён! Теперь вы можете войти в аккаунт.
+        </div>
+      )}
+      {confirmError && (
+        <div className="mb-4 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <span className="text-red-500 text-base">✕</span>
+          Ссылка для подтверждения недействительна или устарела.
+        </div>
+      )}
       <h1 className="text-2xl font-bold mb-6 text-center">{mode === "login" ? "Вход" : "Регистрация"}</h1>
 
       <div className="border border-gray-300 rounded-xl p-6 flex flex-col gap-4">
@@ -108,14 +136,24 @@ export default function AuthPage() {
 
         {error && <p className="text-red-500 text-sm bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>}
 
-        <Button
-          variant="primary"
-          onClick={handleSubmit}
-          disabled={loading}
-          className="w-full py-2"
-        >
+        <Button variant="primary" onClick={handleSubmit} disabled={loading} className="w-full py-2">
           {loading ? "Загрузка..." : mode === "login" ? "Войти" : "Зарегистрироваться"}
         </Button>
+
+        <div className="flex items-center gap-3">
+          <div className="flex-1 border-t border-gray-200" />
+          <span className="text-xs text-gray-400">или</span>
+          <div className="flex-1 border-t border-gray-200" />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors hover:cursor-pointer"
+        >
+          <FcGoogle className="text-base" />
+          Продолжить с Google
+        </button>
 
         <p className="text-center text-sm text-gray-500">
           {mode === "login" ? "Нет аккаунта?" : "Уже есть аккаунт?"}{" "}
@@ -124,6 +162,8 @@ export default function AuthPage() {
             onClick={() => {
               setMode(mode === "login" ? "register" : "login");
               setError("");
+              setEmail("");
+              setPassword("");
             }}
             className="hover:underline"
           >
