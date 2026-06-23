@@ -158,6 +158,35 @@ export async function getBrands(): Promise<{ ok: true; data: { id: number; name:
   return { ok: true, data: data ?? [] };
 }
 
+export type BrandInput = {
+  id?: number;
+  name: string;
+  slug: string;
+};
+
+export async function upsertBrand(
+  data: BrandInput,
+): Promise<{ ok: true; id: number } | { ok: false; error: string }> {
+  await assertAdmin();
+  const db = adminDb();
+  const fields = { name: data.name, slug: data.slug };
+  if (data.id) {
+    const { error } = await db.from("brands").update(fields).eq("id", data.id);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, id: data.id };
+  }
+  const { data: row, error } = await db.from("brands").insert(fields).select("id").single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, id: row.id };
+}
+
+export async function deleteBrand(id: number): Promise<{ ok: true } | { ok: false; error: string }> {
+  await assertAdmin();
+  const { error } = await adminDb().from("brands").delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
 export async function uploadProductImage(
   formData: FormData,
 ): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
