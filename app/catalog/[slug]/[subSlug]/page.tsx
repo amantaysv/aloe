@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import type { ProductRow } from "@/types";
+import { withBrandName } from "@/types";
 import Breadcrumb from "@/components/Breadcrumb";
 import ManufacturerFilter from "@/components/ManufacturerFilter";
 import Pagination from "@/components/Pagination";
@@ -46,14 +48,15 @@ export default async function SubcategoryPage({
   // Build product query
   let baseQuery = supabase
     .from("products")
-    .select("*", { count: "exact" })
+    .select("*, brands(name)", { count: "exact" })
     .eq("category_id", subcategory.id);
 
   if (selectedBrandIds.length > 0) {
     baseQuery = baseQuery.in("brand_id", selectedBrandIds);
   }
 
-  const { data, count } = await baseQuery.order("name").range(from, from + PAGE_SIZE - 1);
+  const { data: rawData, count } = await baseQuery.order("name").range(from, from + PAGE_SIZE - 1);
+  const data = withBrandName((rawData ?? []) as unknown as ProductRow[]);
 
   if (!count && currentPage === 1 && selectedBrandIds.length === 0) notFound();
 

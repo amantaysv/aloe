@@ -1,4 +1,6 @@
 import { notFound, redirect } from "next/navigation";
+import type { ProductRow } from "@/types";
+import { withBrandName } from "@/types";
 import Breadcrumb from "@/components/Breadcrumb";
 import ProductCard from "@/components/ProductCard";
 import SeeAllProducts from "@/components/SeeAllProducts";
@@ -25,11 +27,11 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
     subcategories.map(async (s) => {
       const { data, count } = await supabase
         .from("products")
-        .select("*", { count: "exact" })
+        .select("*, brands(name)", { count: "exact" })
         .eq("category_id", s.id)
         .order("name")
         .limit(SECTION_LIMIT);
-      return { sub: s, products: data ?? [], total: count ?? 0 };
+      return { sub: s, products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
     })
   );
 

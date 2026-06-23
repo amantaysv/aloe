@@ -2,7 +2,8 @@ import Link from "next/link";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
 import { supabase } from "@/lib/supabase";
-import type { Product } from "@/types";
+import type { ProductRow } from "@/types";
+import { withBrandName } from "@/types";
 
 const PAGE_SIZE = 20;
 
@@ -25,12 +26,12 @@ export default async function LabelProductsPage({
 
   const { data, count } = await supabase
     .from("products")
-    .select("*", { count: "exact" })
+    .select("*, brands(name)", { count: "exact" })
     .eq("label", label)
     .order("name")
     .range(from, from + PAGE_SIZE - 1);
 
-  const products: Product[] = data || [];
+  const products = withBrandName((data ?? []) as unknown as ProductRow[]);
   const totalPages = Math.ceil((count || 0) / PAGE_SIZE);
 
   return (

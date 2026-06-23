@@ -50,6 +50,7 @@ export default function ProductCard({ product: p, className = "", href, priority
           <p className="flex-1 text-sm font-medium line-clamp-3" title={p.name}>
             {p.name}
           </p>
+          {p.brand_name && <p className="text-xs text-gray-400 mt-0.5 truncate">{p.brand_name}</p>}
           <div className="flex items-baseline gap-1.5 mt-1">
             <p className="text-base font-bold">{p.price} сом</p>
             {p.old_price && <p className="text-sm text-gray-400 line-through">{p.old_price} сом</p>}

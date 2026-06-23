@@ -40,7 +40,7 @@ export default async function BrandPage({
 
   if (!brandData) notFound();
 
-  const { data, count } = await supabase
+  const { data: rawData, count } = await supabase
     .from("products")
     .select("*", { count: "exact" })
     .eq("brand_id", brandData.id)
@@ -48,6 +48,8 @@ export default async function BrandPage({
     .range(from, from + PAGE_SIZE - 1);
 
   if (!count && currentPage === 1) notFound();
+
+  const data = (rawData ?? []).map((p) => ({ ...p, brand_name: brandData.name }));
 
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE);
 

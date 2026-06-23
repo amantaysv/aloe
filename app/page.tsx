@@ -1,11 +1,12 @@
 import BannerCarousel from "@/components/BannerCarousel";
 import ProductCarousel from "@/components/ProductCarousel";
 import { supabase } from "@/lib/supabase";
-import type { Product } from "@/types";
+import type { ProductRow } from "@/types";
+import { withBrandName } from "@/types";
 
 async function getTaggedProducts(label: "popular" | "new" | "sale" | "discount") {
-  const { data, count } = await supabase.from("products").select("*", { count: "exact" }).eq("label", label).limit(10);
-  return { products: (data ?? []) as Product[], total: count ?? 0 };
+  const { data, count } = await supabase.from("products").select("*, brands(name)", { count: "exact" }).eq("label", label).limit(10);
+  return { products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
 }
 
 export default async function HomePage() {
@@ -33,10 +34,10 @@ export default async function HomePage() {
       const ids = [cat.id, ...(subsByParent.get(cat.id) ?? [])];
       const { data, count } = await supabase
         .from("products")
-        .select("*", { count: "exact" })
+        .select("*, brands(name)", { count: "exact" })
         .in("category_id", ids)
         .limit(10);
-      return { cat, products: (data ?? []) as Product[], total: count ?? 0 };
+      return { cat, products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
     })
   );
 

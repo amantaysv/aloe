@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { ProductRow } from "@/types";
+import { withBrandName } from "@/types";
 import AddToCart from "@/components/AddToCart";
 import Breadcrumb from "@/components/Breadcrumb";
 import FavoriteButton from "@/components/FavoriteButton";
@@ -32,14 +34,19 @@ const LABEL_MAP = {
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const { data: product } = await supabase.from("products").select("*").eq("id", id).single();
+  const { data: rawProduct } = await supabase.from("products").select("*, brands(name, slug)").eq("id", id).single();
 
-  if (!product) notFound();
+  if (!rawProduct) notFound();
 
-  const [{ data: related }, { data: allCategories }] = await Promise.all([
-    supabase.from("products").select("*").eq("category_id", product.category_id).neq("id", product.id).limit(4),
+  const brandInfo = (rawProduct as unknown as { brands?: { name: string; slug: string } | null }).brands;
+  const product = withBrandName([rawProduct as unknown as ProductRow])[0];
+
+  const [{ data: rawRelated }, { data: allCategories }] = await Promise.all([
+    supabase.from("products").select("*, brands(name)").eq("category_id", product.category_id).neq("id", product.id).limit(4),
     supabase.from("categories").select("id, name, parent_id, slug"),
   ]);
+
+  const related = withBrandName((rawRelated ?? []) as unknown as ProductRow[]);
 
   const productCategory = allCategories?.find((c) => c.id === product.category_id);
   const parentCategory = productCategory?.parent_id
@@ -94,7 +101,16 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             {product.category}
           </Link>
 
-          <h1 className="text-2xl font-bold leading-snug mb-4">{product.name}</h1>
+          <h1 className="text-2xl font-bold leading-snug mb-2">{product.name}</h1>
+
+          {brandInfo && (
+            <p className="text-sm text-gray-500 mb-4">
+              Производитель:{" "}
+              <Link href={`/brands/${brandInfo.slug}`} className="text-green-600 hover:underline">
+                {brandInfo.name}
+              </Link>
+            </p>
+          )}
 
           <div className="flex items-baseline gap-3 mb-6">
             <span className="text-3xl font-bold">{product.price} сом</span>

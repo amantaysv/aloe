@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { ProductRow } from "@/types";
+import { withBrandName } from "@/types";
 import ManufacturerFilter from "@/components/ManufacturerFilter";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
@@ -12,7 +14,7 @@ async function searchProducts(query: string, brandIds: number[], page: number) {
 
   let q = supabase
     .from("products")
-    .select("*", { count: "exact" })
+    .select("*, brands(name)", { count: "exact" })
     .ilike("name", `%${query}%`)
     .order("name")
     .range(from, to);
@@ -22,7 +24,7 @@ async function searchProducts(query: string, brandIds: number[], page: number) {
   }
 
   const { data, count } = await q;
-  return { products: data || [], total: count || 0 };
+  return { products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count || 0 };
 }
 
 async function getBrandsForQuery(query: string) {
