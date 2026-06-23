@@ -28,6 +28,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       const { data, count } = await supabase
         .from("products")
         .select("*, brands(name)", { count: "exact" })
+        .eq("published", true)
         .eq("category_id", s.id)
         .order("name")
         .limit(SECTION_LIMIT);

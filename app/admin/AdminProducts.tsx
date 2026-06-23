@@ -4,8 +4,8 @@ import { useRef, useState } from "react";
 import { ImagePlus, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import Pagination from "@/components/Pagination";
 import Button from "@/components/Button";
+import Pagination from "@/components/Pagination";
 import type { Product } from "@/types";
 import { deleteProduct, getBrands, uploadProductImage, upsertProduct, type ProductInput } from "./actions";
 
@@ -30,6 +30,7 @@ const empty: ProductInput = {
   external_id: "",
   brand_id: null,
   seo_text: null,
+  published: true,
 };
 
 type SortBy = "id-desc" | "name-asc" | "price-asc" | "price-desc";
@@ -41,20 +42,12 @@ type Props = {
   total: number;
   q: string;
   label: string;
+  published: string;
   sort: SortBy;
   categories: { id: number; name: string }[];
 };
 
-export default function AdminProducts({
-  products,
-  page,
-  totalPages,
-  total,
-  q,
-  label,
-  sort,
-  categories,
-}: Props) {
+export default function AdminProducts({ products, page, totalPages, total, q, label, published, sort, categories }: Props) {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState(q);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -67,7 +60,7 @@ export default function AdminProducts({
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
   const brandsLoadedRef = useRef(false);
 
-  function navigate(updates: { q?: string; label?: string; sort?: string; page?: number }) {
+  function navigate(updates: { q?: string; label?: string; published?: string; sort?: string; page?: number }) {
     const params = new URLSearchParams(window.location.search);
     if ("q" in updates) {
       if (updates.q) params.set("q", updates.q!);
@@ -77,6 +70,11 @@ export default function AdminProducts({
     if ("label" in updates) {
       if (updates.label) params.set("label", updates.label!);
       else params.delete("label");
+      params.delete("page");
+    }
+    if ("published" in updates) {
+      if (updates.published) params.set("published", updates.published!);
+      else params.delete("published");
       params.delete("page");
     }
     if ("sort" in updates) {
@@ -126,6 +124,7 @@ export default function AdminProducts({
       external_id: p.external_id,
       brand_id: p.brand_id ?? null,
       seo_text: p.seo_text ?? null,
+      published: p.published,
     });
     setError("");
   }
@@ -246,13 +245,31 @@ export default function AdminProducts({
               {l.label}
             </Button>
           ))}
+          <div className="w-px h-4 bg-gray-300 self-center mx-1" />
+          {[
+            { value: "", label: "Все статусы" },
+            { value: "yes", label: "Опубликованные" },
+            { value: "no", label: "Скрытые" },
+          ].map((p) => (
+            <Button
+              key={p.value}
+              onClick={() => navigate({ published: p.value })}
+              className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
+                published === p.value
+                  ? "bg-gray-700 text-white border-gray-700"
+                  : "border-gray-300 text-gray-600 hover:border-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {p.label}
+            </Button>
+          ))}
         </div>
         <select
           value={sort}
           onChange={(e) => navigate({ sort: e.target.value })}
           className="border border-gray-300 rounded-lg px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 hover:cursor-pointer"
         >
-          <option value="id-desc">Новые первые</option>
+          <option value="id-desc">Сначала новые</option>
           <option value="name-asc">По алфавиту</option>
           <option value="price-asc">Цена ↑</option>
           <option value="price-desc">Цена ↓</option>
@@ -268,7 +285,14 @@ export default function AdminProducts({
               {p.image_url && <Image src={p.image_url} alt={p.name} fill className="object-contain p-1" unoptimized />}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{p.name}</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-medium truncate">{p.name}</p>
+                {!p.published && (
+                  <span className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">
+                    Скрыт
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-gray-400">
                 {p.category} · {p.price} сом{p.old_price ? ` (было ${p.old_price})` : ""}
               </p>
@@ -367,7 +391,9 @@ export default function AdminProducts({
                 >
                   <option value="">Не указан</option>
                   {brands.map((b) => (
-                    <option key={b.id} value={b.id}>{b.name}</option>
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
                   ))}
                 </select>
               </Field>
@@ -470,6 +496,16 @@ export default function AdminProducts({
                   />
                 </Field>
               </div>
+
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={editing.published ?? true}
+                  onChange={(e) => set("published", e.target.checked)}
+                  className="w-4 h-4 accent-green-600"
+                />
+                <span className="text-sm font-medium text-gray-700">Опубликован</span>
+              </label>
             </div>
 
             <div className="px-6 py-4 border-t border-gray-200 sticky bottom-0 bg-white">

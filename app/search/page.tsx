@@ -15,6 +15,7 @@ async function searchProducts(query: string, brandIds: number[], page: number) {
   let q = supabase
     .from("products")
     .select("*, brands(name)", { count: "exact" })
+    .eq("published", true)
     .ilike("name", `%${query}%`)
     .order("name")
     .range(from, to);
@@ -32,6 +33,7 @@ async function getBrandsForQuery(query: string) {
   const { data: productRows } = await supabase
     .from("products")
     .select("brand_id")
+    .eq("published", true)
     .ilike("name", `%${query}%`)
     .not("brand_id", "is", null);
 

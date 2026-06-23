@@ -19,6 +19,7 @@ export type Product = {
   brand_id?: number | null;
   brand_name?: string | null;
   seo_text?: string | null;
+  published: boolean;
 };
 
 export type ProductRow = Product & { brands: { name: string } | null };

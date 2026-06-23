@@ -34,7 +34,7 @@ const LABEL_MAP = {
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const { data: rawProduct } = await supabase.from("products").select("*, brands(name, slug)").eq("id", id).single();
+  const { data: rawProduct } = await supabase.from("products").select("*, brands(name, slug)").eq("id", id).eq("published", true).single();
 
   if (!rawProduct) notFound();
 
@@ -42,7 +42,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const product = withBrandName([rawProduct as unknown as ProductRow])[0];
 
   const [{ data: rawRelated }, { data: allCategories }] = await Promise.all([
-    supabase.from("products").select("*, brands(name)").eq("category_id", product.category_id).neq("id", product.id).limit(4),
+    supabase.from("products").select("*, brands(name)").eq("published", true).eq("category_id", product.category_id).neq("id", product.id).limit(4),
     supabase.from("categories").select("id, name, parent_id, slug"),
   ]);
 

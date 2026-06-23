@@ -34,6 +34,7 @@ export default async function SubcategoryPage({
   const { data: brandIdRows } = await supabase
     .from("products")
     .select("brand_id")
+    .eq("published", true)
     .eq("category_id", subcategory.id)
     .not("brand_id", "is", null);
 
@@ -49,6 +50,7 @@ export default async function SubcategoryPage({
   let baseQuery = supabase
     .from("products")
     .select("*, brands(name)", { count: "exact" })
+    .eq("published", true)
     .eq("category_id", subcategory.id);
 
   if (selectedBrandIds.length > 0) {

@@ -34,6 +34,7 @@ export type ProductInput = {
   description?: string | null;
   brand_id?: number | null;
   seo_text?: string | null;
+  published?: boolean;
 };
 
 export async function upsertProduct(

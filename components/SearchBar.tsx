@@ -34,6 +34,7 @@ export default function SearchBar() {
       const { data } = await supabase
         .from("products")
         .select("id, name, price, image_url, category_id")
+        .eq("published", true)
         .ilike("name", `%${query}%`)
         .limit(6);
 

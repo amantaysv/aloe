@@ -5,7 +5,7 @@ import type { ProductRow } from "@/types";
 import { withBrandName } from "@/types";
 
 async function getTaggedProducts(label: "popular" | "new" | "sale" | "discount") {
-  const { data, count } = await supabase.from("products").select("*, brands(name)", { count: "exact" }).eq("label", label).limit(10);
+  const { data, count } = await supabase.from("products").select("*, brands(name)", { count: "exact" }).eq("published", true).eq("label", label).limit(10);
   return { products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
 }
 
@@ -35,6 +35,7 @@ export default async function HomePage() {
       const { data, count } = await supabase
         .from("products")
         .select("*, brands(name)", { count: "exact" })
+        .eq("published", true)
         .in("category_id", ids)
         .limit(10);
       return { cat, products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };

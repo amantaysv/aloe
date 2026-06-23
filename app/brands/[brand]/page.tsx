@@ -43,6 +43,7 @@ export default async function BrandPage({
   const { data: rawData, count } = await supabase
     .from("products")
     .select("*", { count: "exact" })
+    .eq("published", true)
     .eq("brand_id", brandData.id)
     .order("name")
     .range(from, from + PAGE_SIZE - 1);

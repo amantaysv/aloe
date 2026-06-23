@@ -27,6 +27,7 @@ export default async function LabelProductsPage({
   const { data, count } = await supabase
     .from("products")
     .select("*, brands(name)", { count: "exact" })
+    .eq("published", true)
     .eq("label", label)
     .order("name")
     .range(from, from + PAGE_SIZE - 1);
