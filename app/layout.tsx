@@ -6,6 +6,7 @@ import CatalogSidebar from "@/components/CatalogSidebar";
 import Header from "@/components/Header";
 import Toaster from "@/components/Toaster";
 import { supabase } from "@/lib/supabase";
+import { getCategories } from "@/services/category.service";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"] });
@@ -20,13 +21,8 @@ export const metadata: Metadata = {
   description: "Интернет-магазин бытовой химии и косметики",
 };
 
-async function getCategories() {
-  const { data } = await supabase.from("categories").select("*");
-  return data || [];
-}
-
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const categories = await getCategories();
+  const categories = await getCategories(supabase);
   const parents = categories.filter((c) => !c.parent_id);
   const subs = categories.filter((c) => c.parent_id);
 

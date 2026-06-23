@@ -2,8 +2,7 @@ import Link from "next/link";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
 import { supabase } from "@/lib/supabase";
-import type { ProductRow } from "@/types";
-import { withBrandName } from "@/types";
+import { getProductsByLabelPaginated } from "@/services/product.service";
 
 const PAGE_SIZE = 20;
 
@@ -22,18 +21,8 @@ export default async function LabelProductsPage({
   emptyText = "Товары не добавлены",
   page,
 }: Props) {
-  const from = (page - 1) * PAGE_SIZE;
-
-  const { data, count } = await supabase
-    .from("products")
-    .select("*, brands(name)", { count: "exact" })
-    .eq("published", true)
-    .eq("label", label)
-    .order("name")
-    .range(from, from + PAGE_SIZE - 1);
-
-  const products = withBrandName((data ?? []) as unknown as ProductRow[]);
-  const totalPages = Math.ceil((count || 0) / PAGE_SIZE);
+  const { products, total } = await getProductsByLabelPaginated(supabase, label, { page, pageSize: PAGE_SIZE });
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
@@ -42,7 +31,7 @@ export default async function LabelProductsPage({
       </Link>
       <div className="flex items-baseline gap-3 mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
-        {count ? <span className="text-sm text-gray-400">{count} товаров</span> : null}
+        {total ? <span className="text-sm text-gray-400">{total} товаров</span> : null}
       </div>
       {products.length === 0 ? (
         <p className="text-gray-400 text-sm">{emptyText}</p>

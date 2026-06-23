@@ -1,14 +1,13 @@
 import Link from "next/link";
 import Breadcrumb from "@/components/Breadcrumb";
 import { createClient } from "@/lib/supabase-server";
+import { getBrands } from "@/services/brand.service";
 
 export const metadata = { title: "Бренды — Aloe.kg" };
 
 export default async function BrandsPage() {
   const supabase = await createClient();
-  const { data: brands } = await supabase.from("brands").select("id, name, slug").order("name");
-
-  const list = brands ?? [];
+  const list = await getBrands(supabase);
 
   const grouped = list.reduce<Record<string, typeof list>>((acc, brand) => {
     const letter = brand.name[0].toUpperCase();

@@ -1,6 +1,7 @@
 "use server";
 import { createClient } from "@/lib/supabase-server";
 import { createClient as createSupabase } from "@supabase/supabase-js";
+import { getAdminBrands } from "@/services/brand.service";
 
 async function assertAdmin() {
   const supabase = await createClient();
@@ -154,9 +155,8 @@ export async function uploadBannerImage(
 export async function getBrands(): Promise<{ ok: true; data: { id: number; name: string }[] } | { ok: false; error: string }> {
   await assertAdmin();
   const supabase = await createClient();
-  const { data, error } = await supabase.from("brands").select("id, name").order("name");
-  if (error) return { ok: false, error: error.message };
-  return { ok: true, data: data ?? [] };
+  const data = await getAdminBrands(supabase);
+  return { ok: true, data };
 }
 
 export type BrandInput = {

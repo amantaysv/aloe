@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase-server";
+import { getAdminOrders, getOrderStatusCounts } from "@/services/order.service";
 import AdminOrders from "../AdminOrders";
 
 const PAGE_SIZE = 15;
@@ -14,29 +15,18 @@ export default async function OrdersPage({
   const currentPage = Math.max(1, parseInt(sp.page ?? "1") || 1);
   const q = sp.q ?? "";
   const statuses = sp.status ? sp.status.split(",") : [];
-  const from = (currentPage - 1) * PAGE_SIZE;
 
-  let oq = supabase.from("orders").select("*", { count: "exact" }).order("created_at", { ascending: false });
-  if (q) oq = oq.or(`customer_name.ilike.%${q}%,customer_phone.ilike.%${q}%`);
-  if (statuses.length > 0) oq = oq.in("status", statuses);
-  oq = oq.range(from, from + PAGE_SIZE - 1);
-
-  const [{ data: orders, count }, { data: allStatusRows }] = await Promise.all([
-    oq,
-    supabase.from("orders").select("status"),
+  const [{ orders, total }, statusCounts] = await Promise.all([
+    getAdminOrders(supabase, { q, statuses, page: currentPage, pageSize: PAGE_SIZE }),
+    getOrderStatusCounts(supabase),
   ]);
-
-  const statusCounts: Record<string, number> = {};
-  for (const row of allStatusRows ?? []) {
-    statusCounts[row.status] = (statusCounts[row.status] ?? 0) + 1;
-  }
 
   return (
     <AdminOrders
-      orders={(orders ?? []) as Parameters<typeof AdminOrders>[0]["orders"]}
+      orders={orders as Parameters<typeof AdminOrders>[0]["orders"]}
       page={currentPage}
-      totalPages={Math.ceil((count ?? 0) / PAGE_SIZE)}
-      total={count ?? 0}
+      totalPages={Math.ceil(total / PAGE_SIZE)}
+      total={total}
       q={q}
       statusFilter={sp.status ?? ""}
       statusCounts={statusCounts}

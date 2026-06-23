@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase-server";
+import { getUserOrders } from "@/services/order.service";
+import { getProfile } from "@/services/profile.service";
 import ProfileTabs from "./ProfileTabs";
 
 export const metadata = { title: "Профиль — Aloe.kg" };
@@ -12,9 +14,9 @@ export default async function ProfilePage() {
 
   if (!user) redirect("/auth");
 
-  const [{ data: orders }, { data: profile }] = await Promise.all([
-    supabase.from("orders").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-    supabase.from("profiles").select("name, phone, address").eq("id", user.id).single(),
+  const [orders, profile] = await Promise.all([
+    getUserOrders(supabase, user.id),
+    getProfile(supabase, user.id),
   ]);
 
   const initial = {
@@ -44,7 +46,7 @@ export default async function ProfilePage() {
         </div>
       </div>
 
-      <ProfileTabs initial={initial} orders={(orders ?? []) as Parameters<typeof ProfileTabs>[0]["orders"]} />
+      <ProfileTabs initial={initial} orders={orders as Parameters<typeof ProfileTabs>[0]["orders"]} />
     </main>
   );
 }

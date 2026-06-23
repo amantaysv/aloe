@@ -2,8 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import { createClient } from "@/lib/supabase-server";
-import type { ProductRow } from "@/types";
-import { withBrandName } from "@/types";
+import { getFavoriteProducts } from "@/services/favorites.service";
 
 export default async function FavoritesPage() {
   const supabase = await createClient();
@@ -13,15 +12,7 @@ export default async function FavoritesPage() {
 
   if (!user) redirect("/auth");
 
-  const { data } = await supabase
-    .from("favorites")
-    .select("product_id, products(*, brands(name))")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
-
-  const products = withBrandName(
-    (data || []).map((f) => f.products as unknown as ProductRow | null).filter(Boolean) as ProductRow[]
-  );
+  const products = await getFavoriteProducts(supabase, user.id);
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">

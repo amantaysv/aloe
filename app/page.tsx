@@ -1,28 +1,24 @@
 import BannerCarousel from "@/components/BannerCarousel";
 import ProductCarousel from "@/components/ProductCarousel";
 import { supabase } from "@/lib/supabase";
-import type { ProductRow } from "@/types";
-import { withBrandName } from "@/types";
-
-async function getTaggedProducts(label: "popular" | "new" | "sale" | "discount") {
-  const { data, count } = await supabase.from("products").select("*, brands(name)", { count: "exact" }).eq("published", true).eq("label", label).limit(10);
-  return { products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
-}
+import { getActiveBanners } from "@/services/banner.service";
+import { getCategoriesWithSlug } from "@/services/category.service";
+import { getProductsByCategories, getProductsByLabel } from "@/services/product.service";
 
 export default async function HomePage() {
-  const [popular, newest, onSale, discounted, { data: banners }, { data: allCategories }] = await Promise.all([
-    getTaggedProducts("popular"),
-    getTaggedProducts("new"),
-    getTaggedProducts("sale"),
-    getTaggedProducts("discount"),
-    supabase.from("banners").select("id, image_url").eq("active", true).order("sort_order"),
-    supabase.from("categories").select("id, name, parent_id, slug"),
+  const [popular, newest, onSale, discounted, banners, allCategories] = await Promise.all([
+    getProductsByLabel(supabase, "popular"),
+    getProductsByLabel(supabase, "new"),
+    getProductsByLabel(supabase, "sale"),
+    getProductsByLabel(supabase, "discount"),
+    getActiveBanners(supabase),
+    getCategoriesWithSlug(supabase),
   ]);
 
-  const topCategories = (allCategories ?? []).filter((c) => !c.parent_id);
+  const topCategories = allCategories.filter((c) => !c.parent_id);
 
   const subsByParent = new Map<string, string[]>();
-  for (const c of allCategories ?? []) {
+  for (const c of allCategories) {
     if (c.parent_id) {
       if (!subsByParent.has(c.parent_id)) subsByParent.set(c.parent_id, []);
       subsByParent.get(c.parent_id)!.push(c.id);
@@ -32,19 +28,14 @@ export default async function HomePage() {
   const categoryProducts = await Promise.all(
     topCategories.map(async (cat) => {
       const ids = [cat.id, ...(subsByParent.get(cat.id) ?? [])];
-      const { data, count } = await supabase
-        .from("products")
-        .select("*, brands(name)", { count: "exact" })
-        .eq("published", true)
-        .in("category_id", ids)
-        .limit(10);
-      return { cat, products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
-    })
+      const { products, total } = await getProductsByCategories(supabase, ids);
+      return { cat, products, total };
+    }),
   );
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
-      <BannerCarousel banners={banners ?? []} />
+      <BannerCarousel banners={banners} />
       {popular.total > 0 && (
         <ProductCarousel
           title="Популярные товары"
@@ -72,7 +63,7 @@ export default async function HomePage() {
               products={products}
               totalCount={total}
             />
-          )
+          ),
       )}
     </main>
   );

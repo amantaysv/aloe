@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-browser";
+import { searchProductsAutocomplete } from "@/services/product.service";
 
 type Product = {
   id: number;
@@ -31,14 +32,9 @@ export default function SearchBar() {
 
     const timer = setTimeout(async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("products")
-        .select("id, name, price, image_url, category_id")
-        .eq("published", true)
-        .ilike("name", `%${query}%`)
-        .limit(6);
-
-      setResults(data || []);
+      const supabase = createClient();
+      const data = await searchProductsAutocomplete(supabase, query);
+      setResults(data as Product[]);
       setOpen(true);
       setLoading(false);
     }, 300);
@@ -46,7 +42,6 @@ export default function SearchBar() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Закрыть при клике вне
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {

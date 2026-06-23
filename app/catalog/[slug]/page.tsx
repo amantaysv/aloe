@@ -1,11 +1,11 @@
 import { notFound, redirect } from "next/navigation";
-import type { ProductRow } from "@/types";
-import { withBrandName } from "@/types";
 import Breadcrumb from "@/components/Breadcrumb";
 import ProductCard from "@/components/ProductCard";
 import SeeAllProducts from "@/components/SeeAllProducts";
 import SortSelect, { type SortValue } from "@/components/SortSelect";
 import { supabase } from "@/lib/supabase";
+import { getCategoriesWithSlug } from "@/services/category.service";
+import { getSubcategorySection } from "@/services/product.service";
 
 const SECTION_LIMIT = 8;
 
@@ -20,7 +20,7 @@ export default async function CategoryPage({
   const sortParam = (sp.sort ?? "name") as SortValue;
   const validSort: SortValue = ["name", "price_asc", "price_desc"].includes(sortParam) ? sortParam : "name";
 
-  const { data: allCategories } = await supabase.from("categories").select("id, name, parent_id, slug");
+  const allCategories = await getCategoriesWithSlug(supabase);
 
   const category = allCategories?.find((c) => c.slug === slug);
   if (!category) notFound();
@@ -30,21 +30,13 @@ export default async function CategoryPage({
     redirect(`/catalog/${parent?.slug ?? slug}/${slug}`);
   }
 
-  const subcategories = (allCategories ?? []).filter((c) => c.parent_id === category.id);
+  const subcategories = allCategories.filter((c) => c.parent_id === category.id);
 
   const sections = await Promise.all(
     subcategories.map(async (s) => {
-      const orderCol = validSort === "price_asc" || validSort === "price_desc" ? "price" : "name";
-      const ascending = validSort !== "price_desc";
-      const { data, count } = await supabase
-        .from("products")
-        .select("*, brands(name)", { count: "exact" })
-        .eq("published", true)
-        .eq("category_id", s.id)
-        .order(orderCol, { ascending })
-        .limit(SECTION_LIMIT);
-      return { sub: s, products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
-    })
+      const { products, total } = await getSubcategorySection(supabase, s.id, validSort, SECTION_LIMIT);
+      return { sub: s, products, total };
+    }),
   );
 
   const nonEmpty = sections.filter((s) => s.total > 0);

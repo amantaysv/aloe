@@ -1,13 +1,12 @@
 import { createClient } from "@/lib/supabase-server";
+import { getAllBanners } from "@/services/banner.service";
 import AdminBanners from "../AdminBanners";
 
 export default async function BannersPage() {
   const supabase = await createClient();
-  const { data: banners } = await supabase.from("banners").select("*").order("sort_order");
+  const banners = await getAllBanners(supabase);
 
   return (
-    <AdminBanners
-      banners={(banners ?? []) as Parameters<typeof AdminBanners>[0]["banners"]}
-    />
+    <AdminBanners banners={banners as Parameters<typeof AdminBanners>[0]["banners"]} />
   );
 }

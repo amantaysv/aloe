@@ -11,14 +11,14 @@ import FavoriteButton from "@/components/FavoriteButton";
 import ProductCard from "@/components/ProductCard";
 import ProductDescription from "@/components/ProductDescription";
 import { supabase } from "@/lib/supabase";
+import { getCategoriesWithSlug } from "@/services/category.service";
+import { getProduct, getRelatedProducts } from "@/services/product.service";
 
-const getProduct = cache((id: string) =>
-  supabase.from("products").select("*, brands(name, slug)").eq("id", id).eq("published", true).single(),
-);
+const getCachedProduct = cache((id: string) => getProduct(supabase, id));
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const { data: product } = await getProduct(id);
+  const { data: product } = await getCachedProduct(id);
   if (!product) return {};
   const seo = product.seo_text || product.name;
   return {
@@ -39,19 +39,17 @@ const LABEL_MAP = {
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const { data: rawProduct } = await getProduct(id);
+  const { data: rawProduct } = await getCachedProduct(id);
 
   if (!rawProduct) notFound();
 
   const brandInfo = (rawProduct as unknown as { brands?: { name: string; slug: string } | null }).brands;
   const product = withBrandName([rawProduct as unknown as ProductRow])[0];
 
-  const [{ data: rawRelated }, { data: allCategories }] = await Promise.all([
-    supabase.from("products").select("*, brands(name)").eq("published", true).eq("category_id", product.category_id).neq("id", product.id).limit(4),
-    supabase.from("categories").select("id, name, parent_id, slug"),
+  const [related, allCategories] = await Promise.all([
+    getRelatedProducts(supabase, String(product.category_id), id),
+    getCategoriesWithSlug(supabase),
   ]);
-
-  const related = withBrandName((rawRelated ?? []) as unknown as ProductRow[]);
 
   const productCategory = allCategories?.find((c) => c.id === product.category_id);
   const parentCategory = productCategory?.parent_id

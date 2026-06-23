@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase-server";
-
+import { getProfile } from "@/services/profile.service";
 import CheckoutForm from "./CheckoutForm";
 
 export const metadata = {
@@ -15,7 +15,7 @@ export default async function CheckoutPage() {
   const initial = { name: "", phone: "", address: "" };
 
   if (user) {
-    const { data: profile } = await supabase.from("profiles").select("name, phone, address").eq("id", user.id).single();
+    const profile = await getProfile(supabase, user.id);
     if (profile) {
       initial.name = profile.name ?? "";
       initial.phone = profile.phone ?? "";

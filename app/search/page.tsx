@@ -1,52 +1,11 @@
 import Link from "next/link";
-import type { ProductRow } from "@/types";
-import { withBrandName } from "@/types";
 import ManufacturerFilter from "@/components/ManufacturerFilter";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
 import { supabase } from "@/lib/supabase";
+import { getBrandsForSearch, searchProducts } from "@/services/product.service";
 
 const PAGE_SIZE = 24;
-
-async function searchProducts(query: string, brandIds: number[], page: number) {
-  const from = (page - 1) * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
-
-  let q = supabase
-    .from("products")
-    .select("*, brands(name)", { count: "exact" })
-    .eq("published", true)
-    .ilike("name", `%${query}%`)
-    .order("name")
-    .range(from, to);
-
-  if (brandIds.length > 0) {
-    q = q.in("brand_id", brandIds);
-  }
-
-  const { data, count } = await q;
-  return { products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count || 0 };
-}
-
-async function getBrandsForQuery(query: string) {
-  const { data } = await supabase
-    .from("products")
-    .select("brands(id, name)")
-    .eq("published", true)
-    .ilike("name", `%${query}%`)
-    .not("brand_id", "is", null);
-
-  const seen = new Set<number>();
-  const brands: { id: number; name: string }[] = [];
-  for (const row of data ?? []) {
-    const b = (row as unknown as { brands: { id: number; name: string } | null }).brands;
-    if (b && !seen.has(b.id)) {
-      seen.add(b.id);
-      brands.push(b);
-    }
-  }
-  return brands.sort((a, b) => a.name.localeCompare(b.name));
-}
 
 export default async function SearchPage({
   searchParams,
@@ -59,8 +18,8 @@ export default async function SearchPage({
   const selectedBrandIds = (sp.brand ? (Array.isArray(sp.brand) ? sp.brand : [sp.brand]) : []).map(Number);
 
   const [{ products, total }, brands] = await Promise.all([
-    searchProducts(q, selectedBrandIds, currentPage),
-    getBrandsForQuery(q),
+    searchProducts(supabase, q, { brandIds: selectedBrandIds, page: currentPage, pageSize: PAGE_SIZE }),
+    getBrandsForSearch(supabase, q),
   ]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -94,11 +53,7 @@ export default async function SearchPage({
             page={currentPage}
             totalPages={totalPages}
             basePath="/search"
-            query={
-              selectedBrandIds.length > 0
-                ? { q, brand: selectedBrandIds.map(String) }
-                : { q }
-            }
+            query={selectedBrandIds.length > 0 ? { q, brand: selectedBrandIds.map(String) } : { q }}
           />
         </>
       )}

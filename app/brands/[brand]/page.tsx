@@ -4,6 +4,8 @@ import Breadcrumb from "@/components/Breadcrumb";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
 import { createClient } from "@/lib/supabase-server";
+import { getBrandBySlug, getBrandNameBySlug } from "@/services/brand.service";
+import { getProductsByBrand } from "@/services/product.service";
 
 const PAGE_SIZE = 24;
 
@@ -14,7 +16,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { brand } = await params;
   const supabase = await createClient();
-  const { data } = await supabase.from("brands").select("name").eq("slug", brand).single();
+  const data = await getBrandNameBySlug(supabase, brand);
   if (!data) return {};
   return { title: `${data.name} — Бренды — Aloe.kg` };
 }
@@ -28,31 +30,21 @@ export default async function BrandPage({
 }) {
   const [{ brand }, { page = "1" }] = await Promise.all([params, searchParams]);
   const currentPage = Math.max(1, parseInt(page));
-  const from = (currentPage - 1) * PAGE_SIZE;
 
   const supabase = await createClient();
-
-  const { data: brandData } = await supabase
-    .from("brands")
-    .select("id, name, slug")
-    .eq("slug", brand)
-    .single();
+  const brandData = await getBrandBySlug(supabase, brand);
 
   if (!brandData) notFound();
 
-  const { data: rawData, count } = await supabase
-    .from("products")
-    .select("*", { count: "exact" })
-    .eq("published", true)
-    .eq("brand_id", brandData.id)
-    .order("name")
-    .range(from, from + PAGE_SIZE - 1);
+  const { products: rawProducts, total } = await getProductsByBrand(supabase, brandData.id, {
+    page: currentPage,
+    pageSize: PAGE_SIZE,
+  });
 
-  if (!count && currentPage === 1) notFound();
+  if (!total && currentPage === 1) notFound();
 
-  const data = (rawData ?? []).map((p) => ({ ...p, brand_name: brandData.name }));
-
-  const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE);
+  const data = rawProducts.map((p) => ({ ...p, brand_name: brandData.name }));
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
@@ -66,11 +58,11 @@ export default async function BrandPage({
 
       <div className="flex items-baseline gap-3 mb-6">
         <h1 className="text-2xl font-bold">{brandData.name}</h1>
-        <span className="text-sm text-gray-400">{count} товаров</span>
+        <span className="text-sm text-gray-400">{total} товаров</span>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {(data ?? []).map((product, i) => (
+        {data.map((product, i) => (
           <ProductCard key={product.id} product={product} priority={i === 0} />
         ))}
       </div>

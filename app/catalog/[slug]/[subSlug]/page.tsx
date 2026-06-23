@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
-import type { ProductRow } from "@/types";
-import { withBrandName } from "@/types";
 import Breadcrumb from "@/components/Breadcrumb";
 import ManufacturerFilter from "@/components/ManufacturerFilter";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
 import SortSelect, { type SortValue } from "@/components/SortSelect";
 import { supabase } from "@/lib/supabase";
+import { getCategoriesWithSlug } from "@/services/category.service";
+import { getBrandsForSubcategory, getSubcategoryProducts } from "@/services/product.service";
 
 const PAGE_SIZE = 20;
 
@@ -23,9 +23,7 @@ export default async function SubcategoryPage({
   const sortParam = (sp.sort ?? "name") as SortValue;
   const validSort: SortValue = ["name", "price_asc", "price_desc"].includes(sortParam) ? sortParam : "name";
 
-  const from = (currentPage - 1) * PAGE_SIZE;
-
-  const { data: allCategories } = await supabase.from("categories").select("id, name, parent_id, slug");
+  const allCategories = await getCategoriesWithSlug(supabase);
 
   const parentCategory = allCategories?.find((c) => c.slug === slug && c.parent_id === null);
   if (!parentCategory) notFound();
@@ -33,50 +31,19 @@ export default async function SubcategoryPage({
   const subcategory = allCategories?.find((c) => c.slug === subSlug && c.parent_id === parentCategory.id);
   if (!subcategory) notFound();
 
-  // Build product query
-  let baseQuery = supabase
-    .from("products")
-    .select("*, brands(name)", { count: "exact" })
-    .eq("published", true)
-    .eq("category_id", subcategory.id);
-
-  if (selectedBrandIds.length > 0) {
-    baseQuery = baseQuery.in("brand_id", selectedBrandIds);
-  }
-
-  const sortedQuery =
-    validSort === "price_asc"
-      ? baseQuery.order("price", { ascending: true })
-      : validSort === "price_desc"
-        ? baseQuery.order("price", { ascending: false })
-        : baseQuery.order("name");
-
-  // Single brand query + products in parallel (replaces 2 sequential brand queries followed by products)
-  const [{ data: brandRows }, { data: rawData, count }] = await Promise.all([
-    supabase
-      .from("products")
-      .select("brands(id, name)")
-      .eq("published", true)
-      .eq("category_id", subcategory.id)
-      .not("brand_id", "is", null),
-    sortedQuery.range(from, from + PAGE_SIZE - 1),
+  const [brands, { products, total }] = await Promise.all([
+    getBrandsForSubcategory(supabase, subcategory.id),
+    getSubcategoryProducts(supabase, subcategory.id, {
+      page: currentPage,
+      sort: validSort,
+      brandIds: selectedBrandIds,
+      pageSize: PAGE_SIZE,
+    }),
   ]);
 
-  const seen = new Set<number>();
-  const brands: { id: number; name: string }[] = [];
-  for (const row of brandRows ?? []) {
-    const b = (row as unknown as { brands: { id: number; name: string } | null }).brands;
-    if (b && !seen.has(b.id)) {
-      seen.add(b.id);
-      brands.push(b);
-    }
-  }
-  brands.sort((a, b) => a.name.localeCompare(b.name));
-  const data = withBrandName((rawData ?? []) as unknown as ProductRow[]);
+  if (!total && currentPage === 1 && selectedBrandIds.length === 0) notFound();
 
-  if (!count && currentPage === 1 && selectedBrandIds.length === 0) notFound();
-
-  const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE);
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
@@ -90,7 +57,7 @@ export default async function SubcategoryPage({
 
       <div className="flex items-baseline gap-3 mb-4">
         <h1 className="text-2xl font-bold">{subcategory.name}</h1>
-        <span className="text-sm text-gray-400">{count ?? 0} товаров</span>
+        <span className="text-sm text-gray-400">{total} товаров</span>
       </div>
 
       <div className="flex flex-wrap items-start gap-4 mb-6">
@@ -100,12 +67,12 @@ export default async function SubcategoryPage({
         </div>
       </div>
 
-      {(data ?? []).length === 0 ? (
+      {products.length === 0 ? (
         <p className="text-gray-500 py-8 text-center">По выбранным фильтрам ничего не найдено</p>
       ) : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {(data ?? []).map((product, i) => (
+            {products.map((product, i) => (
               <ProductCard key={product.id} product={product} priority={i === 0} />
             ))}
           </div>
