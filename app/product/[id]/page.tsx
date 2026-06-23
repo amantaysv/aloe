@@ -3,16 +3,16 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { ProductRow } from "@/types";
-import { withBrandName } from "@/types";
 import AddToCart from "@/components/AddToCart";
 import Breadcrumb from "@/components/Breadcrumb";
 import FavoriteButton from "@/components/FavoriteButton";
 import ProductCard from "@/components/ProductCard";
 import ProductDescription from "@/components/ProductDescription";
-import { supabase } from "@/lib/supabase";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
+import { supabase } from "@/lib/supabase";
 import { getProduct, getRelatedProducts } from "@/services/product.service";
+import type { ProductRow } from "@/types";
+import { withBrandName } from "@/types";
 
 const getCachedProduct = cache((id: string) => getProduct(supabase, id));
 
@@ -85,7 +85,14 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
         <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden">
-          <Image src={product.image_url} alt={product.name} fill className="object-contain p-6" priority />
+          <Image
+            src={product.image_url}
+            alt={product.name}
+            fill
+            className="object-contain p-6"
+            priority
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
           {label && (
             <div className="absolute top-3 left-3">
               <span className={`${label.cls} text-white text-xs font-semibold px-2 py-1 rounded`}>{label.text}</span>
