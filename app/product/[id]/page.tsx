@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,9 +12,13 @@ import ProductCard from "@/components/ProductCard";
 import ProductDescription from "@/components/ProductDescription";
 import { supabase } from "@/lib/supabase";
 
+const getProduct = cache((id: string) =>
+  supabase.from("products").select("*, brands(name, slug)").eq("id", id).eq("published", true).single(),
+);
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const { data: product } = await supabase.from("products").select("name, seo_text").eq("id", id).single();
+  const { data: product } = await getProduct(id);
   if (!product) return {};
   const seo = product.seo_text || product.name;
   return {
@@ -34,7 +39,7 @@ const LABEL_MAP = {
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const { data: rawProduct } = await supabase.from("products").select("*, brands(name, slug)").eq("id", id).eq("published", true).single();
+  const { data: rawProduct } = await getProduct(id);
 
   if (!rawProduct) notFound();
 

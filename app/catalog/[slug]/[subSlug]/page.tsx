@@ -33,22 +33,6 @@ export default async function SubcategoryPage({
   const subcategory = allCategories?.find((c) => c.slug === subSlug && c.parent_id === parentCategory.id);
   if (!subcategory) notFound();
 
-  // Fetch distinct brand_ids used in this subcategory, then get brand names
-  const { data: brandIdRows } = await supabase
-    .from("products")
-    .select("brand_id")
-    .eq("published", true)
-    .eq("category_id", subcategory.id)
-    .not("brand_id", "is", null);
-
-  const distinctBrandIds = [...new Set((brandIdRows ?? []).map((r) => r.brand_id as number))];
-
-  const { data: brandsData } = distinctBrandIds.length
-    ? await supabase.from("brands").select("id, name").in("id", distinctBrandIds).order("name")
-    : { data: [] };
-
-  const brands = brandsData ?? [];
-
   // Build product query
   let baseQuery = supabase
     .from("products")
@@ -67,7 +51,27 @@ export default async function SubcategoryPage({
         ? baseQuery.order("price", { ascending: false })
         : baseQuery.order("name");
 
-  const { data: rawData, count } = await sortedQuery.range(from, from + PAGE_SIZE - 1);
+  // Single brand query + products in parallel (replaces 2 sequential brand queries followed by products)
+  const [{ data: brandRows }, { data: rawData, count }] = await Promise.all([
+    supabase
+      .from("products")
+      .select("brands(id, name)")
+      .eq("published", true)
+      .eq("category_id", subcategory.id)
+      .not("brand_id", "is", null),
+    sortedQuery.range(from, from + PAGE_SIZE - 1),
+  ]);
+
+  const seen = new Set<number>();
+  const brands: { id: number; name: string }[] = [];
+  for (const row of brandRows ?? []) {
+    const b = (row as unknown as { brands: { id: number; name: string } | null }).brands;
+    if (b && !seen.has(b.id)) {
+      seen.add(b.id);
+      brands.push(b);
+    }
+  }
+  brands.sort((a, b) => a.name.localeCompare(b.name));
   const data = withBrandName((rawData ?? []) as unknown as ProductRow[]);
 
   if (!count && currentPage === 1 && selectedBrandIds.length === 0) notFound();

@@ -29,19 +29,23 @@ async function searchProducts(query: string, brandIds: number[], page: number) {
 }
 
 async function getBrandsForQuery(query: string) {
-  // Brands whose products match the search query
-  const { data: productRows } = await supabase
+  const { data } = await supabase
     .from("products")
-    .select("brand_id")
+    .select("brands(id, name)")
     .eq("published", true)
     .ilike("name", `%${query}%`)
     .not("brand_id", "is", null);
 
-  const ids = [...new Set((productRows ?? []).map((r) => r.brand_id as number))];
-  if (!ids.length) return [];
-
-  const { data } = await supabase.from("brands").select("id, name").in("id", ids).order("name");
-  return data ?? [];
+  const seen = new Set<number>();
+  const brands: { id: number; name: string }[] = [];
+  for (const row of data ?? []) {
+    const b = (row as unknown as { brands: { id: number; name: string } | null }).brands;
+    if (b && !seen.has(b.id)) {
+      seen.add(b.id);
+      brands.push(b);
+    }
+  }
+  return brands.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export default async function SearchPage({
