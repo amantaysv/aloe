@@ -1,33 +1,22 @@
 "use client";
 
-import { useEffect } from "react";
 import { Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase-browser";
 import { useFavorites } from "@/store/favorites";
 import { useToast } from "@/store/toast";
 import Button from "@/components/Button";
 
 export default function FavoriteButton({ productId }: { productId: number }) {
-  const { ids, load, add, remove } = useFavorites();
+  const { ids, userId, add, remove } = useFavorites();
   const { show } = useToast();
   const router = useRouter();
   const isFav = ids.includes(productId);
 
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  async function toggle(e: React.MouseEvent) {
+  function toggle(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
 
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
+    if (!userId) {
       show("Войдите, чтобы добавить в избранное", "info");
       router.push("/auth");
       return;
@@ -35,14 +24,9 @@ export default function FavoriteButton({ productId }: { productId: number }) {
 
     if (isFav) {
       remove(productId);
-      await supabase.from("favorites").delete().eq("user_id", user.id).eq("product_id", productId);
       show("Удалено из избранного", "info");
     } else {
       add(productId);
-      await supabase.from("favorites").insert({
-        user_id: user.id,
-        product_id: productId,
-      });
       show("Добавлено в избранное", "success");
     }
   }

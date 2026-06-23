@@ -5,7 +5,6 @@ import type { User } from "@supabase/supabase-js";
 import { LogInIcon, LogOut, User as UserIcon } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase-browser";
-import { useFavorites } from "@/store/favorites";
 import Button from "@/components/Button";
 
 export default function AuthButton() {
@@ -13,8 +12,6 @@ export default function AuthButton() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const supabase = createClient();
-  const resetFavorites = useFavorites((s) => s.reset);
-
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
 
@@ -40,7 +37,6 @@ export default function AuthButton() {
   async function signOut() {
     setOpen(false);
     await supabase.auth.signOut();
-    resetFavorites();
     setUser(null);
   }
 

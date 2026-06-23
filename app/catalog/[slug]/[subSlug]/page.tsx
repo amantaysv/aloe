@@ -5,6 +5,7 @@ import Breadcrumb from "@/components/Breadcrumb";
 import ManufacturerFilter from "@/components/ManufacturerFilter";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
+import SortSelect, { type SortValue } from "@/components/SortSelect";
 import { supabase } from "@/lib/supabase";
 
 const PAGE_SIZE = 20;
@@ -14,11 +15,13 @@ export default async function SubcategoryPage({
   searchParams,
 }: {
   params: Promise<{ slug: string; subSlug: string }>;
-  searchParams: Promise<{ page?: string; brand?: string | string[] }>;
+  searchParams: Promise<{ page?: string; brand?: string | string[]; sort?: string }>;
 }) {
   const [{ slug, subSlug }, sp] = await Promise.all([params, searchParams]);
   const currentPage = Math.max(1, parseInt(sp.page ?? "1"));
   const selectedBrandIds = (sp.brand ? (Array.isArray(sp.brand) ? sp.brand : [sp.brand]) : []).map(Number);
+  const sortParam = (sp.sort ?? "name") as SortValue;
+  const validSort: SortValue = ["name", "price_asc", "price_desc"].includes(sortParam) ? sortParam : "name";
 
   const from = (currentPage - 1) * PAGE_SIZE;
 
@@ -57,7 +60,14 @@ export default async function SubcategoryPage({
     baseQuery = baseQuery.in("brand_id", selectedBrandIds);
   }
 
-  const { data: rawData, count } = await baseQuery.order("name").range(from, from + PAGE_SIZE - 1);
+  const sortedQuery =
+    validSort === "price_asc"
+      ? baseQuery.order("price", { ascending: true })
+      : validSort === "price_desc"
+        ? baseQuery.order("price", { ascending: false })
+        : baseQuery.order("name");
+
+  const { data: rawData, count } = await sortedQuery.range(from, from + PAGE_SIZE - 1);
   const data = withBrandName((rawData ?? []) as unknown as ProductRow[]);
 
   if (!count && currentPage === 1 && selectedBrandIds.length === 0) notFound();
@@ -79,7 +89,12 @@ export default async function SubcategoryPage({
         <span className="text-sm text-gray-400">{count ?? 0} товаров</span>
       </div>
 
-      <ManufacturerFilter manufacturers={brands} />
+      <div className="flex flex-wrap items-start gap-4 mb-6">
+        <ManufacturerFilter manufacturers={brands} className="" />
+        <div className="ml-auto">
+          <SortSelect current={validSort} />
+        </div>
+      </div>
 
       {(data ?? []).length === 0 ? (
         <p className="text-gray-500 py-8 text-center">По выбранным фильтрам ничего не найдено</p>
@@ -95,7 +110,10 @@ export default async function SubcategoryPage({
             page={currentPage}
             totalPages={totalPages}
             basePath={`/catalog/${slug}/${subSlug}`}
-            query={selectedBrandIds.length > 0 ? { brand: selectedBrandIds.map(String) } : undefined}
+            query={{
+              ...(selectedBrandIds.length > 0 ? { brand: selectedBrandIds.map(String) } : {}),
+              ...(validSort !== "name" ? { sort: validSort } : {}),
+            }}
           />
         </>
       )}

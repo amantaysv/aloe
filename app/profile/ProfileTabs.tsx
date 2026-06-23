@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import ProfileForm from "./ProfileForm";
 import Pagination from "@/components/Pagination";
 import Button from "@/components/Button";
+import { useCart } from "@/store/cart";
+import { useToast } from "@/store/toast";
 
 type Order = {
   id: number;
@@ -11,9 +14,11 @@ type Order = {
   total: number;
   status: string;
   items: {
+    id: number;
     name: string;
     quantity: number;
     price: number;
+    image_url: string;
   }[];
 };
 
@@ -48,6 +53,19 @@ const PAGE_SIZE = 10;
 export default function ProfileTabs({ initial, orders }: { initial: Profile; orders: Order[] }) {
   const [tab, setTab] = useState<"profile" | "orders">("profile");
   const [page, setPage] = useState(1);
+  const { add } = useCart();
+  const { show } = useToast();
+  const router = useRouter();
+
+  function repeatOrder(order: Order) {
+    order.items.forEach((item) => {
+      for (let i = 0; i < item.quantity; i++) {
+        add({ id: item.id, name: item.name, price: item.price, image_url: item.image_url });
+      }
+    });
+    show("Товары добавлены в корзину", "success");
+    router.push("/cart");
+  }
 
   const totalPages = Math.ceil(orders.length / PAGE_SIZE);
   const paginated = orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -107,8 +125,15 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
                         ))}
                       </ul>
 
-                      <div className="flex justify-end border-t border-gray-300 pt-2">
+                      <div className="flex justify-between items-center border-t border-gray-300 pt-2">
                         <span className="font-semibold text-sm">Итого: {order.total.toLocaleString("ru-RU")} сом</span>
+                        <Button
+                          variant="secondary"
+                          onClick={() => repeatOrder(order)}
+                          className="text-xs px-3 py-1.5"
+                        >
+                          Повторить заказ
+                        </Button>
                       </div>
                     </div>
                   );

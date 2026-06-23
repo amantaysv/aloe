@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -26,6 +26,11 @@ export default function CatalogSidebar({ parents, subcategories }: { parents: Ca
   const activeParentSlug = params?.slug as string | undefined;
   const activeSubSlug = params?.subSlug as string | undefined;
   const [openSlug, setOpenSlug] = useState<string | null>(activeParentSlug ?? null);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpenSlug(activeParentSlug ?? null);
+  }, [activeParentSlug]);
 
   return (
     <aside className="w-60 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r border-gray-300 scrollbar-gutter-stable">

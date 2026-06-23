@@ -4,12 +4,21 @@ import { withBrandName } from "@/types";
 import Breadcrumb from "@/components/Breadcrumb";
 import ProductCard from "@/components/ProductCard";
 import SeeAllProducts from "@/components/SeeAllProducts";
+import SortSelect, { type SortValue } from "@/components/SortSelect";
 import { supabase } from "@/lib/supabase";
 
 const SECTION_LIMIT = 8;
 
-export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ sort?: string }>;
+}) {
+  const [{ slug }, sp] = await Promise.all([params, searchParams]);
+  const sortParam = (sp.sort ?? "name") as SortValue;
+  const validSort: SortValue = ["name", "price_asc", "price_desc"].includes(sortParam) ? sortParam : "name";
 
   const { data: allCategories } = await supabase.from("categories").select("id, name, parent_id, slug");
 
@@ -25,12 +34,14 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
 
   const sections = await Promise.all(
     subcategories.map(async (s) => {
+      const orderCol = validSort === "price_asc" || validSort === "price_desc" ? "price" : "name";
+      const ascending = validSort !== "price_desc";
       const { data, count } = await supabase
         .from("products")
         .select("*, brands(name)", { count: "exact" })
         .eq("published", true)
         .eq("category_id", s.id)
-        .order("name")
+        .order(orderCol, { ascending })
         .limit(SECTION_LIMIT);
       return { sub: s, products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
     })
@@ -45,9 +56,12 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
     <main className="max-w-6xl mx-auto px-4 py-8">
       <Breadcrumb crumbs={[{ label: "Главная", href: "/" }, { label: category.name }]} />
 
-      <div className="flex items-baseline gap-3 mb-4">
+      <div className="flex flex-wrap items-center gap-3 mb-6">
         <h1 className="text-2xl font-bold">{category.name}</h1>
         <span className="text-sm text-gray-400">{totalCount} товаров</span>
+        <div className="ml-auto">
+          <SortSelect current={validSort} />
+        </div>
       </div>
 
       <div className="space-y-10">

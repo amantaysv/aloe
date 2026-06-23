@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Lobster } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
-import CartSync from "@/components/CartSync";
+import AuthSync from "@/components/AuthSync";
 import CatalogSidebar from "@/components/CatalogSidebar";
 import Header from "@/components/Header";
 import Toaster from "@/components/Toaster";
@@ -34,7 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="ru">
       <body className={`${geist.className} ${lobster.variable}`} suppressHydrationWarning>
         <NextTopLoader color="#16a34a" showSpinner={false} />
-        <CartSync />
+        <AuthSync />
         <Header />
         <div className="max-w-7xl mx-auto flex">
           <CatalogSidebar parents={parents} subcategories={subs} />

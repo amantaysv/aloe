@@ -5,7 +5,13 @@ import { useCallback } from "react";
 
 type Brand = { id: number; name: string };
 
-export default function ManufacturerFilter({ manufacturers: brands }: { manufacturers: Brand[] }) {
+export default function ManufacturerFilter({
+  manufacturers: brands,
+  className = "mb-6",
+}: {
+  manufacturers: Brand[];
+  className?: string;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -35,7 +41,7 @@ export default function ManufacturerFilter({ manufacturers: brands }: { manufact
   if (brands.length === 0) return null;
 
   return (
-    <div className="mb-6">
+    <div className={className}>
       <div className="flex items-center gap-3 mb-2">
         <span className="text-sm font-medium text-gray-700">Производитель</span>
         {selected.length > 0 && (

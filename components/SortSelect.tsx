@@ -1,0 +1,49 @@
+"use client";
+
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useCallback } from "react";
+
+export type SortValue = "name" | "price_asc" | "price_desc";
+
+const OPTIONS: { value: SortValue; label: string }[] = [
+  { value: "name", label: "По названию" },
+  { value: "price_asc", label: "Сначала дешевле" },
+  { value: "price_desc", label: "Сначала дороже" },
+];
+
+export default function SortSelect({ current }: { current: SortValue }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const onChange = useCallback(
+    (value: SortValue) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("page");
+      if (value === "name") {
+        params.delete("sort");
+      } else {
+        params.set("sort", value);
+      }
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [router, pathname, searchParams]
+  );
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-sm text-gray-500">Сортировка:</span>
+      <select
+        value={current}
+        onChange={(e) => onChange(e.target.value as SortValue)}
+        className="text-sm border border-gray-300 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
+      >
+        {OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
