@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase-server";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const resolvedOrigin = forwardedHost ? `https://${forwardedHost}` : origin;
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
   const code = searchParams.get("code");
@@ -13,9 +15,9 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({ type, token_hash });
     if (!error) {
-      return NextResponse.redirect(`${origin}/auth?confirmed=true`);
+      return NextResponse.redirect(`${resolvedOrigin}/auth?confirmed=true`);
     }
-    return NextResponse.redirect(`${origin}/auth?error=confirmation_failed`);
+    return NextResponse.redirect(`${resolvedOrigin}/auth?error=confirmation_failed`);
   }
 
   // PKCE / OAuth flow: code exchange
@@ -25,13 +27,13 @@ export async function GET(request: NextRequest) {
     const next = searchParams.get("next");
     if (!error) {
       if (next) {
-        return NextResponse.redirect(`${origin}${next}`);
+        return NextResponse.redirect(`${resolvedOrigin}${next}`);
       }
       await supabase.auth.signOut();
-      return NextResponse.redirect(`${origin}/auth?confirmed=true`);
+      return NextResponse.redirect(`${resolvedOrigin}/auth?confirmed=true`);
     }
-    return NextResponse.redirect(`${origin}/auth?error=confirmation_failed`);
+    return NextResponse.redirect(`${resolvedOrigin}/auth?error=confirmation_failed`);
   }
 
-  return NextResponse.redirect(`${origin}/auth?error=confirmation_failed`);
+  return NextResponse.redirect(`${resolvedOrigin}/auth?error=confirmation_failed`);
 }

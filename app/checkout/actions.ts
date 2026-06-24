@@ -39,5 +39,9 @@ export async function createOrder({
 
   if (error) return { ok: false as const, error: "Не удалось оформить заказ. Попробуйте ещё раз." };
 
+  if (user?.id) {
+    await admin.from("cart_items").delete().eq("user_id", user.id);
+  }
+
   return { ok: true as const, orderId: String(data!.id) };
 }
