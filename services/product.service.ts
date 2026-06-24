@@ -19,11 +19,7 @@ export async function getProductsByLabel(
   return { products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
 }
 
-export async function getProductsByCategories(
-  supabase: SupabaseClient,
-  categoryIds: string[],
-  limit = 10,
-) {
+export async function getProductsByCategories(supabase: SupabaseClient, categoryIds: string[], limit = 10) {
   const { data, count } = await supabase
     .from("products")
     .select("*, brands(name)", { count: "exact" })
@@ -60,12 +56,7 @@ export async function getProduct(supabase: SupabaseClient, id: string) {
   return supabase.from("products").select("*, brands(name, slug)").eq("id", id).eq("published", true).single();
 }
 
-export async function getRelatedProducts(
-  supabase: SupabaseClient,
-  categoryId: string,
-  excludeId: string,
-  limit = 4,
-) {
+export async function getRelatedProducts(supabase: SupabaseClient, categoryId: string, excludeId: string, limit = 4) {
   const { data } = await supabase
     .from("products")
     .select("*, brands(name)")

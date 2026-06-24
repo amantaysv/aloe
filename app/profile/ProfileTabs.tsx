@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import ProfileForm from "./ProfileForm";
-import Pagination from "@/components/Pagination";
 import Button from "@/components/Button";
+import Pagination from "@/components/Pagination";
 import { useCart } from "@/store/cart";
 import { useToast } from "@/store/toast";
+import ProfileForm from "./ProfileForm";
 
 type Order = {
   id: number;
@@ -127,11 +127,7 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
 
                       <div className="flex justify-between items-center border-t border-gray-300 pt-2">
                         <span className="font-semibold text-sm">Итого: {order.total.toLocaleString("ru-RU")} сом</span>
-                        <Button
-                          variant="secondary"
-                          onClick={() => repeatOrder(order)}
-                          className="text-xs px-3 py-1.5"
-                        >
+                        <Button variant="secondary" onClick={() => repeatOrder(order)} className="text-xs px-3 py-1.5">
                           Повторить заказ
                         </Button>
                       </div>

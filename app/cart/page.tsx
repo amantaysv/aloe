@@ -4,8 +4,8 @@ import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/store/cart";
 import Button from "@/components/Button";
+import { useCart } from "@/store/cart";
 
 export default function CartPage() {
   const router = useRouter();

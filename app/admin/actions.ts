@@ -1,6 +1,7 @@
 "use server";
-import { createClient } from "@/lib/supabase-server";
+
 import { createClient as createSupabase } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase-server";
 import { getAdminBrands } from "@/services/brand.service";
 
 async function assertAdmin() {
@@ -143,16 +144,18 @@ export async function uploadBannerImage(
   const file = formData.get("file") as File | null;
   if (!file || !file.size) return { ok: false, error: "Файл не выбран" };
   const ext = file.name.split(".").pop() ?? "jpg";
-  const path = `banners/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
   const db = adminDb();
-  const { error } = await db.storage.from("product-images").upload(path, buffer, { contentType: file.type });
+  const { error } = await db.storage.from("banners").upload(path, buffer, { contentType: file.type });
   if (error) return { ok: false, error: error.message };
-  const { data } = db.storage.from("product-images").getPublicUrl(path);
+  const { data } = db.storage.from("banners").getPublicUrl(path);
   return { ok: true, url: data.publicUrl };
 }
 
-export async function getBrands(): Promise<{ ok: true; data: { id: number; name: string }[] } | { ok: false; error: string }> {
+export async function getBrands(): Promise<
+  { ok: true; data: { id: number; name: string }[] } | { ok: false; error: string }
+> {
   await assertAdmin();
   const supabase = await createClient();
   const data = await getAdminBrands(supabase);
@@ -165,9 +168,7 @@ export type BrandInput = {
   slug: string;
 };
 
-export async function upsertBrand(
-  data: BrandInput,
-): Promise<{ ok: true; id: number } | { ok: false; error: string }> {
+export async function upsertBrand(data: BrandInput): Promise<{ ok: true; id: number } | { ok: false; error: string }> {
   await assertAdmin();
   const db = adminDb();
   const fields = { name: data.name, slug: data.slug };

@@ -1,12 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import {
-  clearCart,
-  deleteCartItem,
-  loadCart,
-  reconcileCartItems,
-  upsertCartItem,
-} from "@/services/cart.service";
+import { clearCart, deleteCartItem, loadCart, reconcileCartItems, upsertCartItem } from "@/services/cart.service";
 
 type CartItem = {
   id: number;

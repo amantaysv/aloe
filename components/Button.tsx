@@ -42,7 +42,7 @@ export default function Button({
           iconColor === "danger" && "text-gray-400 hover:bg-red-100 hover:text-red-600",
           iconColor === "green" && "text-gray-400 hover:bg-green-100 hover:text-green-600",
         ],
-        className
+        className,
       )}
       {...props}
     >

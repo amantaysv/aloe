@@ -64,9 +64,7 @@ export default function AdminBrands({
       const exists = prev.find((b) => b.id === editing.id);
       if (exists)
         return prev
-          .map((b) =>
-            b.id === editing.id ? { ...b, name: editing.name.trim(), slug: editing.slug.trim() } : b,
-          )
+          .map((b) => (b.id === editing.id ? { ...b, name: editing.name.trim(), slug: editing.slug.trim() } : b))
           .sort((a, b) => a.name.localeCompare(b.name));
       return [...prev, { id: result.id, name: editing.name.trim(), slug: editing.slug.trim() }].sort((a, b) =>
         a.name.localeCompare(b.name),
@@ -99,10 +97,7 @@ export default function AdminBrands({
         {brands.map((brand) => {
           const locked = usedBrandIds.has(brand.id);
           return (
-            <div
-              key={brand.id}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 group"
-            >
+            <div key={brand.id} className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 group">
               <div className="flex-1 min-w-0">
                 <span className="text-sm font-medium">{brand.name}</span>
                 <span className="text-xs text-gray-400 ml-2">{brand.slug}</span>

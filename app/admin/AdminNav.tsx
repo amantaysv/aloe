@@ -1,8 +1,8 @@
 "use client";
 
+import cn from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import cn from "clsx";
 
 const TABS = [
   { label: "Заказы", href: "/admin/orders" },
@@ -24,7 +24,7 @@ export default function AdminNav() {
             "px-4 py-2 text-sm font-medium -mb-px border-b-2",
             pathname.startsWith(t.href)
               ? "border-green-600 text-green-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
+              : "border-transparent text-gray-500 hover:text-gray-700",
           )}
         >
           {t.label}

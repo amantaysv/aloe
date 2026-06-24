@@ -3,8 +3,8 @@ import Breadcrumb from "@/components/Breadcrumb";
 import ProductCard from "@/components/ProductCard";
 import SeeAllProducts from "@/components/SeeAllProducts";
 import SortSelect, { type SortValue } from "@/components/SortSelect";
-import { supabase } from "@/lib/supabase";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
+import { supabase } from "@/lib/supabase";
 import { getSubcategorySection } from "@/services/product.service";
 
 const SECTION_LIMIT = 8;

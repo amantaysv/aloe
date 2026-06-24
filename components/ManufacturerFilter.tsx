@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCallback } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type Brand = { id: number; name: string };
 
@@ -28,7 +28,7 @@ export default function ManufacturerFilter({
       next.forEach((b) => params.append("brand", String(b)));
       router.push(`${pathname}?${params.toString()}`);
     },
-    [router, pathname, searchParams, selected]
+    [router, pathname, searchParams, selected],
   );
 
   const reset = useCallback(() => {

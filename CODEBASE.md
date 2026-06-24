@@ -52,147 +52,155 @@
 ## Database Schema (Supabase / PostgreSQL)
 
 ### products
-| column | type | notes |
-|--------|------|-------|
-| id | int | PK |
-| external_id | text | |
-| name | text | |
-| price | numeric | |
-| old_price | numeric | nullable |
-| image_url | text | |
-| product_url | text | |
-| category | text | string label |
-| category_id | int | FK → categories.id |
-| label | text | `popular` \| `new` \| `sale` \| `discount` \| null |
-| description | text | nullable |
-| brand_id | int | FK → brands.id |
-| seo_text | text | nullable |
-| published | boolean | |
-| created_at | timestamptz | |
+
+| column      | type        | notes                                              |
+| ----------- | ----------- | -------------------------------------------------- |
+| id          | int         | PK                                                 |
+| external_id | text        |                                                    |
+| name        | text        |                                                    |
+| price       | numeric     |                                                    |
+| old_price   | numeric     | nullable                                           |
+| image_url   | text        |                                                    |
+| product_url | text        |                                                    |
+| category    | text        | string label                                       |
+| category_id | int         | FK → categories.id                                 |
+| label       | text        | `popular` \| `new` \| `sale` \| `discount` \| null |
+| description | text        | nullable                                           |
+| brand_id    | int         | FK → brands.id                                     |
+| seo_text    | text        | nullable                                           |
+| published   | boolean     |                                                    |
+| created_at  | timestamptz |                                                    |
 
 ### categories
-| column | type | notes |
-|--------|------|-------|
-| id | int | PK |
-| name | text | |
-| slug | text | |
-| parent_id | int | self-referential FK (null = top-level) |
+
+| column    | type | notes                                  |
+| --------- | ---- | -------------------------------------- |
+| id        | int  | PK                                     |
+| name      | text |                                        |
+| slug      | text |                                        |
+| parent_id | int  | self-referential FK (null = top-level) |
 
 ### brands
+
 | column | type | notes |
-|--------|------|-------|
-| id | int | PK |
-| name | text | |
-| slug | text | |
+| ------ | ---- | ----- |
+| id     | int  | PK    |
+| name   | text |       |
+| slug   | text |       |
 
 ### banners
-| column | type | notes |
-|--------|------|-------|
-| id | int | PK |
-| image_url | text | |
-| sort_order | int | |
-| active | boolean | |
+
+| column     | type    | notes |
+| ---------- | ------- | ----- |
+| id         | int     | PK    |
+| image_url  | text    |       |
+| sort_order | int     |       |
+| active     | boolean |       |
 
 ### profiles
-| column | type | notes |
-|--------|------|-------|
-| id | uuid | FK → auth.users |
-| name | text | |
-| phone | text | |
-| address | text | |
-| updated_at | timestamptz | |
+
+| column     | type        | notes           |
+| ---------- | ----------- | --------------- |
+| id         | uuid        | FK → auth.users |
+| name       | text        |                 |
+| phone      | text        |                 |
+| address    | text        |                 |
+| updated_at | timestamptz |                 |
 
 ### orders
-| column | type | notes |
-|--------|------|-------|
-| id | int | PK |
-| user_id | uuid | nullable FK → auth.users |
-| customer_name | text | |
-| customer_phone | text | |
-| customer_address | text | |
-| comment | text | |
-| items | jsonb | array of cart items |
-| total | numeric | |
-| status | text | `new` \| ... |
-| created_at | timestamptz | |
+
+| column           | type        | notes                    |
+| ---------------- | ----------- | ------------------------ |
+| id               | int         | PK                       |
+| user_id          | uuid        | nullable FK → auth.users |
+| customer_name    | text        |                          |
+| customer_phone   | text        |                          |
+| customer_address | text        |                          |
+| comment          | text        |                          |
+| items            | jsonb       | array of cart items      |
+| total            | numeric     |                          |
+| status           | text        | `new` \| ...             |
+| created_at       | timestamptz |                          |
 
 ### cart_items
-| column | type |
-|--------|------|
-| user_id | uuid (PK part) |
-| product_id | int (PK part) |
-| quantity | int |
+
+| column     | type           |
+| ---------- | -------------- |
+| user_id    | uuid (PK part) |
+| product_id | int (PK part)  |
+| quantity   | int            |
 
 ### favorites
-| column | type |
-|--------|------|
-| user_id | uuid (PK part) |
-| product_id | int (PK part) |
-| created_at | timestamptz |
+
+| column     | type           |
+| ---------- | -------------- |
+| user_id    | uuid (PK part) |
+| product_id | int (PK part)  |
+| created_at | timestamptz    |
 
 **Storage bucket:** `product-images` (product photos + banners)
 
 ## TypeScript Types (`/types/index.ts`)
 
 ```typescript
-type Brand = { id: number; name: string; slug: string }
+type Brand = { id: number; name: string; slug: string };
 
 type Product = {
-  id: number
-  external_id: string
-  name: string
-  price: number
-  image_url: string
-  product_url: string
-  category: string
-  category_id: number
-  label?: "popular" | "new" | "sale" | "discount" | null
-  old_price?: number | null
-  description?: string | null
-  brand_id?: number | null
-  brand_name?: string | null
-  seo_text?: string | null
-  published: boolean
-}
+  id: number;
+  external_id: string;
+  name: string;
+  price: number;
+  image_url: string;
+  product_url: string;
+  category: string;
+  category_id: number;
+  label?: "popular" | "new" | "sale" | "discount" | null;
+  old_price?: number | null;
+  description?: string | null;
+  brand_id?: number | null;
+  brand_name?: string | null;
+  seo_text?: string | null;
+  published: boolean;
+};
 
-type ProductRow = Product & { brands: { name: string } | null }
-type CartItem   = { id: number; name: string; price: number; quantity: number; image_url: string }
-type SortValue  = "name" | "price_asc" | "price_desc"
+type ProductRow = Product & { brands: { name: string } | null };
+type CartItem = { id: number; name: string; price: number; quantity: number; image_url: string };
+type SortValue = "name" | "price_asc" | "price_desc";
 ```
 
 ## Services (`/services/`)
 
-| file | purpose |
-|------|---------|
-| `product.ts` | Product CRUD, filtering, search |
-| `brand.ts` | Brand queries |
-| `category.ts` | Category tree queries |
-| `order.ts` | Order creation & listing |
-| `profile.ts` | User profile read/write |
-| `cart.ts` | DB cart sync (auth users) |
-| `favorites.ts` | DB favorites sync (auth users) |
-| `banner.ts` | Banner queries |
+| file           | purpose                         |
+| -------------- | ------------------------------- |
+| `product.ts`   | Product CRUD, filtering, search |
+| `brand.ts`     | Brand queries                   |
+| `category.ts`  | Category tree queries           |
+| `order.ts`     | Order creation & listing        |
+| `profile.ts`   | User profile read/write         |
+| `cart.ts`      | DB cart sync (auth users)       |
+| `favorites.ts` | DB favorites sync (auth users)  |
+| `banner.ts`    | Banner queries                  |
 
 ## Lib Utilities (`/lib/`)
 
-| file | purpose |
-|------|---------|
-| `supabase-server.ts` | `createClient()` — SSR Supabase with cookies |
-| `supabase-browser.ts` | `createClient()` — client-side Supabase |
-| `supabase.ts` | Direct anon-key client |
-| `cn.ts` | `cn(...classes)` — clsx + tailwind-merge |
-| `cached-queries.ts` | ISR-cached wrappers via `unstable_cache()` |
+| file                  | purpose                                      |
+| --------------------- | -------------------------------------------- |
+| `supabase-server.ts`  | `createClient()` — SSR Supabase with cookies |
+| `supabase-browser.ts` | `createClient()` — client-side Supabase      |
+| `supabase.ts`         | Direct anon-key client                       |
+| `cn.ts`               | `cn(...classes)` — clsx + tailwind-merge     |
+| `cached-queries.ts`   | ISR-cached wrappers via `unstable_cache()`   |
 
 ### Cached Queries (ISR tags & TTLs)
 
-| function | TTL | tag |
-|----------|-----|-----|
-| `getCachedCategories()` | 1 hour | `categories` |
-| `getCachedBrands()` | 1 hour | `brands` |
-| `getCachedProductsByLabel(label, limit?)` | 60 s | `products` |
-| `getCachedProductsByCategories(ids, limit?)` | 60 s | `products` |
-| `getCachedProductsByBrand(id, page, pageSize)` | 60 s | `products` |
-| `getCachedHomePageCategoryProducts(groups, limit?)` | 60 s | `products` |
+| function                                            | TTL    | tag          |
+| --------------------------------------------------- | ------ | ------------ |
+| `getCachedCategories()`                             | 1 hour | `categories` |
+| `getCachedBrands()`                                 | 1 hour | `brands`     |
+| `getCachedProductsByLabel(label, limit?)`           | 60 s   | `products`   |
+| `getCachedProductsByCategories(ids, limit?)`        | 60 s   | `products`   |
+| `getCachedProductsByBrand(id, page, pageSize)`      | 60 s   | `products`   |
+| `getCachedHomePageCategoryProducts(groups, limit?)` | 60 s   | `products`   |
 
 ## Zustand Stores (`/store/`)
 
@@ -202,11 +210,11 @@ type SortValue  = "name" | "price_asc" | "price_desc"
 
 ## Server Actions
 
-| file | actions |
-|------|---------|
-| `app/checkout/actions.ts` | `createOrder()` |
-| `app/profile/actions.ts` | `saveProfile()` |
-| `app/admin/actions.ts` | `upsertProduct()`, `deleteProduct()`, `upsertCategory()`, `upsertBrand()`, `upsertBanner()`, `uploadProductImage()`, `updateOrderStatus()` |
+| file                      | actions                                                                                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `app/checkout/actions.ts` | `createOrder()`                                                                                                                            |
+| `app/profile/actions.ts`  | `saveProfile()`                                                                                                                            |
+| `app/admin/actions.ts`    | `upsertProduct()`, `deleteProduct()`, `upsertCategory()`, `upsertBrand()`, `upsertBanner()`, `uploadProductImage()`, `updateOrderStatus()` |
 
 ## Auth
 
@@ -232,6 +240,7 @@ SUPABASE_SERVICE_ROLE_KEY       # server-only, used in admin actions to bypass R
 **No `/api` routes** — all data access via Supabase directly or Server Actions.
 
 **Data fetching strategy:**
+
 - RSC + `unstable_cache()` for static/semi-static data (categories, carousels)
 - React `cache()` for per-request deduplication
 - `Promise.all()` for parallel queries

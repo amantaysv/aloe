@@ -24,10 +24,7 @@ export async function getAdminOrders(
   const { q = "", statuses = [], page = 1, pageSize = 15 } = options;
   const from = (page - 1) * pageSize;
 
-  let query = supabase
-    .from("orders")
-    .select("*", { count: "exact" })
-    .order("created_at", { ascending: false });
+  let query = supabase.from("orders").select("*", { count: "exact" }).order("created_at", { ascending: false });
   if (q) query = query.or(`customer_name.ilike.%${q}%,customer_phone.ilike.%${q}%`);
   if (statuses.length > 0) query = query.in("status", statuses);
 

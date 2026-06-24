@@ -36,12 +36,7 @@ export async function loadCart(supabase: SupabaseClient, userId: string): Promis
     }));
 }
 
-export async function upsertCartItem(
-  supabase: SupabaseClient,
-  userId: string,
-  productId: number,
-  quantity: number,
-) {
+export async function upsertCartItem(supabase: SupabaseClient, userId: string, productId: number, quantity: number) {
   const { error } = await supabase
     .from("cart_items")
     .upsert({ user_id: userId, product_id: productId, quantity }, { onConflict: "user_id,product_id" });
@@ -49,11 +44,7 @@ export async function upsertCartItem(
 }
 
 export async function deleteCartItem(supabase: SupabaseClient, userId: string, productId: number) {
-  const { error } = await supabase
-    .from("cart_items")
-    .delete()
-    .eq("user_id", userId)
-    .eq("product_id", productId);
+  const { error } = await supabase.from("cart_items").delete().eq("user_id", userId).eq("product_id", productId);
   if (error) console.error("[cart] delete error:", error.message);
 }
 
@@ -67,11 +58,9 @@ export async function reconcileCartItems(
   userId: string,
   items: { id: number; quantity: number }[],
 ) {
-  const { error } = await supabase
-    .from("cart_items")
-    .upsert(
-      items.map((i) => ({ user_id: userId, product_id: i.id, quantity: i.quantity })),
-      { onConflict: "user_id,product_id" },
-    );
+  const { error } = await supabase.from("cart_items").upsert(
+    items.map((i) => ({ user_id: userId, product_id: i.id, quantity: i.quantity })),
+    { onConflict: "user_id,product_id" },
+  );
   if (error) console.error("[cart] reconcile error:", error.message);
 }

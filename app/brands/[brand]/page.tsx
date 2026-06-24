@@ -1,5 +1,5 @@
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumb";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
@@ -7,11 +7,7 @@ import { getCachedBrandBySlug, getCachedProductsByBrand } from "@/lib/cached-que
 
 const PAGE_SIZE = 24;
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ brand: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ brand: string }> }): Promise<Metadata> {
   const { brand } = await params;
   const data = await getCachedBrandBySlug(brand);
   if (!data) return {};
@@ -32,11 +28,7 @@ export default async function BrandPage({
 
   if (!brandData) notFound();
 
-  const { products: rawProducts, total } = await getCachedProductsByBrand(
-    brandData.id,
-    currentPage,
-    PAGE_SIZE,
-  );
+  const { products: rawProducts, total } = await getCachedProductsByBrand(brandData.id, currentPage, PAGE_SIZE);
 
   if (!total && currentPage === 1) notFound();
 
@@ -46,11 +38,7 @@ export default async function BrandPage({
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
       <Breadcrumb
-        crumbs={[
-          { label: "Главная", href: "/" },
-          { label: "Бренды", href: "/brands" },
-          { label: brandData.name },
-        ]}
+        crumbs={[{ label: "Главная", href: "/" }, { label: "Бренды", href: "/brands" }, { label: brandData.name }]}
       />
 
       <div className="flex items-baseline gap-3 mb-6">

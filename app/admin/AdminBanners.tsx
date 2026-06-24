@@ -4,8 +4,8 @@ import { useRef, useState } from "react";
 import { EyeIcon, EyeOffIcon, GripVerticalIcon, ImagePlusIcon, Loader2Icon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import Button from "@/components/Button";
-import { deleteBanner, reorderBanners, uploadBannerImage, upsertBanner } from "./actions";
 import { useToast } from "@/store/toast";
+import { deleteBanner, reorderBanners, uploadBannerImage, upsertBanner } from "./actions";
 
 type Banner = { id: number; image_url: string; sort_order: number; active: boolean };
 
@@ -147,18 +147,27 @@ export default function AdminBanners({ banners: initial }: { banners: Banner[] }
             onDragOver={(e) => onDragOver(e, b.id)}
             onDragLeave={() => setDragOverId(null)}
             onDrop={() => onDrop(i)}
-            onDragEnd={() => { dragIndex.current = null; setDragOverId(null); }}
+            onDragEnd={() => {
+              dragIndex.current = null;
+              setDragOverId(null);
+            }}
             className={`flex items-center gap-3 border rounded-xl p-3 transition-colors ${
               dragOverId === b.id
                 ? "border-green-400 bg-green-50"
                 : b.active
-                ? "border-gray-200"
-                : "border-gray-100 bg-gray-50"
+                  ? "border-gray-200"
+                  : "border-gray-100 bg-gray-50"
             }`}
           >
             <GripVerticalIcon className="size-4 text-gray-400 shrink-0 cursor-grab active:cursor-grabbing" />
-            <div className="relative w-40 h-16 shrink-0 bg-gray-100 rounded-lg overflow-hidden">
-              <Image src={b.image_url} alt={`Баннер ${i + 1}`} fill className="object-cover" />
+            <div className="relative w-40 shrink-0 bg-gray-100 rounded-lg overflow-hidden aspect-2/1 lg:aspect-3/1">
+              <Image
+                src={b.image_url}
+                alt={`Баннер ${i + 1}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 25vw"
+              />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-700">Баннер {i + 1}</p>

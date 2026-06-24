@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { saveProfile } from "./actions";
 import Button from "@/components/Button";
+import { saveProfile } from "./actions";
 
 type Props = {
   initial: { name: string; phone: string; address: string };
@@ -53,12 +53,7 @@ export default function ProfileForm({ initial }: Props) {
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Личные данные</h2>
         {!editing && (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => setEditing(true)}
-            className="text-sm font-medium"
-          >
+          <Button type="button" variant="ghost" onClick={() => setEditing(true)} className="text-sm font-medium">
             Изменить
           </Button>
         )}

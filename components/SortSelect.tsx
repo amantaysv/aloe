@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCallback } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export type SortValue = "name" | "price_asc" | "price_desc";
 
@@ -27,7 +27,7 @@ export default function SortSelect({ current }: { current: SortValue }) {
       }
       router.push(`${pathname}?${params.toString()}`);
     },
-    [router, pathname, searchParams]
+    [router, pathname, searchParams],
   );
 
   return (

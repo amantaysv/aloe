@@ -90,7 +90,7 @@ export default function Pagination({ page, totalPages, ...rest }: Props) {
           <Button key={p} onClick={() => onPageChange!(p)} className={btnCls(p === page)}>
             {p}
           </Button>
-        )
+        ),
       )}
 
       {/* Next */}

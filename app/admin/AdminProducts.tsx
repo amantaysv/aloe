@@ -47,7 +47,17 @@ type Props = {
   categories: { id: number; name: string }[];
 };
 
-export default function AdminProducts({ products, page, totalPages, total, q, label, published, sort, categories }: Props) {
+export default function AdminProducts({
+  products,
+  page,
+  totalPages,
+  total,
+  q,
+  label,
+  published,
+  sort,
+  categories,
+}: Props) {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState(q);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);

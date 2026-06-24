@@ -5,8 +5,8 @@ import type { User } from "@supabase/supabase-js";
 import { LogInIcon, LogOut, User as UserIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase-browser";
 import Button from "@/components/Button";
+import { createClient } from "@/lib/supabase-browser";
 
 export default function AuthButton() {
   const [user, setUser] = useState<User | null>(null);

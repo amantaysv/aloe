@@ -14,10 +14,7 @@ export default async function ProfilePage() {
 
   if (!user) redirect("/auth");
 
-  const [orders, profile] = await Promise.all([
-    getUserOrders(supabase, user.id),
-    getProfile(supabase, user.id),
-  ]);
+  const [orders, profile] = await Promise.all([getUserOrders(supabase, user.id), getProfile(supabase, user.id)]);
 
   const initial = {
     name: profile?.name ?? "",

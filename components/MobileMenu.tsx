@@ -21,13 +21,7 @@ const specials = [
   { href: "/brands", label: "Бренды" },
 ];
 
-export default function MobileMenu({
-  parents,
-  subcategories,
-}: {
-  parents: Category[];
-  subcategories: Category[];
-}) {
+export default function MobileMenu({ parents, subcategories }: { parents: Category[]; subcategories: Category[] }) {
   const { open, close } = useMobileMenu();
   const params = useParams();
   const activeParentSlug = params?.slug as string | undefined;
@@ -51,9 +45,7 @@ export default function MobileMenu({
 
   return (
     <>
-      {open && (
-        <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={close} aria-hidden="true" />
-      )}
+      {open && <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={close} aria-hidden="true" />}
 
       <div
         className={`fixed top-0 left-0 h-full w-72 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${

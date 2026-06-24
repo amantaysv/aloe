@@ -4,8 +4,8 @@ import ManufacturerFilter from "@/components/ManufacturerFilter";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
 import SortSelect, { type SortValue } from "@/components/SortSelect";
-import { supabase } from "@/lib/supabase";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
+import { supabase } from "@/lib/supabase";
 import { getBrandsForSubcategory, getSubcategoryProducts } from "@/services/product.service";
 
 const PAGE_SIZE = 20;

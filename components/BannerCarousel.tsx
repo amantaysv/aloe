@@ -42,6 +42,7 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
                 fill
                 className="object-cover"
                 priority={i === 0}
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
           ))}
