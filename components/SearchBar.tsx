@@ -15,7 +15,13 @@ type Product = {
   category_id: string;
 };
 
-export default function SearchBar({ defaultValue = "", withButton = false }: { defaultValue?: string; withButton?: boolean }) {
+export default function SearchBar({
+  defaultValue = "",
+  withButton = false,
+}: {
+  defaultValue?: string;
+  withButton?: boolean;
+}) {
   const [query, setQuery] = useState(defaultValue);
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
@@ -25,6 +31,7 @@ export default function SearchBar({ defaultValue = "", withButton = false }: { d
 
   useEffect(() => {
     if (withButton || query.length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResults([]);
       setOpen(false);
       return;
@@ -77,12 +84,9 @@ export default function SearchBar({ defaultValue = "", withButton = false }: { d
         />
 
         {withButton && (
-          <button
-            onClick={handleSubmit}
-            className="shrink-0 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 rounded-lg transition-colors"
-          >
+          <Button variant="primary" onClick={handleSubmit}>
             Искать
-          </button>
+          </Button>
         )}
       </div>
 

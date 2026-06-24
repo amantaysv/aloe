@@ -200,10 +200,14 @@ export default function AdminBanners({ banners: initial }: { banners: Banner[] }
                       show(result.error, "error");
                     }
                   }}
-                  className={`shrink-0 transition-colors ${(links[b.id] ?? "") !== (b.link ?? "") ? "text-green-600 hover:bg-green-50" : "hover:bg-gray-100"}`}
+                  className={`shrink-0 ${(links[b.id] ?? "") !== (b.link ?? "") ? "text-green-600 hover:bg-green-50" : "hover:bg-gray-100"}`}
                   title="Сохранить ссылку"
                 >
-                  {savingLink[b.id] ? <Loader2Icon className="size-4 animate-spin" /> : <CheckIcon className="size-4" />}
+                  {savingLink[b.id] ? (
+                    <Loader2Icon className="size-4 animate-spin" />
+                  ) : (
+                    <CheckIcon className="size-4" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -216,7 +220,7 @@ export default function AdminBanners({ banners: initial }: { banners: Banner[] }
               >
                 {b.active ? <EyeIcon className="size-4" /> : <EyeOffIcon className="size-4" />}
               </Button>
-              <Button variant="icon" iconColor="danger" onClick={() => handleDelete(b.id)}>
+              <Button variant="icon" iconColor="danger" onClick={() => handleDelete(b.id)} aria-label="Удалить баннер">
                 <Trash2Icon className="size-4" />
               </Button>
             </div>

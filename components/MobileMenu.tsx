@@ -5,6 +5,7 @@ import { Minus, Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMobileMenu } from "@/store/mobile-menu";
+import Button from "./Button";
 
 type Category = {
   id: number;
@@ -54,16 +55,12 @@ export default function MobileMenu({ parents, subcategories }: { parents: Catego
       >
         <div className="flex items-center justify-between px-4 h-14 border-b border-gray-200 shrink-0">
           <span className="font-semibold text-gray-800 text-base">Каталог</span>
-          <button
-            onClick={close}
-            className="p-1 text-gray-500 hover:text-gray-800 transition-colors"
-            aria-label="Закрыть"
-          >
+          <Button variant="icon" onClick={close} aria-label="Закрыть">
             <X className="size-5" />
-          </button>
+          </Button>
         </div>
 
-        <nav className="overflow-y-auto h-[calc(100%-3.5rem)] py-2">
+        <nav className="overflow-y-auto h-[calc(100%-3.5rem)] py-2 scrollbar-gutter-stable">
           {specials.map((s) => (
             <Link
               key={s.href}
@@ -84,7 +81,7 @@ export default function MobileMenu({ parents, subcategories }: { parents: Catego
 
             return (
               <div key={parent.id}>
-                <button
+                <Button
                   onClick={() => setOpenSlug(isOpen ? null : parent.slug)}
                   className={`w-full flex items-center justify-between gap-1 px-4 py-2.5 text-sm font-medium hover:bg-gray-50 text-left transition-colors ${
                     isActive ? "text-green-600" : ""
@@ -94,7 +91,7 @@ export default function MobileMenu({ parents, subcategories }: { parents: Catego
                   <span className="text-green-600 shrink-0">
                     {isOpen ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                   </span>
-                </button>
+                </Button>
 
                 {subs.length > 0 && (
                   <div

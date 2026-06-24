@@ -156,14 +156,13 @@ function AuthForm() {
           <div className="flex-1 border-t border-gray-200" />
         </div>
 
-        <button
-          type="button"
+        <Button
           onClick={handleGoogleSignIn}
           className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors hover:cursor-pointer"
         >
           <FcGoogle className="text-base" />
           Продолжить с Google
-        </button>
+        </Button>
 
         <p className="text-center text-sm text-gray-500">
           {mode === "login" ? "Нет аккаунта?" : "Уже есть аккаунт?"}{" "}

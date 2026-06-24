@@ -2,12 +2,13 @@
 
 import { useCallback } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Button from "./Button";
 
 type Brand = { id: number; name: string };
 
 export default function ManufacturerFilter({
   manufacturers: brands,
-  className = "mb-6",
+  className,
 }: {
   manufacturers: Brand[];
   className?: string;
@@ -42,12 +43,12 @@ export default function ManufacturerFilter({
 
   return (
     <div className={className}>
-      <div className="flex items-center gap-3 mb-2">
+      <div className="flex items-baseline gap-3 mb-2">
         <span className="text-sm font-medium text-gray-700">Производитель</span>
         {selected.length > 0 && (
-          <button onClick={reset} className="text-xs text-green-600 hover:underline">
+          <Button variant="ghost" onClick={reset} className="text-xs">
             Сбросить
-          </button>
+          </Button>
         )}
       </div>
       <div className="flex flex-wrap gap-2">

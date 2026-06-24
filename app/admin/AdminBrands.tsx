@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PencilIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import Button from "@/components/Button";
 import { deleteBrand, upsertBrand, type BrandInput } from "./actions";
@@ -21,7 +21,7 @@ export default function AdminBrands({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const usedBrandIds = new Set(usedIds);
+  const usedBrandIds = useMemo(() => new Set(usedIds), [usedIds]);
 
   function openNew() {
     setEditing({ ...empty, isNew: true });
@@ -50,25 +50,21 @@ export default function AdminBrands({
     }
     setSaving(true);
     setError("");
-    const result = await upsertBrand({
-      id: editing.id,
-      name: editing.name.trim(),
-      slug: editing.slug.trim(),
-    });
+    const name = editing.name.trim();
+    const slug = editing.slug.trim();
+    const result = await upsertBrand({ id: editing.id, name, slug });
     setSaving(false);
     if (!result.ok) {
       setError(result.error);
       return;
     }
+    const byName = (a: Brand, b: Brand) => a.name.localeCompare(b.name);
     setBrands((prev) => {
       const exists = prev.find((b) => b.id === editing.id);
-      if (exists)
-        return prev
-          .map((b) => (b.id === editing.id ? { ...b, name: editing.name.trim(), slug: editing.slug.trim() } : b))
-          .sort((a, b) => a.name.localeCompare(b.name));
-      return [...prev, { id: result.id, name: editing.name.trim(), slug: editing.slug.trim() }].sort((a, b) =>
-        a.name.localeCompare(b.name),
-      );
+      const next = exists
+        ? prev.map((b) => (b.id === editing.id ? { ...b, name, slug } : b))
+        : [...prev, { id: result.id, name, slug }];
+      return next.sort(byName);
     });
     close();
   }
@@ -103,11 +99,11 @@ export default function AdminBrands({
                 <span className="text-xs text-gray-400 ml-2">{brand.slug}</span>
               </div>
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button variant="icon" size="sm" onClick={() => openEdit(brand)}>
+                <Button variant="icon" size="sm" onClick={() => openEdit(brand)} aria-label="Редактировать">
                   <PencilIcon className="size-4" />
                 </Button>
                 {!locked && (
-                  <Button variant="icon" iconColor="danger" size="sm" onClick={() => handleDelete(brand.id)}>
+                  <Button variant="icon" iconColor="danger" size="sm" onClick={() => handleDelete(brand.id)} aria-label="Удалить">
                     <Trash2Icon className="size-4" />
                   </Button>
                 )}
@@ -123,7 +119,7 @@ export default function AdminBrands({
           <div className="relative ml-auto w-full max-w-md bg-white h-full overflow-y-auto shadow-xl flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
               <h2 className="text-lg font-bold">{editing.isNew ? "Новый бренд" : "Редактировать бренд"}</h2>
-              <Button onClick={close} className="text-gray-400 hover:text-gray-700">
+              <Button onClick={close} aria-label="Закрыть" className="text-gray-400 hover:text-gray-700">
                 <XIcon className="size-5" />
               </Button>
             </div>

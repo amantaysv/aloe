@@ -54,7 +54,7 @@ export default async function SearchPage({
         <p className="text-sm text-gray-500 mt-1">Найдено: {total} товаров</p>
       </div>
 
-      <ManufacturerFilter manufacturers={brands} />
+      <ManufacturerFilter manufacturers={brands} className="mb-6" />
 
       {products.length === 0 ? (
         <div className="text-center py-16 text-gray-500">
