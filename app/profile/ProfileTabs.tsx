@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import Pagination from "@/components/Pagination";
+import { ORDER_STATUS } from "@/lib/constants";
 import { useCart } from "@/store/cart";
 import { useToast } from "@/store/toast";
 import ProfileForm from "./ProfileForm";
@@ -26,26 +27,6 @@ type Profile = {
   name: string;
   phone: string;
   address: string;
-};
-
-const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
-  new: { label: "Новый", cls: "bg-blue-100 text-blue-700" },
-  confirmed: {
-    label: "Подтверждён",
-    cls: "bg-yellow-100 text-yellow-700",
-  },
-  processing: {
-    label: "В доставке",
-    cls: "bg-orange-100 text-orange-700",
-  },
-  delivered: {
-    label: "Доставлен",
-    cls: "bg-green-100 text-green-700",
-  },
-  cancelled: {
-    label: "Отменён",
-    cls: "bg-red-100 text-red-600",
-  },
 };
 
 const PAGE_SIZE = 10;
@@ -97,7 +78,7 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
             <>
               <div className="flex flex-col gap-4">
                 {paginated.map((order) => {
-                  const s = STATUS_LABELS[order.status] ?? STATUS_LABELS.new;
+                  const s = ORDER_STATUS[order.status] ?? ORDER_STATUS.new;
                   return (
                     <div key={order.id} className="border border-gray-300 rounded-xl p-4">
                       <div className="flex justify-between items-start mb-3">

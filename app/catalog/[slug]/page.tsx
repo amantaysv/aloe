@@ -4,9 +4,10 @@ import MainContainer from "@/components/MainContainer";
 import ProductCard from "@/components/ProductCard";
 import ProductGrid from "@/components/ProductGrid";
 import SeeAllProducts from "@/components/SeeAllProducts";
-import SortSelect, { type SortValue } from "@/components/SortSelect";
+import SortSelect from "@/components/SortSelect";
 import TitleWithCount from "@/components/TitleWithCount";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
+import { parseSortParam } from "@/lib/page-params";
 import { supabase } from "@/lib/supabase";
 import { getSubcategorySection } from "@/services/product.service";
 
@@ -20,8 +21,7 @@ export default async function CategoryPage({
   searchParams: Promise<{ sort?: string }>;
 }) {
   const [{ slug }, sp] = await Promise.all([params, searchParams]);
-  const sortParam = (sp.sort ?? "name") as SortValue;
-  const validSort: SortValue = ["name", "price_asc", "price_desc"].includes(sortParam) ? sortParam : "name";
+  const validSort = parseSortParam(sp.sort);
 
   const allCategories = await getCachedCategoriesWithSlug();
 

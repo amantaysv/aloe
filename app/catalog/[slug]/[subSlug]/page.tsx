@@ -5,9 +5,10 @@ import ManufacturerFilter from "@/components/ManufacturerFilter";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
 import ProductGrid from "@/components/ProductGrid";
-import SortSelect, { type SortValue } from "@/components/SortSelect";
+import SortSelect from "@/components/SortSelect";
 import TitleWithCount from "@/components/TitleWithCount";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
+import { parseBrandIds, parsePage, parseSortParam } from "@/lib/page-params";
 import { supabase } from "@/lib/supabase";
 import { getBrandsForSubcategory, getSubcategoryProducts } from "@/services/product.service";
 
@@ -21,10 +22,9 @@ export default async function SubcategoryPage({
   searchParams: Promise<{ page?: string; brand?: string | string[]; sort?: string }>;
 }) {
   const [{ slug, subSlug }, sp] = await Promise.all([params, searchParams]);
-  const currentPage = Math.max(1, parseInt(sp.page ?? "1"));
-  const selectedBrandIds = (sp.brand ? (Array.isArray(sp.brand) ? sp.brand : [sp.brand]) : []).map(Number);
-  const sortParam = (sp.sort ?? "name") as SortValue;
-  const validSort: SortValue = ["name", "price_asc", "price_desc"].includes(sortParam) ? sortParam : "name";
+  const currentPage = parsePage(sp.page);
+  const selectedBrandIds = parseBrandIds(sp.brand);
+  const validSort = parseSortParam(sp.sort);
 
   const allCategories = await getCachedCategoriesWithSlug();
 

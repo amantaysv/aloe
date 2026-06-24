@@ -5,6 +5,7 @@ import { Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import Pagination from "@/components/Pagination";
+import { ORDER_STATUS } from "@/lib/constants";
 import OrderStatusSelect from "./OrderStatusSelect";
 
 type Order = {
@@ -21,14 +22,6 @@ type Order = {
     quantity: number;
     price: number;
   }[];
-};
-
-const STATUS: Record<string, { label: string; cls: string }> = {
-  new: { label: "Новый", cls: "bg-blue-100 text-blue-700" },
-  confirmed: { label: "Подтверждён", cls: "bg-yellow-100 text-yellow-700" },
-  processing: { label: "В доставке", cls: "bg-orange-100 text-orange-700" },
-  delivered: { label: "Доставлен", cls: "bg-green-100 text-green-700" },
-  cancelled: { label: "Отменён", cls: "bg-red-100 text-red-700" },
 };
 
 type Props = {
@@ -99,7 +92,7 @@ export default function AdminOrders({
     <>
       {/* Status badges / filters */}
       <div className="flex gap-2 flex-wrap mb-5">
-        {Object.entries(STATUS).map(([key, { label, cls }]) => {
+        {Object.entries(ORDER_STATUS).map(([key, { label, cls }]) => {
           const active = activeStatuses.has(key);
           return (
             <Button

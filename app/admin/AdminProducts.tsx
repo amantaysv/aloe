@@ -8,6 +8,7 @@ import Button from "@/components/Button";
 import Pagination from "@/components/Pagination";
 import type { Product } from "@/types";
 import { deleteProduct, getBrands, uploadProductImage, upsertProduct, type ProductInput } from "./actions";
+import { adminInputCls as inp, Field } from "./admin-ui";
 
 const LABELS = [
   { value: "", label: "Нет" },
@@ -536,14 +537,3 @@ export default function AdminProducts({
   );
 }
 
-const inp =
-  "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500";
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
-      {children}
-    </div>
-  );
-}

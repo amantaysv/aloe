@@ -11,6 +11,7 @@ import ProductCard from "@/components/ProductCard";
 import ProductDescription from "@/components/ProductDescription";
 import Title from "@/components/Title";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
+import { LABEL_MAP } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import { getProduct, getRelatedProducts } from "@/services/product.service";
 import type { ProductRow } from "@/types";
@@ -30,13 +31,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     other: { title: seo },
   };
 }
-
-const LABEL_MAP = {
-  popular: { text: "Хит", cls: "bg-green-600" },
-  new: { text: "Новинка", cls: "bg-blue-500" },
-  sale: { text: "Акция", cls: "bg-orange-500" },
-  discount: { text: "Скидка", cls: "bg-red-500" },
-} as const;
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

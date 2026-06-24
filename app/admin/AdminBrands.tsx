@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { PencilIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import Button from "@/components/Button";
 import { deleteBrand, upsertBrand, type BrandInput } from "./actions";
+import { adminInputCls as inp, Field } from "./admin-ui";
 
 type Brand = { id: number; name: string; slug: string };
 
@@ -127,8 +128,7 @@ export default function AdminBrands({
             <div className="flex-1 px-6 py-5 space-y-4">
               {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
 
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Slug *</label>
+              <Field label="Slug *">
                 <input
                   value={editing.slug}
                   onChange={(e) => set("slug", e.target.value.toLowerCase().replace(/\s+/g, "-"))}
@@ -136,17 +136,16 @@ export default function AdminBrands({
                   placeholder="garnier"
                 />
                 <p className="text-xs text-gray-400 mt-1">Используется в URL: /brands/slug</p>
-              </div>
+              </Field>
 
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Название *</label>
+              <Field label="Название *">
                 <input
                   value={editing.name}
                   onChange={(e) => set("name", e.target.value)}
                   className={inp}
                   placeholder="Garnier"
                 />
-              </div>
+              </Field>
             </div>
 
             <div className="px-6 py-4 border-t border-gray-200 sticky bottom-0 bg-white">
@@ -161,5 +160,3 @@ export default function AdminBrands({
   );
 }
 
-const inp =
-  "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500";

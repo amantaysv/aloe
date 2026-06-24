@@ -7,6 +7,7 @@ import ProductCard from "@/components/ProductCard";
 import ProductGrid from "@/components/ProductGrid";
 import TitleWithCount from "@/components/TitleWithCount";
 import { getCachedBrandBySlug, getCachedProductsByBrand } from "@/lib/cached-queries";
+import { parsePage } from "@/lib/page-params";
 
 const PAGE_SIZE = 24;
 
@@ -24,8 +25,8 @@ export default async function BrandPage({
   params: Promise<{ brand: string }>;
   searchParams: Promise<{ page?: string }>;
 }) {
-  const [{ brand }, { page = "1" }] = await Promise.all([params, searchParams]);
-  const currentPage = Math.max(1, parseInt(page));
+  const [{ brand }, sp] = await Promise.all([params, searchParams]);
+  const currentPage = parsePage(sp.page);
 
   const brandData = await getCachedBrandBySlug(brand);
 

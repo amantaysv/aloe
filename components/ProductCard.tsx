@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { LABEL_MAP } from "@/lib/constants";
 import type { Product } from "@/types";
 import AddToCart from "./AddToCart";
 import FavoriteButton from "./FavoriteButton";
@@ -10,13 +11,6 @@ type Props = {
   href?: string;
   priority?: boolean;
 };
-
-const LABEL_MAP = {
-  popular: { text: "Хит", cls: "bg-green-600" },
-  new: { text: "Новинка", cls: "bg-blue-500" },
-  sale: { text: "Акция", cls: "bg-orange-500" },
-  discount: { text: "Скидка", cls: "bg-red-500" },
-} as const;
 
 function ProductBadge({ label }: { label: Product["label"] }) {
   if (!label) return null;

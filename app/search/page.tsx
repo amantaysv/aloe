@@ -6,6 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import ProductGrid from "@/components/ProductGrid";
 import SearchBar from "@/components/SearchBar";
 import Title from "@/components/Title";
+import { parseBrandIds, parsePage } from "@/lib/page-params";
 import { supabase } from "@/lib/supabase";
 import { getBrandsForSearch, searchProducts } from "@/services/product.service";
 
@@ -18,8 +19,8 @@ export default async function SearchPage({
 }) {
   const sp = await searchParams;
   const q = sp.q ?? "";
-  const currentPage = Math.max(1, parseInt(sp.page ?? "1"));
-  const selectedBrandIds = (sp.brand ? (Array.isArray(sp.brand) ? sp.brand : [sp.brand]) : []).map(Number);
+  const currentPage = parsePage(sp.page);
+  const selectedBrandIds = parseBrandIds(sp.brand);
 
   if (!q.trim()) {
     return (

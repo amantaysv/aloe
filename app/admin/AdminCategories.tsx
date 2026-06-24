@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChevronRightIcon, PencilIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import Button from "@/components/Button";
 import { deleteCategory, upsertCategory, type CategoryInput } from "./actions";
+import { adminInputCls as inp, Field } from "./admin-ui";
 
 type Category = { id: number; name: string; parent_id: number | null; slug: string };
 
@@ -181,8 +182,7 @@ export default function AdminCategories({
             <div className="flex-1 px-6 py-5 space-y-4">
               {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
 
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Slug *</label>
+              <Field label="Slug *">
                 <input
                   value={editing.slug}
                   onChange={(e) => set("slug", e.target.value.toLowerCase().replace(/\s+/g, "-"))}
@@ -190,20 +190,18 @@ export default function AdminCategories({
                   placeholder="bytovaya-khimiya"
                 />
                 <p className="text-xs text-gray-400 mt-1">Используется в URL: /catalog/slug</p>
-              </div>
+              </Field>
 
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Название *</label>
+              <Field label="Название *">
                 <input
                   value={editing.name}
                   onChange={(e) => set("name", e.target.value)}
                   className={inp}
                   placeholder="Бытовая химия"
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Родительская категория</label>
+              <Field label="Родительская категория">
                 <select
                   value={editing.parent_id ?? ""}
                   onChange={(e) => set("parent_id", e.target.value ? parseInt(e.target.value) : null)}
@@ -218,7 +216,7 @@ export default function AdminCategories({
                       </option>
                     ))}
                 </select>
-              </div>
+              </Field>
             </div>
 
             <div className="px-6 py-4 border-t border-gray-200 sticky bottom-0 bg-white">
@@ -233,5 +231,3 @@ export default function AdminCategories({
   );
 }
 
-const inp =
-  "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500";

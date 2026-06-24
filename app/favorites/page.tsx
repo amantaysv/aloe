@@ -1,19 +1,13 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import MainContainer from "@/components/MainContainer";
 import ProductCard from "@/components/ProductCard";
 import ProductGrid from "@/components/ProductGrid";
 import Title from "@/components/Title";
-import { createClient } from "@/lib/supabase-server";
+import { requireAuth } from "@/lib/auth";
 import { getFavoriteProducts } from "@/services/favorites.service";
 
 export default async function FavoritesPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/auth");
+  const { supabase, user } = await requireAuth();
 
   const products = await getFavoriteProducts(supabase, user.id);
 

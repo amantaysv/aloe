@@ -1,7 +1,6 @@
-import { redirect } from "next/navigation";
 import MainContainer from "@/components/MainContainer";
 import Title from "@/components/Title";
-import { createClient } from "@/lib/supabase-server";
+import { requireAuth } from "@/lib/auth";
 import { getUserOrders } from "@/services/order.service";
 import { getProfile } from "@/services/profile.service";
 import LogoutButton from "./LogoutButton";
@@ -10,12 +9,7 @@ import ProfileTabs from "./ProfileTabs";
 export const metadata = { title: "Профиль — Aloe.kg" };
 
 export default async function ProfilePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/auth");
+  const { supabase, user } = await requireAuth();
 
   const [orders, profile] = await Promise.all([getUserOrders(supabase, user.id), getProfile(supabase, user.id)]);
 
