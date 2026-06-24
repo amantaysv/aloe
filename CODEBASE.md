@@ -7,7 +7,7 @@
 - **Database:** Supabase (PostgreSQL + Auth + Storage + RLS)
 - **State:** Zustand 5.0.14 with persist middleware (localStorage)
 - **Styling:** Tailwind CSS 4.3.1, no dark mode
-- **UI libs:** Lucide React, React Icons, Embla Carousel, react-markdown, NextTopLoader
+- **UI libs:** Lucide React, React Icons, Embla Carousel, react-markdown, NextTopLoader, @tailwindcss/typography
 - **Code quality:** ESLint 9, Prettier (120 char, import sorting)
 
 ## Directory Structure
@@ -15,10 +15,10 @@
 ```
 /
 ├── app/                    # Next.js App Router pages
-├── components/             # 20 shared React components
+├── components/             # 27 shared React components
 ├── lib/                    # Supabase clients, caching, cn() util
 ├── services/               # Data access layer (8 domain modules)
-├── store/                  # Zustand stores (cart, favorites, toast)
+├── store/                  # Zustand stores (cart, favorites, toast, mobile-menu)
 ├── types/                  # TypeScript type definitions (index.ts)
 ├── proxy.ts                # Middleware — Supabase auth cookie management
 ├── next.config.ts          # Image optimization, remote patterns
@@ -32,7 +32,9 @@
 /auth                       # Login / register (email+password, Google OAuth)
 /auth/confirm               # Email OTP verification & OAuth PKCE callback (route.ts)
 /product/[id]               # Product detail page
-/catalog/[slug]/[subSlug]   # Category / subcategory with filters
+/catalog/[slug]             # Category listing with filters
+/catalog/[slug]/[subSlug]   # Subcategory listing with filters
+/brands                     # All brands index (alphabetical)
 /brands/[brand]             # Brand product listing
 /search                     # Search results with filters
 /cart                       # Shopping cart
@@ -42,11 +44,11 @@
 /delivery                   # Delivery info
 /popular /new /sale /discount  # Label-based product pages
 /admin                      # Admin dashboard (role: admin)
-  /admin/orders             # Order management
-  /admin/products           # Product CRUD
-  /admin/categories         # Category management
-  /admin/brands             # Brand management
-  /admin/banners            # Banner carousel management
+/admin/orders               # Order management
+/admin/products             # Product CRUD
+/admin/categories           # Category management
+/admin/brands               # Brand management
+/admin/banners              # Banner carousel management
 ```
 
 ## Database Schema (Supabase / PostgreSQL)
@@ -164,22 +166,22 @@ type Product = {
 };
 
 type ProductRow = Product & { brands: { name: string } | null };
-type CartItem = { id: number; name: string; price: number; quantity: number; image_url: string };
-type SortValue = "name" | "price_asc" | "price_desc";
+
+function withBrandName(rows: ProductRow[]): Product[]; // maps brands.name → brand_name
 ```
 
 ## Services (`/services/`)
 
-| file           | purpose                         |
-| -------------- | ------------------------------- |
-| `product.ts`   | Product CRUD, filtering, search |
-| `brand.ts`     | Brand queries                   |
-| `category.ts`  | Category tree queries           |
-| `order.ts`     | Order creation & listing        |
-| `profile.ts`   | User profile read/write         |
-| `cart.ts`      | DB cart sync (auth users)       |
-| `favorites.ts` | DB favorites sync (auth users)  |
-| `banner.ts`    | Banner queries                  |
+| file                   | purpose                         |
+| ---------------------- | ------------------------------- |
+| `product.service.ts`   | Product CRUD, filtering, search |
+| `brand.service.ts`     | Brand queries                   |
+| `category.service.ts`  | Category tree queries           |
+| `order.service.ts`     | Order creation & listing        |
+| `profile.service.ts`   | User profile read/write         |
+| `cart.service.ts`      | DB cart sync (auth users)       |
+| `favorites.service.ts` | DB favorites sync (auth users)  |
+| `banner.service.ts`    | Banner queries                  |
 
 ## Lib Utilities (`/lib/`)
 
@@ -196,7 +198,10 @@ type SortValue = "name" | "price_asc" | "price_desc";
 | function                                            | TTL    | tag          |
 | --------------------------------------------------- | ------ | ------------ |
 | `getCachedCategories()`                             | 1 hour | `categories` |
+| `getCachedCategoriesWithSlug()`                     | 1 hour | `categories` |
 | `getCachedBrands()`                                 | 1 hour | `brands`     |
+| `getCachedBrandBySlug(slug)`                        | 1 hour | `brands`     |
+| `getCachedActiveBanners()`                          | 1 hour | `banners`    |
 | `getCachedProductsByLabel(label, limit?)`           | 60 s   | `products`   |
 | `getCachedProductsByCategories(ids, limit?)`        | 60 s   | `products`   |
 | `getCachedProductsByBrand(id, page, pageSize)`      | 60 s   | `products`   |
@@ -207,6 +212,7 @@ type SortValue = "name" | "price_asc" | "price_desc";
 - **cart store** — cart items array, persisted to localStorage; syncs with DB when user logs in
 - **favorites store** — product IDs, syncs with DB on auth
 - **toast store** — notification queue (no persistence)
+- **mobile-menu store** — boolean open/close state for mobile nav (no persistence)
 
 ## Server Actions
 

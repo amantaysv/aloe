@@ -1,19 +1,23 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { EyeIcon, EyeOffIcon, GripVerticalIcon, ImagePlusIcon, Loader2Icon, Trash2Icon } from "lucide-react";
+import { CheckIcon, EyeIcon, EyeOffIcon, GripVerticalIcon, ImagePlusIcon, Loader2Icon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import Button from "@/components/Button";
 import { useToast } from "@/store/toast";
 import { deleteBanner, reorderBanners, uploadBannerImage, upsertBanner } from "./actions";
 
-type Banner = { id: number; image_url: string; sort_order: number; active: boolean };
+type Banner = { id: number; image_url: string; sort_order: number; active: boolean; link?: string | null };
 
 export default function AdminBanners({ banners: initial }: { banners: Banner[] }) {
   const [banners, setBanners] = useState(() => [...initial].sort((a, b) => a.sort_order - b.sort_order));
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dragOverId, setDragOverId] = useState<number | null>(null);
+  const [links, setLinks] = useState<Record<number, string>>(() =>
+    Object.fromEntries(initial.map((b) => [b.id, b.link ?? ""])),
+  );
+  const [savingLink, setSavingLink] = useState<Record<number, boolean>>({});
   const fileRef = useRef<HTMLInputElement>(null);
   const dragIndex = useRef<number | null>(null);
   const { show } = useToast();
@@ -37,7 +41,8 @@ export default function AdminBanners({ banners: initial }: { banners: Banner[] }
       show(result.error, "error");
       return;
     }
-    setBanners((prev) => [...prev, { id: result.id, image_url: upload.url, sort_order, active: true }]);
+    setBanners((prev) => [...prev, { id: result.id, image_url: upload.url, sort_order, active: true, link: null }]);
+    setLinks((prev) => ({ ...prev, [result.id]: "" }));
     show("Баннер добавлен", "success");
   }
 
@@ -170,8 +175,37 @@ export default function AdminBanners({ banners: initial }: { banners: Banner[] }
               />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-700">Баннер {i + 1}</p>
-              <p className="text-xs text-gray-400">{b.active ? "Активен" : "Скрыт"}</p>
+              <p className="text-sm font-medium text-gray-700 mb-1">Баннер {i + 1}</p>
+              <p className="text-xs text-gray-400 mb-1.5">{b.active ? "Активен" : "Скрыт"}</p>
+              <div className="flex gap-1.5">
+                <input
+                  type="url"
+                  placeholder="Ссылка (необязательно)"
+                  value={links[b.id] ?? ""}
+                  onChange={(e) => setLinks((prev) => ({ ...prev, [b.id]: e.target.value }))}
+                  className="flex-1 min-w-0 text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:border-green-500"
+                />
+                <Button
+                  variant="icon"
+                  disabled={savingLink[b.id]}
+                  onClick={async () => {
+                    const link = (links[b.id] ?? "").trim() || null;
+                    setSavingLink((prev) => ({ ...prev, [b.id]: true }));
+                    const result = await upsertBanner({ ...b, link });
+                    setSavingLink((prev) => ({ ...prev, [b.id]: false }));
+                    if (result.ok) {
+                      setBanners((prev) => prev.map((x) => (x.id === b.id ? { ...x, link } : x)));
+                      show("Ссылка сохранена", "success");
+                    } else {
+                      show(result.error, "error");
+                    }
+                  }}
+                  className={`shrink-0 transition-colors ${(links[b.id] ?? "") !== (b.link ?? "") ? "text-green-600 hover:bg-green-50" : "hover:bg-gray-100"}`}
+                  title="Сохранить ссылку"
+                >
+                  {savingLink[b.id] ? <Loader2Icon className="size-4 animate-spin" /> : <CheckIcon className="size-4" />}
+                </Button>
+              </div>
             </div>
             <div className="flex gap-1 shrink-0">
               <Button

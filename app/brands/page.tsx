@@ -41,7 +41,7 @@ export default async function BrandsPage() {
 
       <div className="space-y-8">
         {letters.map((letter) => (
-          <section key={letter} id={`letter-${letter}`}>
+          <section key={letter} id={`letter-${letter}`} className="scroll-mt-16 lg:scroll-mt-20">
             <h2 className="text-lg font-semibold text-green-600 border-b border-gray-200 pb-1 mb-3">{letter}</h2>
             <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               {grouped[letter].map((brand) => (

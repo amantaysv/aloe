@@ -99,6 +99,7 @@ export type BannerInput = {
   image_url: string;
   sort_order: number;
   active: boolean;
+  link?: string | null;
 };
 
 export async function upsertBanner(

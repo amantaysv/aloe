@@ -44,7 +44,7 @@ export default async function BrandPage({
         crumbs={[{ label: "Главная", href: "/" }, { label: "Бренды", href: "/brands" }, { label: brandData.name }]}
       />
 
-      <TitleWithCount count={total}>brandData.name</TitleWithCount>
+      <TitleWithCount count={total}>{brandData.name}</TitleWithCount>
 
       <ProductGrid>
         {data.map((product, i) => (

@@ -5,9 +5,10 @@ import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import Button from "@/components/Button";
 
-type Banner = { id: number; image_url: string };
+type Banner = { id: number; image_url: string; link?: string | null };
 
 export default function BannerCarousel({ banners }: { banners: Banner[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
@@ -36,14 +37,27 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
         <div className="flex h-full">
           {banners.map((b, i) => (
             <div key={b.id} className="relative flex-[0_0_100%] h-full">
-              <Image
-                src={b.image_url}
-                alt={`Баннер ${i + 1}`}
-                fill
-                className="object-cover"
-                priority={i === 0}
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
+              {b.link ? (
+                <Link href={b.link} className="block w-full h-full">
+                  <Image
+                    src={b.image_url}
+                    alt={`Баннер ${i + 1}`}
+                    fill
+                    className="object-cover"
+                    priority={i === 0}
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </Link>
+              ) : (
+                <Image
+                  src={b.image_url}
+                  alt={`Баннер ${i + 1}`}
+                  fill
+                  className="object-cover"
+                  priority={i === 0}
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              )}
             </div>
           ))}
         </div>

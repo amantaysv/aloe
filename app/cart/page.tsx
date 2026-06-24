@@ -34,7 +34,7 @@ export default function CartPage() {
             className="flex items-center gap-2 md:gap-4 border-b md:border border-gray-300 md:rounded-lg p-2 md:p-3"
           >
             <div className="relative w-14 h-14 md:w-16 md:h-16 shrink-0 bg-gray-50 rounded">
-              <Image src={item.image_url} alt={item.name} fill className="object-contain p-1" />
+              <Image src={item.image_url} alt={item.name} fill sizes="(max-width: 768px) 56px, 64px" className="object-contain p-1" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium line-clamp-2">{item.name}</p>
