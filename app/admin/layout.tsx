@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import MainContainer from "@/components/MainContainer";
+import Title from "@/components/Title";
 import { createClient } from "@/lib/supabase-server";
 import AdminNav from "./AdminNav";
 
@@ -12,10 +14,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!user || user.app_metadata?.role !== "admin") notFound();
 
   return (
-    <main className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Админ</h1>
+    <MainContainer>
+      <Title className="mb-6">Админ</Title>
       <AdminNav />
       {children}
-    </main>
+    </MainContainer>
   );
 }

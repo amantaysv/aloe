@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
+import MainContainer from "@/components/MainContainer";
+import Title from "@/components/Title";
 import { useCart } from "@/store/cart";
 
 export default function CartPage() {
@@ -13,18 +15,18 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <main className="text-center py-16">
+      <MainContainer className="text-center py-16">
         <p className="text-gray-500 text-lg">Корзина пуста</p>
         <Link href="/" className="text-green-600 text-sm mt-2 inline-block hover:underline">
           Перейти в каталог
         </Link>
-      </main>
+      </MainContainer>
     );
   }
 
   return (
-    <main>
-      <h1 className="text-2xl font-bold mb-6">Корзина</h1>
+    <MainContainer>
+      <Title className="mb-6">Корзина</Title>
       <div className="flex flex-col gap-3">
         {items.map((item) => (
           <div key={item.id} className="flex items-center gap-4 border border-gray-300 rounded-lg p-3">
@@ -36,17 +38,11 @@ export default function CartPage() {
               <p className="text-sm text-green-600 font-bold mt-1">{item.price} сом</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <Button
-                onClick={() => decrement(item.id)}
-                className="w-8 h-8 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center font-bold"
-              >
+              <Button variant="icon" size="sm" onClick={() => decrement(item.id)} className="border border-gray-300">
                 {item.quantity === 1 ? <Trash2Icon className="size-4" /> : <MinusIcon className="size-4" />}
               </Button>
               <span className="w-6 text-center text-sm">{item.quantity}</span>
-              <Button
-                onClick={() => increment(item.id)}
-                className="w-8 h-8 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center font-bold"
-              >
+              <Button variant="icon" size="sm" onClick={() => increment(item.id)} className="border border-gray-300">
                 <PlusIcon className="size-4" />
               </Button>
             </div>
@@ -54,20 +50,24 @@ export default function CartPage() {
         ))}
       </div>
 
-      <div className="mt-6 flex items-center justify-between border-t pt-4">
+      <div className="mt-6 border-t pt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-gray-500 text-sm">Итого:</p>
           <p className="text-2xl font-bold text-green-600">{total()} сом</p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="secondary" onClick={clear}>
+        <div className="flex flex-wrap gap-3">
+          <Button variant="secondary" onClick={clear} className="min-w-40 flex-1 shrink-0">
             Очистить
           </Button>
-          <Button variant="primary" onClick={() => router.push("/checkout")} className="px-6">
+          <Button
+            variant="primary"
+            onClick={() => router.push("/checkout")}
+            className="min-w-40 flex-1 sm:flex-none sm:px-6"
+          >
             Оформить заказ
           </Button>
         </div>
       </div>
-    </main>
+    </MainContainer>
   );
 }

@@ -36,7 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <MobileMenu parents={parents} subcategories={subs} />
         <div className="max-w-7xl mx-auto flex">
           <CatalogSidebar parents={parents} subcategories={subs} />
-          <div className="flex-1 min-w-0 px-3 lg:px-6 py-4 lg:py-8 pb-20 lg:pb-8">{children}</div>
+          <div className="flex-1 min-w-0">{children}</div>
         </div>
         <MobileBottomNav />
         <Toaster />

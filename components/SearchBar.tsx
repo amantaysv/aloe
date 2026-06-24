@@ -15,8 +15,8 @@ type Product = {
   category_id: string;
 };
 
-export default function SearchBar() {
-  const [query, setQuery] = useState("");
+export default function SearchBar({ defaultValue = "", withButton = false }: { defaultValue?: string; withButton?: boolean }) {
+  const [query, setQuery] = useState(defaultValue);
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -24,7 +24,7 @@ export default function SearchBar() {
   const router = useRouter();
 
   useEffect(() => {
-    if (query.length < 2) {
+    if (withButton || query.length < 2) {
       setResults([]);
       setOpen(false);
       return;
@@ -40,7 +40,7 @@ export default function SearchBar() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, withButton]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -52,22 +52,43 @@ export default function SearchBar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  function handleSubmit() {
+    if (query.trim()) {
+      setOpen(false);
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    }
+  }
+
   return (
     <div ref={ref} className="relative w-full">
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onFocus={() => {
-          if (results.length > 0) setOpen(true);
-        }}
-        placeholder="Поиск товаров..."
-        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-green-500"
-      />
+      <div className={withButton ? "flex gap-2" : ""}>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => {
+            if (!withButton && results.length > 0) setOpen(true);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSubmit();
+          }}
+          placeholder="Поиск товаров..."
+          className="flex-1 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-green-500"
+        />
 
-      {loading && <div className="absolute right-3 top-2.5 text-gray-400 text-xs">...</div>}
+        {withButton && (
+          <button
+            onClick={handleSubmit}
+            className="shrink-0 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 rounded-lg transition-colors"
+          >
+            Искать
+          </button>
+        )}
+      </div>
 
-      {open && results.length > 0 && (
+      {!withButton && loading && <div className="absolute right-3 top-2.5 text-gray-400 text-xs">...</div>}
+
+      {!withButton && open && results.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 overflow-hidden">
           {results.map((p) => (
             <Button
@@ -102,7 +123,7 @@ export default function SearchBar() {
         </div>
       )}
 
-      {open && results.length === 0 && !loading && (
+      {!withButton && open && results.length === 0 && !loading && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 px-4 py-3 text-sm text-gray-500">
           Ничего не найдено
         </div>

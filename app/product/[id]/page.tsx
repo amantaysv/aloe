@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import AddToCart from "@/components/AddToCart";
 import Breadcrumb from "@/components/Breadcrumb";
 import FavoriteButton from "@/components/FavoriteButton";
+import MainContainer from "@/components/MainContainer";
 import ProductCard from "@/components/ProductCard";
 import ProductDescription from "@/components/ProductDescription";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
@@ -80,7 +81,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       : null;
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-8">
+    <MainContainer>
       <Breadcrumb crumbs={breadcrumbs} />
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
@@ -153,6 +154,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           </div>
         </section>
       )}
-    </main>
+    </MainContainer>
   );
 }

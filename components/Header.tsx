@@ -186,10 +186,9 @@ export default function Header() {
           <Link href="/favorites" className="p-2 text-gray-400 hover:text-red-400 transition-colors" title="Избранное">
             <Heart className="size-5" />
           </Link>
+          <CartIcon />
+          <AuthButton />
         </div>
-
-        <CartIcon />
-        <AuthButton />
       </div>
     </header>
   );

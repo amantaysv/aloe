@@ -1,10 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumb";
-import CatalogTitleWithCount from "@/components/CatalogTitleWithCount";
+import MainContainer from "@/components/MainContainer";
 import ProductCard from "@/components/ProductCard";
 import ProductGrid from "@/components/ProductGrid";
 import SeeAllProducts from "@/components/SeeAllProducts";
 import SortSelect, { type SortValue } from "@/components/SortSelect";
+import TitleWithCount from "@/components/TitleWithCount";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { supabase } from "@/lib/supabase";
 import { getSubcategorySection } from "@/services/product.service";
@@ -47,10 +48,10 @@ export default async function CategoryPage({
   const totalCount = nonEmpty.reduce((acc, s) => acc + s.total, 0);
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-8">
+    <MainContainer>
       <Breadcrumb crumbs={[{ label: "Главная", href: "/" }, { label: category.name }]} />
 
-      <CatalogTitleWithCount title={category.name} count={totalCount} />
+      <TitleWithCount count={totalCount}>{category.name}</TitleWithCount>
 
       <div className="flex justify-end mb-6">
         <SortSelect current={validSort} />
@@ -71,6 +72,6 @@ export default async function CategoryPage({
           </div>
         ))}
       </div>
-    </main>
+    </MainContainer>
   );
 }

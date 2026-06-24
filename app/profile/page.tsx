@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import MainContainer from "@/components/MainContainer";
+import Title from "@/components/Title";
 import { createClient } from "@/lib/supabase-server";
 import { getUserOrders } from "@/services/order.service";
 import { getProfile } from "@/services/profile.service";
@@ -23,8 +25,8 @@ export default async function ProfilePage() {
   };
 
   return (
-    <main className="max-w-2xl mx-auto py-10 px-4">
-      <h1 className="text-2xl font-bold mb-6">Мой профиль</h1>
+    <MainContainer className="max-w-2xl">
+      <Title className="mb-6">Мой профиль</Title>
 
       <div className="border border-gray-300 rounded-xl p-5 mb-6 flex items-center gap-4">
         <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-lg shrink-0">
@@ -44,6 +46,6 @@ export default async function ProfilePage() {
       </div>
 
       <ProfileTabs initial={initial} orders={orders as Parameters<typeof ProfileTabs>[0]["orders"]} />
-    </main>
+    </MainContainer>
   );
 }

@@ -1,4 +1,5 @@
 import BannerCarousel from "@/components/BannerCarousel";
+import MainContainer from "@/components/MainContainer";
 import ProductCarousel from "@/components/ProductCarousel";
 import {
   getCachedActiveBanners,
@@ -39,7 +40,7 @@ export default async function HomePage() {
   }));
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-8">
+    <MainContainer>
       <BannerCarousel banners={banners} />
       {popular.total > 0 && (
         <ProductCarousel
@@ -70,6 +71,6 @@ export default async function HomePage() {
             />
           ),
       )}
-    </main>
+    </MainContainer>
   );
 }

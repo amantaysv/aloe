@@ -1,11 +1,14 @@
+import MainContainer from "@/components/MainContainer";
+import Title from "@/components/Title";
+
 export const metadata = {
   title: "Доставка и оплата — Aloe.kg",
 };
 
 export default function DeliveryPage() {
   return (
-    <main className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-8">Доставка и оплата</h1>
+    <MainContainer className="max-w-2xl">
+      <Title className="mb-8">Доставка и оплата</Title>
 
       <section className="mb-8">
         <h2 className="text-lg font-semibold mb-3 text-green-700">Способы доставки</h2>
@@ -72,6 +75,6 @@ export default function DeliveryPage() {
       </section>
 
       <p className="text-green-600 font-medium">Удачных покупок!</p>
-    </main>
+    </MainContainer>
   );
 }

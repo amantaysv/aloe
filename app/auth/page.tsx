@@ -4,6 +4,8 @@ import { Suspense, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { useRouter, useSearchParams } from "next/navigation";
 import Button from "@/components/Button";
+import MainContainer from "@/components/MainContainer";
+import Title from "@/components/Title";
 import { createClient } from "@/lib/supabase-browser";
 
 const ERROR_MAP: Record<string, string> = {
@@ -81,7 +83,7 @@ function AuthForm() {
 
   if (registered) {
     return (
-      <main className="max-w-sm mx-auto py-16">
+      <MainContainer className="max-w-sm">
         <div className="border border-gray-300 rounded-xl p-6 text-center flex flex-col gap-4">
           <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto text-green-600 text-2xl">
             ✉
@@ -105,12 +107,12 @@ function AuthForm() {
             Войти в аккаунт
           </Button>
         </div>
-      </main>
+      </MainContainer>
     );
   }
 
   return (
-    <main className="max-w-sm mx-auto py-16">
+    <MainContainer className="max-w-sm">
       {confirmed && (
         <div className="mb-4 flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
           <span className="text-green-500 text-base">✓</span>
@@ -123,7 +125,7 @@ function AuthForm() {
           Ссылка для подтверждения недействительна или устарела.
         </div>
       )}
-      <h1 className="text-2xl font-bold mb-6 text-center">{mode === "login" ? "Вход" : "Регистрация"}</h1>
+      <Title className="mb-6 text-center">{mode === "login" ? "Вход" : "Регистрация"}</Title>
 
       <div className="border border-gray-300 rounded-xl p-6 flex flex-col gap-4">
         <input
@@ -179,6 +181,6 @@ function AuthForm() {
           </Button>
         </p>
       </div>
-    </main>
+    </MainContainer>
   );
 }

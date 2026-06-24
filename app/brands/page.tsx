@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Breadcrumb from "@/components/Breadcrumb";
-import CatalogTitleWithCount from "@/components/CatalogTitleWithCount";
+import MainContainer from "@/components/MainContainer";
+import TitleWithCount from "@/components/TitleWithCount";
 import { getCachedBrands } from "@/lib/cached-queries";
 
 export const metadata = { title: "Бренды — Aloe.kg" };
@@ -17,10 +18,12 @@ export default async function BrandsPage() {
   const letters = Object.keys(grouped).sort((a, b) => a.localeCompare(b, "ru"));
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8">
+    <MainContainer>
       <Breadcrumb crumbs={[{ label: "Главная", href: "/" }, { label: "Бренды" }]} />
 
-      <CatalogTitleWithCount title="Бренды" count={list.length} isBrands />
+      <TitleWithCount count={list.length} isBrands>
+        Бренды
+      </TitleWithCount>
 
       {list.length === 0 && <p className="text-gray-400 text-sm">Бренды не найдены</p>}
 
@@ -55,6 +58,6 @@ export default async function BrandsPage() {
           </section>
         ))}
       </div>
-    </main>
+    </MainContainer>
   );
 }

@@ -1,3 +1,5 @@
+import MainContainer from "@/components/MainContainer";
+import Title from "@/components/Title";
 import { createClient } from "@/lib/supabase-server";
 import { getProfile } from "@/services/profile.service";
 import CheckoutForm from "./CheckoutForm";
@@ -24,9 +26,9 @@ export default async function CheckoutPage() {
   }
 
   return (
-    <main className="max-w-xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Оформление заказа</h1>
+    <MainContainer className="max-w-xl">
+      <Title className="mb-6">Оформление заказа</Title>
       <CheckoutForm initial={initial} />
-    </main>
+    </MainContainer>
   );
 }

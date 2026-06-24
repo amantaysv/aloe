@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumb";
-import CatalogTitleWithCount from "@/components/CatalogTitleWithCount";
+import MainContainer from "@/components/MainContainer";
 import ManufacturerFilter from "@/components/ManufacturerFilter";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
 import ProductGrid from "@/components/ProductGrid";
 import SortSelect, { type SortValue } from "@/components/SortSelect";
+import TitleWithCount from "@/components/TitleWithCount";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { supabase } from "@/lib/supabase";
 import { getBrandsForSubcategory, getSubcategoryProducts } from "@/services/product.service";
@@ -48,7 +49,7 @@ export default async function SubcategoryPage({
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-8">
+    <MainContainer>
       <Breadcrumb
         crumbs={[
           { label: "Главная", href: "/" },
@@ -57,7 +58,7 @@ export default async function SubcategoryPage({
         ]}
       />
 
-      <CatalogTitleWithCount title={subcategory.name} count={total} />
+      <TitleWithCount count={total}>{subcategory.name}</TitleWithCount>
 
       <div className="flex flex-wrap items-end gap-4 mb-6">
         <ManufacturerFilter manufacturers={brands} />
@@ -87,6 +88,6 @@ export default async function SubcategoryPage({
           />
         </>
       )}
-    </main>
+    </MainContainer>
   );
 }

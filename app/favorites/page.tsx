@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import MainContainer from "@/components/MainContainer";
 import ProductCard from "@/components/ProductCard";
 import ProductGrid from "@/components/ProductGrid";
+import Title from "@/components/Title";
 import { createClient } from "@/lib/supabase-server";
 import { getFavoriteProducts } from "@/services/favorites.service";
 
@@ -16,8 +18,8 @@ export default async function FavoritesPage() {
   const products = await getFavoriteProducts(supabase, user.id);
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Избранное</h1>
+    <MainContainer>
+      <Title className="mb-6">Избранное</Title>
 
       {products.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
@@ -35,6 +37,6 @@ export default async function FavoritesPage() {
           ))}
         </ProductGrid>
       )}
-    </main>
+    </MainContainer>
   );
 }

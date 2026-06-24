@@ -1,8 +1,10 @@
 import Link from "next/link";
+import MainContainer from "@/components/MainContainer";
 import ManufacturerFilter from "@/components/ManufacturerFilter";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
 import ProductGrid from "@/components/ProductGrid";
+import SearchBar from "@/components/SearchBar";
 import { supabase } from "@/lib/supabase";
 import { getBrandsForSearch, searchProducts } from "@/services/product.service";
 
@@ -18,6 +20,19 @@ export default async function SearchPage({
   const currentPage = Math.max(1, parseInt(sp.page ?? "1"));
   const selectedBrandIds = (sp.brand ? (Array.isArray(sp.brand) ? sp.brand : [sp.brand]) : []).map(Number);
 
+  if (!q.trim()) {
+    return (
+      <MainContainer>
+        <div className="mb-6 lg:hidden">
+          <SearchBar withButton />
+        </div>
+        <div className="text-center py-16 text-gray-400">
+          <p className="text-lg">Введите название товара для поиска</p>
+        </div>
+      </MainContainer>
+    );
+  }
+
   const [{ products, total }, brands] = await Promise.all([
     searchProducts(supabase, q, { brandIds: selectedBrandIds, page: currentPage, pageSize: PAGE_SIZE }),
     getBrandsForSearch(supabase, q),
@@ -26,7 +41,11 @@ export default async function SearchPage({
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <main>
+    <MainContainer>
+      <div className="mb-6 lg:hidden">
+        <SearchBar defaultValue={q} withButton />
+      </div>
+
       <div className="mb-6">
         <h1 className="text-xl font-bold">
           Результаты поиска: <span className="text-green-600">«{q}»</span>
@@ -58,6 +77,6 @@ export default async function SearchPage({
           />
         </>
       )}
-    </main>
+    </MainContainer>
   );
 }
