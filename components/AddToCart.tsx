@@ -12,10 +12,10 @@ type Props = {
     price: number;
     image_url: string;
   };
-  large?: boolean;
+  size?: "sm" | "md" | "lg";
 };
 
-export default function AddToCart({ product, large }: Props) {
+export default function AddToCart({ product, size }: Props) {
   const { add, items, increment, decrement } = useCart();
   const { show } = useToast();
   const item = items.find((i) => i.id === product.id);
@@ -27,18 +27,18 @@ export default function AddToCart({ product, large }: Props) {
           onClick={() => decrement(product.id)}
           variant="icon"
           className={`border border-gray-300 rounded-lg font-bold hover:bg-gray-50`}
-          size={large ? "lg" : "md"}
+          size={size}
         >
           {item.quantity === 1 ? <Trash2Icon className="size-4" /> : <MinusIcon className="size-4" />}
         </Button>
-        <span className={`${large ? "text-base" : "text-sm"} font-medium w-6 text-center whitespace-nowrap`}>
+        <span className={`${size === "lg" ? "text-base" : "text-sm"} font-medium w-6 text-center whitespace-nowrap`}>
           {`${item.quantity} шт`}
         </span>
         <Button
           onClick={() => increment(product.id)}
           variant="icon"
           className={`border border-gray-300 rounded-lg font-bold hover:bg-gray-50`}
-          size={large ? "lg" : "md"}
+          size={size}
         >
           <PlusIcon className="size-4" />
         </Button>
@@ -54,7 +54,7 @@ export default function AddToCart({ product, large }: Props) {
         show("Добавлено в корзину", "success");
       }}
       className={`w-full`}
-      size={large ? "lg" : "md"}
+      size={size}
     >
       В корзину
     </Button>

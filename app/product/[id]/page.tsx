@@ -9,6 +9,7 @@ import FavoriteButton from "@/components/FavoriteButton";
 import MainContainer from "@/components/MainContainer";
 import ProductCard from "@/components/ProductCard";
 import ProductDescription from "@/components/ProductDescription";
+import Title from "@/components/Title";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { supabase } from "@/lib/supabase";
 import { getProduct, getRelatedProducts } from "@/services/product.service";
@@ -112,7 +113,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             {product.category}
           </Link>
 
-          <h1 className="text-2xl font-bold leading-snug mb-2">{product.name}</h1>
+          <Title className="mb-2">{product.name}</Title>
 
           {brandInfo && (
             <p className="text-sm text-gray-500 mb-4">
@@ -124,7 +125,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           )}
 
           <div className="flex items-baseline gap-3 mb-6">
-            <span className="text-3xl font-bold">{product.price} сом</span>
+            <span className="text-2xl md:text-3xl font-bold">{product.price} сом</span>
             {product.old_price && <span className="text-lg text-gray-400 line-through">{product.old_price} сом</span>}
           </div>
 
@@ -136,7 +137,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 price: product.price,
                 image_url: product.image_url,
               }}
-              large
+              size="lg"
             />
           </div>
 

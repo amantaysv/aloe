@@ -139,7 +139,7 @@ export default function CheckoutForm({ initial }: Props) {
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
             rows={2}
             placeholder="Дополнительная информация, ориентиры..."
           />
@@ -148,7 +148,7 @@ export default function CheckoutForm({ initial }: Props) {
 
       {error && <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
 
-      <Button type="submit" variant="primary" disabled={loading} className="w-full py-3">
+      <Button type="submit" variant="primary" size="md" disabled={loading} className="w-full py-2.5 md:py-3">
         {loading ? "Оформляем..." : "Подтвердить заказ"}
       </Button>
     </form>
