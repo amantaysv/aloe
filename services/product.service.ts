@@ -47,7 +47,8 @@ export async function getHomePageCategoryProducts(
   const allProducts = withBrandName((data ?? []) as unknown as ProductRow[]);
 
   return groups.map(({ topId, allIds: ids }) => {
-    const grouped = allProducts.filter((p) => ids.includes(String(p.category_id)));
+    const idsSet = new Set(ids.map(String));
+    const grouped = allProducts.filter((p) => idsSet.has(String(p.category_id)));
     return { topId, products: grouped.slice(0, limitPerCategory), total: grouped.length };
   });
 }
