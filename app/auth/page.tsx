@@ -88,7 +88,7 @@ function AuthForm() {
           <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto text-green-600 text-2xl">
             ✉
           </div>
-          <h1 className="text-xl font-bold">Подтвердите email</h1>
+          <Title>Подтвердите email</Title>
           <p className="text-sm text-gray-600">
             Мы отправили письмо на <span className="font-medium text-gray-800">{email}</span>
             .

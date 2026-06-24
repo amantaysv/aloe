@@ -1,5 +1,6 @@
 import Link from "next/link";
 import MainContainer from "@/components/MainContainer";
+import Title from "@/components/Title";
 
 export const metadata = {
   title: "Заказ оформлен — Aloe.kg",
@@ -12,7 +13,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   return (
     <MainContainer className="max-w-lg text-center">
       <div className="text-6xl mb-4">✅</div>
-      <h1 className="text-2xl font-bold mb-2">Заказ оформлен!</h1>
+      <Title className="mb-2">Заказ оформлен!</Title>
       <p className="text-gray-500 mb-1">
         Номер заказа: <span className="font-mono font-bold text-gray-700">#{shortId}</span>
       </p>

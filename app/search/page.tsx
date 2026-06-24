@@ -5,6 +5,7 @@ import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
 import ProductGrid from "@/components/ProductGrid";
 import SearchBar from "@/components/SearchBar";
+import Title from "@/components/Title";
 import { supabase } from "@/lib/supabase";
 import { getBrandsForSearch, searchProducts } from "@/services/product.service";
 
@@ -47,9 +48,9 @@ export default async function SearchPage({
       </div>
 
       <div className="mb-6">
-        <h1 className="text-xl font-bold">
+        <Title>
           Результаты поиска: <span className="text-green-600">«{q}»</span>
-        </h1>
+        </Title>
         <p className="text-sm text-gray-500 mt-1">Найдено: {total} товаров</p>
       </div>
 
