@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumb";
+import CatalogTitleWithCount from "@/components/CatalogTitleWithCount";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
+import ProductGrid from "@/components/ProductGrid";
 import { getCachedBrandBySlug, getCachedProductsByBrand } from "@/lib/cached-queries";
 
 const PAGE_SIZE = 24;
@@ -41,16 +43,13 @@ export default async function BrandPage({
         crumbs={[{ label: "Главная", href: "/" }, { label: "Бренды", href: "/brands" }, { label: brandData.name }]}
       />
 
-      <div className="flex items-baseline gap-3 mb-6">
-        <h1 className="text-2xl font-bold">{brandData.name}</h1>
-        <span className="text-sm text-gray-400">{total} товаров</span>
-      </div>
+      <CatalogTitleWithCount title={brandData.name} count={total} />
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <ProductGrid>
         {data.map((product, i) => (
           <ProductCard key={product.id} product={product} priority={i === 0} />
         ))}
-      </div>
+      </ProductGrid>
 
       <Pagination page={currentPage} totalPages={totalPages} basePath={`/brands/${brand}`} />
     </main>

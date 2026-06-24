@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Breadcrumb from "@/components/Breadcrumb";
+import CatalogTitleWithCount from "@/components/CatalogTitleWithCount";
 import { getCachedBrands } from "@/lib/cached-queries";
 
 export const metadata = { title: "Бренды — Aloe.kg" };
@@ -19,10 +20,7 @@ export default async function BrandsPage() {
     <main className="max-w-4xl mx-auto px-4 py-8">
       <Breadcrumb crumbs={[{ label: "Главная", href: "/" }, { label: "Бренды" }]} />
 
-      <div className="flex items-baseline gap-3 mb-8">
-        <h1 className="text-2xl font-bold">Бренды</h1>
-        <span className="text-sm text-gray-400">{list.length} производителей</span>
-      </div>
+      <CatalogTitleWithCount title="Бренды" count={list.length} isBrands />
 
       {list.length === 0 && <p className="text-gray-400 text-sm">Бренды не найдены</p>}
 

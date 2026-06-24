@@ -1,6 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumb";
+import CatalogTitleWithCount from "@/components/CatalogTitleWithCount";
 import ProductCard from "@/components/ProductCard";
+import ProductGrid from "@/components/ProductGrid";
 import SeeAllProducts from "@/components/SeeAllProducts";
 import SortSelect, { type SortValue } from "@/components/SortSelect";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
@@ -48,12 +50,10 @@ export default async function CategoryPage({
     <main className="max-w-6xl mx-auto px-4 py-8">
       <Breadcrumb crumbs={[{ label: "Главная", href: "/" }, { label: category.name }]} />
 
-      <div className="flex flex-wrap items-center gap-3 mb-6">
-        <h1 className="text-2xl font-bold">{category.name}</h1>
-        <span className="text-sm text-gray-400">{totalCount} товаров</span>
-        <div className="ml-auto">
-          <SortSelect current={validSort} />
-        </div>
+      <CatalogTitleWithCount title={category.name} count={totalCount} />
+
+      <div className="flex justify-end mb-6">
+        <SortSelect current={validSort} />
       </div>
 
       <div className="space-y-10">
@@ -63,11 +63,11 @@ export default async function CategoryPage({
               <h2 className="text-lg font-semibold">{s.name}</h2>
               <SeeAllProducts href={`/catalog/${slug}/${s.slug}`} count={total - nonEmpty.length} />
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <ProductGrid>
               {products.map((product, i) => (
                 <ProductCard key={product.id} product={product} priority={i === 0} />
               ))}
-            </div>
+            </ProductGrid>
           </div>
         ))}
       </div>

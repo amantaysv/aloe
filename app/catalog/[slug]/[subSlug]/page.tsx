@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumb";
+import CatalogTitleWithCount from "@/components/CatalogTitleWithCount";
 import ManufacturerFilter from "@/components/ManufacturerFilter";
 import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
+import ProductGrid from "@/components/ProductGrid";
 import SortSelect, { type SortValue } from "@/components/SortSelect";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { supabase } from "@/lib/supabase";
@@ -55,13 +57,10 @@ export default async function SubcategoryPage({
         ]}
       />
 
-      <div className="flex items-baseline gap-3 mb-4">
-        <h1 className="text-2xl font-bold">{subcategory.name}</h1>
-        <span className="text-sm text-gray-400">{total} товаров</span>
-      </div>
+      <CatalogTitleWithCount title={subcategory.name} count={total} />
 
-      <div className="flex flex-wrap items-start gap-4 mb-6">
-        <ManufacturerFilter manufacturers={brands} className="" />
+      <div className="flex flex-wrap items-end gap-4 mb-6">
+        <ManufacturerFilter manufacturers={brands} />
         <div className="ml-auto">
           <SortSelect current={validSort} />
         </div>
@@ -71,11 +70,11 @@ export default async function SubcategoryPage({
         <p className="text-gray-500 py-8 text-center">По выбранным фильтрам ничего не найдено</p>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <ProductGrid>
             {products.map((product, i) => (
               <ProductCard key={product.id} product={product} priority={i === 0} />
             ))}
-          </div>
+          </ProductGrid>
 
           <Pagination
             page={currentPage}

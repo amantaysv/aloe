@@ -3,6 +3,8 @@ import Pagination from "@/components/Pagination";
 import ProductCard from "@/components/ProductCard";
 import { supabase } from "@/lib/supabase";
 import { getProductsByLabelPaginated } from "@/services/product.service";
+import CatalogTitleWithCount from "./CatalogTitleWithCount";
+import ProductGrid from "./ProductGrid";
 
 const PAGE_SIZE = 20;
 
@@ -29,19 +31,18 @@ export default async function LabelProductsPage({
       <Link href="/" className="text-sm text-gray-500 hover:text-gray-800 mb-4 inline-block">
         ← Главная
       </Link>
-      <div className="flex items-baseline gap-3 mb-6">
-        <h1 className="text-2xl font-bold">{title}</h1>
-        {total ? <span className="text-sm text-gray-400">{total} товаров</span> : null}
-      </div>
+
+      <CatalogTitleWithCount title={title} count={total} />
+
       {products.length === 0 ? (
         <p className="text-gray-400 text-sm">{emptyText}</p>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <ProductGrid>
             {products.map((p, i) => (
               <ProductCard key={p.id} product={p} priority={i === 0} />
             ))}
-          </div>
+          </ProductGrid>
           <Pagination page={page} totalPages={totalPages} basePath={basePath} />
         </>
       )}

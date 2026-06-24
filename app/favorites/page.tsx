@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
+import ProductGrid from "@/components/ProductGrid";
 import { createClient } from "@/lib/supabase-server";
 import { getFavoriteProducts } from "@/services/favorites.service";
 
@@ -28,11 +29,11 @@ export default async function FavoritesPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <ProductGrid>
           {products.map((p, i) => (
             <ProductCard key={p.id} product={p} priority={i === 0} />
           ))}
-        </div>
+        </ProductGrid>
       )}
     </main>
   );
