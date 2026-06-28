@@ -5,7 +5,6 @@ import AuthSync from "@/components/AuthSync";
 import CatalogSidebar from "@/components/CatalogSidebar";
 import Header from "@/components/Header";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import MobileMenu from "@/components/MobileMenu";
 import Toaster from "@/components/Toaster";
 import { getCachedCategories } from "@/lib/cached-queries";
 import "./globals.css";
@@ -33,7 +32,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <NextTopLoader color="#16a34a" showSpinner={false} />
         <AuthSync />
         <Header />
-        <MobileMenu parents={parents} subcategories={subs} />
         <div className="max-w-7xl mx-auto flex">
           <CatalogSidebar parents={parents} subcategories={subs} />
           <div className="flex-1 min-w-0">{children}</div>
