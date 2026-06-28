@@ -69,6 +69,7 @@ export type CategoryInput = {
   name: string;
   parent_id: number | null;
   slug: string;
+  image_url?: string | null;
 };
 
 export async function upsertCategory(
@@ -76,7 +77,7 @@ export async function upsertCategory(
 ): Promise<{ ok: true; id: number } | { ok: false; error: string }> {
   await assertAdmin();
   const db = adminDb();
-  const fields = { name: data.name, parent_id: data.parent_id, slug: data.slug };
+  const fields = { name: data.name, parent_id: data.parent_id, slug: data.slug, image_url: data.image_url ?? null };
   if (data.id) {
     const { error } = await db.from("categories").update(fields).eq("id", data.id);
     if (error) return { ok: false, error: error.message };
@@ -85,6 +86,22 @@ export async function upsertCategory(
   const { data: row, error } = await db.from("categories").insert(fields).select("id").single();
   if (error) return { ok: false, error: error.message };
   return { ok: true, id: row.id };
+}
+
+export async function uploadCategoryImage(
+  formData: FormData,
+): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+  await assertAdmin();
+  const file = formData.get("file") as File | null;
+  if (!file || !file.size) return { ok: false, error: "Файл не выбран" };
+  const ext = file.name.split(".").pop() ?? "jpg";
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const db = adminDb();
+  const { error } = await db.storage.from("categories").upload(path, buffer, { contentType: file.type });
+  if (error) return { ok: false, error: error.message };
+  const { data } = db.storage.from("categories").getPublicUrl(path);
+  return { ok: true, url: data.publicUrl };
 }
 
 export async function deleteCategory(id: number): Promise<{ ok: true } | { ok: false; error: string }> {

@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronRightIcon, PencilIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
+import { useRef, useState } from "react";
+import { ChevronRightIcon, ImagePlusIcon, Loader2Icon, PencilIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
+import Image from "next/image";
 import Button from "@/components/Button";
-import { deleteCategory, upsertCategory, type CategoryInput } from "./actions";
+import { deleteCategory, uploadCategoryImage, upsertCategory, type CategoryInput } from "./actions";
 import { adminInputCls as inp, Field } from "./admin-ui";
 
-type Category = { id: number; name: string; parent_id: number | null; slug: string };
+type Category = { id: number; name: string; parent_id: number | null; slug: string; image_url?: string | null };
 
-const empty: CategoryInput = { name: "", parent_id: null, slug: "" };
+const empty: CategoryInput = { name: "", parent_id: null, slug: "", image_url: null };
 
 export default function AdminCategories({
   categories: initial,
@@ -20,7 +21,9 @@ export default function AdminCategories({
   const [categories, setCategories] = useState(initial);
   const [editing, setEditing] = useState<(CategoryInput & { isNew: boolean }) | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const parents = categories.filter((c) => !c.parent_id);
   const subs = categories.filter((c) => c.parent_id);
@@ -32,8 +35,28 @@ export default function AdminCategories({
   }
 
   function openEdit(c: Category) {
-    setEditing({ id: c.id, name: c.name, parent_id: c.parent_id, slug: c.slug, isNew: false });
+    setEditing({ id: c.id, name: c.name, parent_id: c.parent_id, slug: c.slug, image_url: c.image_url ?? null, isNew: false });
     setError("");
+  }
+
+  async function handleImageFile(file: File) {
+    setUploading(true);
+    setError("");
+    const fd = new FormData();
+    fd.append("file", file);
+    const result = await uploadCategoryImage(fd);
+    setUploading(false);
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    setEditing((prev) => (prev ? { ...prev, image_url: result.url } : prev));
+  }
+
+  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) handleImageFile(file);
+    e.target.value = "";
   }
 
   function close() {
@@ -58,6 +81,7 @@ export default function AdminCategories({
       name: editing.name.trim(),
       parent_id: editing.parent_id,
       slug: editing.slug.trim(),
+      image_url: editing.image_url ?? null,
     });
     setSaving(false);
     if (!result.ok) {
@@ -65,18 +89,16 @@ export default function AdminCategories({
       return;
     }
 
+    const updated = {
+      name: editing.name.trim(),
+      parent_id: editing.parent_id,
+      slug: editing.slug.trim(),
+      image_url: editing.image_url ?? null,
+    };
     setCategories((prev) => {
       const exists = prev.find((c) => c.id === editing.id);
-      if (exists)
-        return prev.map((c) =>
-          c.id === editing.id
-            ? { ...c, name: editing.name.trim(), parent_id: editing.parent_id, slug: editing.slug.trim() }
-            : c,
-        );
-      return [
-        ...prev,
-        { id: result.id, name: editing.name.trim(), parent_id: editing.parent_id, slug: editing.slug.trim() },
-      ];
+      if (exists) return prev.map((c) => (c.id === editing.id ? { ...c, ...updated } : c));
+      return [...prev, { id: result.id, ...updated }];
     });
     close();
   }
@@ -114,6 +136,13 @@ export default function AdminCategories({
             <div key={parent.id}>
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 group">
                 <ChevronRightIcon className="size-4 text-gray-300 shrink-0" />
+                {parent.image_url ? (
+                  <div className="relative size-8 shrink-0 rounded overflow-hidden bg-gray-100">
+                    <Image src={parent.image_url} alt={parent.name} fill className="object-cover" sizes="32px" />
+                  </div>
+                ) : (
+                  <div className="size-8 shrink-0 rounded bg-gray-100" />
+                )}
                 <div className="flex-1 min-w-0">
                   <span className="text-sm font-semibold">{parent.name}</span>
                   <span className="text-xs text-gray-400 ml-2">{parent.slug}</span>
@@ -146,6 +175,13 @@ export default function AdminCategories({
                     key={sub.id}
                     className="flex items-center gap-2 pl-9 pr-3 py-1.5 rounded-lg hover:bg-gray-50 group"
                   >
+                    {sub.image_url ? (
+                      <div className="relative size-6 shrink-0 rounded overflow-hidden bg-gray-100">
+                        <Image src={sub.image_url} alt={sub.name} fill className="object-cover" sizes="24px" />
+                      </div>
+                    ) : (
+                      <div className="size-6 shrink-0 rounded bg-gray-100" />
+                    )}
                     <div className="flex-1 min-w-0">
                       <span className="text-sm text-gray-700">{sub.name}</span>
                       <span className="text-xs text-gray-400 ml-2">{sub.slug}</span>
@@ -216,6 +252,55 @@ export default function AdminCategories({
                       </option>
                     ))}
                 </select>
+              </Field>
+
+              <Field label="Изображение">
+                <input ref={fileRef} type="file" accept="image/*" onChange={onFileChange} className="hidden" />
+                {editing.image_url ? (
+                  <div className="relative group w-full aspect-video rounded-xl overflow-hidden bg-gray-100">
+                    <Image src={editing.image_url} alt="Изображение категории" fill className="object-cover" sizes="400px" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <Button
+                        variant="icon"
+                        onClick={() => !uploading && fileRef.current?.click()}
+                        disabled={uploading}
+                        className="bg-white/90 hover:bg-white text-gray-700"
+                        title="Заменить"
+                      >
+                        {uploading ? <Loader2Icon className="size-4 animate-spin" /> : <ImagePlusIcon className="size-4" />}
+                      </Button>
+                      <Button
+                        variant="icon"
+                        iconColor="danger"
+                        onClick={() => set("image_url", null)}
+                        className="bg-white/90 hover:bg-white"
+                        title="Удалить"
+                      >
+                        <Trash2Icon className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => !uploading && fileRef.current?.click()}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const file = e.dataTransfer.files?.[0];
+                      if (file && file.type.startsWith("image/")) handleImageFile(file);
+                    }}
+                    className="border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-green-500 hover:text-green-600 transition-colors cursor-pointer select-none py-8"
+                  >
+                    {uploading ? (
+                      <Loader2Icon className="size-6 animate-spin text-green-600" />
+                    ) : (
+                      <>
+                        <ImagePlusIcon className="size-6" />
+                        <span className="text-sm">Нажмите или перетащите изображение</span>
+                      </>
+                    )}
+                  </div>
+                )}
               </Field>
             </div>
 
