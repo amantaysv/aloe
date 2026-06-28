@@ -15,7 +15,7 @@
 ```
 /
 ├── app/                    # Next.js App Router pages
-├── components/             # 27 shared React components
+├── components/             # 29 shared React components
 ├── lib/                    # Supabase clients, caching, cn() util
 ├── services/               # Data access layer (8 domain modules)
 ├── store/                  # Zustand stores (cart, favorites, toast, mobile-menu)
@@ -32,6 +32,7 @@
 /auth                       # Login / register (email+password, Google OAuth)
 /auth/confirm               # Email OTP verification & OAuth PKCE callback (route.ts)
 /product/[id]               # Product detail page
+/catalog                    # All categories index
 /catalog/[slug]             # Category listing with filters
 /catalog/[slug]/[subSlug]   # Subcategory listing with filters
 /brands                     # All brands index (alphabetical)
@@ -81,6 +82,7 @@
 | name      | text |                                        |
 | slug      | text |                                        |
 | parent_id | int  | self-referential FK (null = top-level) |
+| image_url | text | nullable                               |
 
 ### brands
 
@@ -92,12 +94,13 @@
 
 ### banners
 
-| column     | type    | notes |
-| ---------- | ------- | ----- |
-| id         | int     | PK    |
-| image_url  | text    |       |
-| sort_order | int     |       |
-| active     | boolean |       |
+| column     | type    | notes    |
+| ---------- | ------- | -------- |
+| id         | int     | PK       |
+| image_url  | text    |          |
+| sort_order | int     |          |
+| active     | boolean |          |
+| link       | text    | nullable |
 
 ### profiles
 
@@ -140,7 +143,7 @@
 | product_id | int (PK part)  |
 | created_at | timestamptz    |
 
-**Storage bucket:** `product-images` (product photos + banners)
+**Storage buckets:** `product-images` (product photos), `banners` (banner images), `categories` (category images)
 
 ## TypeScript Types (`/types/index.ts`)
 
@@ -185,13 +188,16 @@ function withBrandName(rows: ProductRow[]): Product[]; // maps brands.name → b
 
 ## Lib Utilities (`/lib/`)
 
-| file                  | purpose                                      |
-| --------------------- | -------------------------------------------- |
-| `supabase-server.ts`  | `createClient()` — SSR Supabase with cookies |
-| `supabase-browser.ts` | `createClient()` — client-side Supabase      |
-| `supabase.ts`         | Direct anon-key client                       |
-| `cn.ts`               | `cn(...classes)` — clsx + tailwind-merge     |
-| `cached-queries.ts`   | ISR-cached wrappers via `unstable_cache()`   |
+| file                  | purpose                                                         |
+| --------------------- | --------------------------------------------------------------- |
+| `supabase-server.ts`  | `createClient()` — SSR Supabase with cookies                    |
+| `supabase-browser.ts` | `createClient()` — client-side Supabase                         |
+| `supabase.ts`         | Direct anon-key client (used by `unstable_cache()` wrappers)    |
+| `cn.ts`               | `cn(...classes)` — clsx + tailwind-merge                        |
+| `cached-queries.ts`   | ISR-cached wrappers via `unstable_cache()`                      |
+| `auth.ts`             | `requireAuth()` — server-side auth guard, redirects to `/auth`  |
+| `constants.ts`        | `LABEL_MAP` (badge text/color), `ORDER_STATUS` (label/color)    |
+| `page-params.ts`      | `parsePage()`, `parseSortParam()`, `parseBrandIds()` — URL helpers |
 
 ### Cached Queries (ISR tags & TTLs)
 
@@ -216,11 +222,11 @@ function withBrandName(rows: ProductRow[]): Product[]; // maps brands.name → b
 
 ## Server Actions
 
-| file                      | actions                                                                                                                                    |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `app/checkout/actions.ts` | `createOrder()`                                                                                                                            |
-| `app/profile/actions.ts`  | `saveProfile()`                                                                                                                            |
-| `app/admin/actions.ts`    | `upsertProduct()`, `deleteProduct()`, `upsertCategory()`, `upsertBrand()`, `upsertBanner()`, `uploadProductImage()`, `updateOrderStatus()` |
+| file                      | actions                                                                                                                                                                                                                           |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/checkout/actions.ts` | `createOrder()`                                                                                                                                                                                                                   |
+| `app/profile/actions.ts`  | `saveProfile()`                                                                                                                                                                                                                   |
+| `app/admin/actions.ts`    | `upsertProduct()`, `deleteProduct()`, `uploadProductImage()`, `upsertCategory()`, `deleteCategory()`, `uploadCategoryImage()`, `upsertBrand()`, `deleteBrand()`, `getBrands()`, `upsertBanner()`, `deleteBanner()`, `uploadBannerImage()`, `reorderBanners()`, `updateOrderStatus()` |
 
 ## Auth
 
