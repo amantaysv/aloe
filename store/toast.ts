@@ -20,7 +20,7 @@ export const useToast = create<ToastStore>((set) => ({
   show: (message, type = "info") => {
     const id = Math.random().toString(36).slice(2);
     set((state) => ({
-      toasts: [...state.toasts, { id, message, type }],
+      toasts: [...state.toasts.slice(-2), { id, message, type }],
     }));
     setTimeout(() => {
       set((state) => ({
