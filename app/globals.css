@@ -13,12 +13,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-} */
 @layer base {
   body {
     background: var(--background);
@@ -63,4 +57,13 @@
 
 @utility scrollbar-gutter-stable {
   scrollbar-gutter: stable both-edges;
+}
+
+@keyframes banner-progress {
+  from { width: 0% }
+  to { width: 100% }
+}
+
+.animate-banner-progress {
+  animation: banner-progress 4s linear forwards;
 }
