@@ -4,9 +4,7 @@ import { useRef, useState } from "react";
 import { ImagePlus, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import Button from "@/components/Button";
-import Currency from "@/components/Currency";
-import Pagination from "@/components/Pagination";
+import { Button, Currency, Pagination } from "@/components";
 import type { Product } from "@/types";
 import { deleteProduct, getBrands, uploadProductImage, upsertProduct, type ProductInput } from "./actions";
 import { Field, adminInputCls as inp } from "./admin-ui";
@@ -344,7 +342,7 @@ export default function AdminProducts({
                 <input ref={fileRef} type="file" accept="image/*" onChange={onFileChange} className="hidden" />
                 {editing.image_url ? (
                   <div
-                    className="relative w-full aspect-square max-w-[200px] bg-gray-100 rounded-xl overflow-hidden group"
+                    className="relative w-full aspect-square max-w-50 bg-gray-100 rounded-xl overflow-hidden group"
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={onDrop}
                   >

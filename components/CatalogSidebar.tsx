@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import Button from "@/components/Button";
+import Button from "./Button";
 
 type Category = {
   id: number;

@@ -1,9 +1,9 @@
 "use client";
 
 import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
-import Button from "@/components/Button";
 import { useCart } from "@/store/cart";
 import { useToast } from "@/store/toast";
+import Button from "./Button";
 
 type Props = {
   product: {

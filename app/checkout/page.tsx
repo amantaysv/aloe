@@ -1,5 +1,4 @@
-import MainContainer from "@/components/MainContainer";
-import Title from "@/components/Title";
+import { MainContainer, Title } from "@/components";
 import { createClient } from "@/lib/supabase-server";
 import { getProfile } from "@/services/profile.service";
 import CheckoutForm from "./CheckoutForm";

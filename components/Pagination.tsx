@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import Button from "@/components/Button";
+import Button from "./Button";
 
 type Props = {
   page: number;

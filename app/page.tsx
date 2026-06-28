@@ -1,6 +1,4 @@
-import BannerCarousel from "@/components/BannerCarousel";
-import MainContainer from "@/components/MainContainer";
-import ProductCarousel from "@/components/ProductCarousel";
+import { BannerCarousel, MainContainer, ProductCarousel } from "@/components";
 import {
   getCachedActiveBanners,
   getCachedCategoriesWithSlug,

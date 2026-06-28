@@ -3,9 +3,7 @@
 import { useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Button from "@/components/Button";
-import Currency from "@/components/Currency";
-import Pagination from "@/components/Pagination";
+import { Button, Currency, Pagination } from "@/components";
 import { ORDER_STATUS } from "@/lib/constants";
 import OrderStatusSelect from "./OrderStatusSelect";
 

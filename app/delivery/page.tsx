@@ -1,5 +1,4 @@
-import Currency from "@/components/Currency";
-import MainContainer from "@/components/MainContainer";
+import { Currency, MainContainer } from "@/components";
 
 export const metadata = {
   title: "Доставка и оплата — Aloe.kg",

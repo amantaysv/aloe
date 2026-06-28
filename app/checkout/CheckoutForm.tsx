@@ -4,8 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Button from "@/components/Button";
-import Currency from "@/components/Currency";
+import { Button, Currency } from "@/components";
 import { useCart } from "@/store/cart";
 import { createOrder } from "./actions";
 

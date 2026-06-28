@@ -1,7 +1,5 @@
 import Link from "next/link";
-import Breadcrumb from "@/components/Breadcrumb";
-import MainContainer from "@/components/MainContainer";
-import TitleWithCount from "@/components/TitleWithCount";
+import { Breadcrumb, MainContainer, TitleWithCount } from "@/components";
 import { getCachedBrands } from "@/lib/cached-queries";
 
 export const metadata = { title: "Бренды — Aloe.kg" };

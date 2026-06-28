@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { ChevronRightIcon, ImagePlusIcon, Loader2Icon, PencilIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import Image from "next/image";
-import Button from "@/components/Button";
+import { Button } from "@/components";
 import { deleteCategory, uploadCategoryImage, upsertCategory, type CategoryInput } from "./actions";
 import { adminInputCls as inp, Field } from "./admin-ui";
 

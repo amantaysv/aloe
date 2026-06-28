@@ -1,4 +1,4 @@
-import LabelProductsPage from "@/components/LabelProductsPage";
+import { LabelProductsPage } from "@/components";
 
 export const metadata = { title: "Акции — Aloe.kg" };
 

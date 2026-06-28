@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Breadcrumb from "@/components/Breadcrumb";
-import MainContainer from "@/components/MainContainer";
-import Pagination from "@/components/Pagination";
-import ProductCard from "@/components/ProductCard";
-import ProductGrid from "@/components/ProductGrid";
-import TitleWithCount from "@/components/TitleWithCount";
+import { Breadcrumb, MainContainer, Pagination, ProductCard, ProductGrid, TitleWithCount } from "@/components";
 import { getCachedBrandBySlug, getCachedProductsByBrand } from "@/lib/cached-queries";
 import { parsePage } from "@/lib/page-params";
 

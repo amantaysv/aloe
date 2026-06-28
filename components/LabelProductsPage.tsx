@@ -1,9 +1,9 @@
 import Link from "next/link";
-import Pagination from "@/components/Pagination";
-import ProductCard from "@/components/ProductCard";
 import { supabase } from "@/lib/supabase";
 import { getProductsByLabelPaginated } from "@/services/product.service";
 import MainContainer from "./MainContainer";
+import Pagination from "./Pagination";
+import ProductCard from "./ProductCard";
 import ProductGrid from "./ProductGrid";
 import TitleWithCount from "./TitleWithCount";
 
