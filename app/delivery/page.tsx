@@ -1,3 +1,4 @@
+import Currency from "@/components/Currency";
 import MainContainer from "@/components/MainContainer";
 
 export const metadata = {
@@ -16,19 +17,25 @@ export default function DeliveryPage() {
             <div>
               <div className="flex items-baseline justify-between">
                 <span className="text-gray-800">По Бишкеку и жилмассивам</span>
-                <span className="text-lg font-semibold text-gray-900">150 сом</span>
+                <span className="text-lg font-semibold text-gray-900">
+                  150 <Currency />
+                </span>
               </div>
-              <p className="text-sm text-gray-400 mt-1">Минимальная сумма заказа — 500 сом</p>
+              <p className="text-sm text-gray-400 mt-1">
+                Минимальная сумма заказа — 500 <Currency />
+              </p>
             </div>
             <div>
               <div className="flex items-baseline justify-between">
                 <span className="text-gray-800">Регионы</span>
-                <span className="text-lg font-semibold text-gray-900">от 290 сом</span>
+                <span className="text-lg font-semibold text-gray-900">
+                  от 290 <Currency />
+                </span>
               </div>
               <p className="text-sm text-gray-400 mt-1">Итоговая цена сообщается по телефону после заказа</p>
             </div>
             <div className="text-sm text-green-600">
-              Бесплатно при заказе от 5 000 сом по Бишкеку
+              Бесплатно при заказе от 5 000 <Currency /> по Бишкеку
             </div>
           </div>
         </section>
@@ -54,8 +61,8 @@ export default function DeliveryPage() {
         <section className="pt-10">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Возврат</h2>
           <p className="text-sm text-gray-700 leading-relaxed">
-            В течение двух дней — только нового, неиспользованного товара.
-            Расходы по доставке до пункта возврата несёт покупатель.
+            В течение двух дней — только нового, неиспользованного товара. Расходы по доставке до пункта возврата несёт
+            покупатель.
           </p>
         </section>
       </div>

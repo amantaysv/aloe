@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
+import Currency from "@/components/Currency";
 import Pagination from "@/components/Pagination";
 import { ORDER_STATUS } from "@/lib/constants";
 import { useCart } from "@/store/cart";
@@ -101,13 +102,17 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
                             <span>
                               {item.name} × {item.quantity}
                             </span>
-                            <span>{(item.price * item.quantity).toLocaleString("ru-RU")} сом</span>
+                            <span>
+                              {(item.price * item.quantity).toLocaleString("ru-RU")} <Currency />
+                            </span>
                           </li>
                         ))}
                       </ul>
 
                       <div className="flex justify-between items-center border-t border-gray-300 pt-2">
-                        <span className="font-semibold text-sm">Итого: {order.total.toLocaleString("ru-RU")} сом</span>
+                        <span className="font-semibold text-sm">
+                          Итого: {order.total.toLocaleString("ru-RU")} <Currency />
+                        </span>
                         <Button variant="secondary" onClick={() => repeatOrder(order)} className="text-xs px-3 py-1.5">
                           Повторить заказ
                         </Button>

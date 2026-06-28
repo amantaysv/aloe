@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LABEL_MAP } from "@/lib/constants";
 import type { Product } from "@/types";
 import AddToCart from "./AddToCart";
+import Currency from "./Currency";
 import FavoriteButton from "./FavoriteButton";
 
 type Props = {
@@ -53,8 +54,14 @@ export default function ProductCard({ product: p, className = "", href, priority
           </p>
           {p.brand_name && <p className="text-xs text-gray-400 mt-0.5 truncate">{p.brand_name}</p>}
           <div className="flex items-baseline gap-1.5 mt-1">
-            <p className="text-base font-bold">{p.price} сом</p>
-            {p.old_price && <p className="text-sm text-gray-400 line-through">{p.old_price} сом</p>}
+            <p className="text-base font-bold">
+              {p.price} <Currency />
+            </p>
+            {p.old_price && (
+              <p className="text-sm text-gray-400 line-through">
+                {p.old_price} <Currency />
+              </p>
+            )}
           </div>
         </div>
       </Link>

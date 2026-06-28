@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
+import Currency from "@/components/Currency";
 import Pagination from "@/components/Pagination";
 import { ORDER_STATUS } from "@/lib/constants";
 import OrderStatusSelect from "./OrderStatusSelect";
@@ -169,7 +170,9 @@ export default function AdminOrders({
                   {order.comment && <p className="text-sm text-gray-400 italic">💬 {order.comment}</p>}
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-xl font-bold text-green-600">{order.total} сом</p>
+                  <p className="text-xl font-bold text-green-600">
+                    {order.total} <Currency />
+                  </p>
                   <OrderStatusSelect
                     orderId={order.id}
                     currentStatus={order.status}
@@ -184,7 +187,7 @@ export default function AdminOrders({
                     <div key={i} className="flex justify-between text-sm">
                       <span className="text-gray-700 flex-1 line-clamp-1">{item.name}</span>
                       <span className="text-gray-500 shrink-0 ml-4">
-                        {item.quantity} × {item.price} сом
+                        {item.quantity} × {item.price} <Currency />
                       </span>
                     </div>
                   ))}

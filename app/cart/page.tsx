@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
+import Currency from "@/components/Currency";
 import MainContainer from "@/components/MainContainer";
 import Title from "@/components/Title";
 import { useCart } from "@/store/cart";
@@ -56,7 +57,9 @@ export default function CartPage() {
       <div className="mt-6 md:border-t md:pt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-gray-500 text-sm">Итого:</p>
-          <p className="text-2xl font-bold text-green-600">{total()} сом</p>
+            <p className="text-2xl font-bold text-green-600">
+              {total()} <Currency />
+            </p>
         </div>
         <div className="flex flex-wrap gap-3">
           <Button variant="secondary" onClick={clear} className="min-w-40 flex-1 shrink-0">

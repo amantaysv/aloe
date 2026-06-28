@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
+import Currency from "@/components/Currency";
 import { useCart } from "@/store/cart";
 import { createOrder } from "./actions";
 
@@ -84,18 +85,26 @@ export default function CheckoutForm({ initial }: Props) {
               </div>
               <p className="flex-1 text-sm line-clamp-1">{item.name}</p>
               <p className="text-sm shrink-0 text-gray-600">
-                {item.quantity} × {item.price} сом
+                {item.quantity} × {item.price} <Currency />
               </p>
             </div>
           ))}
         </div>
         <div className="border-t border-gray-300 mt-3 pt-3 flex justify-between font-bold">
           <span>Итого:</span>
-          <span className="text-green-600">{orderTotal} сом</span>
+          <span className="text-green-600">
+            {orderTotal} <Currency />
+          </span>
         </div>
         <div className="mt-2 text-sm text-gray-500">
           Доставка:{" "}
-          {freeDelivery ? <span className="text-green-600 font-medium">бесплатно 🎉</span> : <span>150 сом</span>}
+          {freeDelivery ? (
+            <span className="text-green-600 font-medium">бесплатно 🎉</span>
+          ) : (
+            <span>
+              150 <Currency />
+            </span>
+          )}
         </div>
       </div>
 

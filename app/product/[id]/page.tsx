@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AddToCart from "@/components/AddToCart";
 import Breadcrumb from "@/components/Breadcrumb";
+import Currency from "@/components/Currency";
 import FavoriteButton from "@/components/FavoriteButton";
 import MainContainer from "@/components/MainContainer";
 import ProductCard from "@/components/ProductCard";
@@ -119,8 +120,14 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           )}
 
           <div className="flex items-baseline gap-3 mb-6">
-            <span className="text-2xl md:text-3xl font-bold">{product.price} сом</span>
-            {product.old_price && <span className="text-lg text-gray-400 line-through">{product.old_price} сом</span>}
+            <span className="text-2xl md:text-3xl font-bold">
+              {product.price} <Currency />
+            </span>
+            {product.old_price && (
+              <span className="text-lg text-gray-400 line-through">
+                {product.old_price} <Currency />
+              </span>
+            )}
           </div>
 
           <div className="mb-6">

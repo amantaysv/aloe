@@ -5,10 +5,11 @@ import { ImagePlus, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-reac
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
+import Currency from "@/components/Currency";
 import Pagination from "@/components/Pagination";
 import type { Product } from "@/types";
 import { deleteProduct, getBrands, uploadProductImage, upsertProduct, type ProductInput } from "./actions";
-import { adminInputCls as inp, Field } from "./admin-ui";
+import { Field, adminInputCls as inp } from "./admin-ui";
 
 const LABELS = [
   { value: "", label: "Нет" },
@@ -305,7 +306,8 @@ export default function AdminProducts({
                 )}
               </div>
               <p className="text-xs text-gray-400">
-                {p.category} · {p.price} сом{p.old_price ? ` (было ${p.old_price})` : ""}
+                {p.category} · {p.price} <Currency />
+                {p.old_price ? ` (было ${p.old_price})` : ""}
               </p>
             </div>
             <div className="flex gap-1 shrink-0">
@@ -536,4 +538,3 @@ export default function AdminProducts({
     </>
   );
 }
-
