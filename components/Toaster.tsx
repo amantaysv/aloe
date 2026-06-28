@@ -1,5 +1,6 @@
 "use client";
 
+import { CheckCircle, Info, XCircle } from "lucide-react";
 import { useToast } from "@/store/toast";
 
 export default function Toaster() {
@@ -21,10 +22,10 @@ export default function Toaster() {
             ${toast.type === "info" ? "bg-gray-800 text-white" : ""}
           `}
         >
-          {toast.type === "success" && <span className="shrink-0 mt-0.5">✓</span>}
-          {toast.type === "error" && <span className="shrink-0 mt-0.5">✕</span>}
-          {toast.type === "info" && <span className="shrink-0 mt-0.5">ℹ</span>}
-          <span>{toast.message}</span>
+          {toast.type === "success" && <CheckCircle className="size-4 shrink-0 mt-px" />}
+          {toast.type === "error" && <XCircle className="size-4 shrink-0 mt-px" />}
+          {toast.type === "info" && <Info className="size-4 shrink-0 mt-px" />}
+          <span className="whitespace-nowrap">{toast.message}</span>
         </div>
       ))}
     </div>
