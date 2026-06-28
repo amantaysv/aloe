@@ -26,7 +26,7 @@ export default function MobileBottomNav() {
   }, []);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden safe-area-pb pb-4 px-4">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden safe-area-pb pb-2 px-4">
       <div className="flex justify-center gap-2">
         <div className="flex items-center justify-around bg-white/50 rounded-full p-1 backdrop-blur-xs">
           {items.map((item) => {
