@@ -1,5 +1,4 @@
-import MainContainer from "@/components/MainContainer";
-import Title from "@/components/Title";
+import { MainContainer, MobileHeader, Title } from "@/components";
 import { requireAuth } from "@/lib/auth";
 import { getUserOrders } from "@/services/order.service";
 import { getProfile } from "@/services/profile.service";
@@ -20,28 +19,45 @@ export default async function ProfilePage() {
   };
 
   return (
-    <MainContainer className="max-w-2xl">
-      <Title className="mb-6">Мой профиль</Title>
-
-      <div className="border border-gray-300 rounded-xl p-5 mb-6 flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-lg shrink-0">
-          {user.email?.[0].toUpperCase()}
+    <>
+      <MobileHeader>
+        <div className="flex items-center">
+          <Title className="flex-1 text-center">Мой профиль</Title>
+          <span className="absolute right-4">
+            <LogoutButton />
+          </span>
         </div>
-        <div className="flex-1">
-          <p className="font-medium">{user.email}</p>
-          <p className="text-sm text-gray-400">
-            Зарегистрирован:{" "}
-            {new Date(user.created_at).toLocaleDateString("ru-RU", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
-        </div>
-        <LogoutButton />
-      </div>
+      </MobileHeader>
+      <MainContainer className="max-w-2xl pt-20">
+        <Title className="hidden md:block mb-6">Мой профиль</Title>
 
-      <ProfileTabs initial={initial} orders={orders as Parameters<typeof ProfileTabs>[0]["orders"]} />
-    </MainContainer>
+        <div className="flex md:hidden flex-col items-center gap-4 mb-4">
+          <div className="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-lg shrink-0">
+            {user.email?.[0].toUpperCase()}
+          </div>
+          <h2 className="text-3xl">{profile?.name}</h2>
+        </div>
+
+        <div className="hidden md:flex border border-gray-300 rounded-xl p-5 mb-6 items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-lg shrink-0">
+            {user.email?.[0].toUpperCase()}
+          </div>
+          <div className="flex-1">
+            <p className="font-medium">{user.email}</p>
+            <p className="text-sm text-gray-400">
+              Зарегистрирован:{" "}
+              {new Date(user.created_at).toLocaleDateString("ru-RU", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          </div>
+          <LogoutButton />
+        </div>
+
+        <ProfileTabs initial={initial} orders={orders as Parameters<typeof ProfileTabs>[0]["orders"]} />
+      </MainContainer>
+    </>
   );
 }

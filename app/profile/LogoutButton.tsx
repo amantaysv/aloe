@@ -2,7 +2,7 @@
 
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Button from "@/components/Button";
+import { Button } from "@/components";
 import { createClient } from "@/lib/supabase-browser";
 import { useCart } from "@/store/cart";
 import { useFavorites } from "@/store/favorites";
@@ -27,7 +27,7 @@ export default function LogoutButton() {
       className="flex items-center gap-2 px-4 py-2 text-sm text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
     >
       <LogOut className="size-4" />
-      <span className="hidden md:inline">Выйти</span>
+      <span className="hidden md:inline">Выйти из аккаунта</span>
     </Button>
   );
 }

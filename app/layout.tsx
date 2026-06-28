@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Lobster } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
-import AuthSync from "@/components/AuthSync";
-import CatalogSidebar from "@/components/CatalogSidebar";
-import Header from "@/components/Header";
-import MobileBottomNav from "@/components/MobileBottomNav";
-import Toaster from "@/components/Toaster";
+import { AuthSync, CatalogSidebar, Header, MobileBottomNav, Toaster } from "@/components";
 import { getCachedCategories } from "@/lib/cached-queries";
 import "./globals.css";
 

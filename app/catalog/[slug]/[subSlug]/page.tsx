@@ -1,12 +1,17 @@
 import { notFound } from "next/navigation";
-import Breadcrumb from "@/components/Breadcrumb";
-import MainContainer from "@/components/MainContainer";
-import ManufacturerFilter from "@/components/ManufacturerFilter";
-import Pagination from "@/components/Pagination";
-import ProductCard from "@/components/ProductCard";
-import ProductGrid from "@/components/ProductGrid";
-import SortSelect from "@/components/SortSelect";
-import TitleWithCount from "@/components/TitleWithCount";
+import {
+  Breadcrumb,
+  MainContainer,
+  ManufacturerFilter,
+  MobileCatalogHeader,
+  MobileHeader,
+  Pagination,
+  ProductCard,
+  ProductGrid,
+  SortSelect,
+  SubcategoryFilter,
+  TitleWithCount,
+} from "@/components";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { parseBrandIds, parsePage, parseSortParam } from "@/lib/page-params";
 import { supabase } from "@/lib/supabase";
@@ -49,45 +54,61 @@ export default async function SubcategoryPage({
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <MainContainer>
-      <Breadcrumb
-        crumbs={[
-          { label: "Главная", href: "/" },
-          { label: parentCategory.name, href: `/catalog/${slug}` },
-          { label: subcategory.name },
-        ]}
-      />
+    <>
+      <MobileHeader>
+        <MobileCatalogHeader title={parentCategory.name} />
+      </MobileHeader>
 
-      <TitleWithCount count={total}>{subcategory.name}</TitleWithCount>
+      <MainContainer className="pt-20">
+        <Breadcrumb
+          crumbs={[
+            { label: "Главная", href: "/" },
+            { label: parentCategory.name, href: `/catalog/${slug}` },
+            { label: subcategory.name },
+          ]}
+        />
 
-      <div className="flex flex-wrap items-end gap-4 mb-6">
-        <ManufacturerFilter manufacturers={brands} />
-        <div className="ml-auto">
-          <SortSelect current={validSort} />
+        <TitleWithCount className="hidden md:flex" count={total}>
+          {subcategory.name}
+        </TitleWithCount>
+
+        <SubcategoryFilter
+          subcategories={allCategories.filter((c) => c.parent_id === parentCategory.id)}
+          categorySlug={slug}
+          activeSubSlug={subSlug}
+        />
+
+        <div className="flex flex-wrap items-end gap-4 mb-6">
+          <ManufacturerFilter manufacturers={brands} />
+          <div className="ml-auto">
+            <SortSelect current={validSort} />
+          </div>
         </div>
-      </div>
 
-      {products.length === 0 ? (
-        <p className="text-gray-500 py-8 text-center">По выбранным фильтрам ничего не найдено</p>
-      ) : (
-        <>
-          <ProductGrid>
-            {products.map((product, i) => (
-              <ProductCard key={product.id} product={product} priority={i === 0} />
-            ))}
-          </ProductGrid>
+        <h2 className="md:hidden text-lg font-semibold text-center mb-4">{subcategory.name}</h2>
 
-          <Pagination
-            page={currentPage}
-            totalPages={totalPages}
-            basePath={`/catalog/${slug}/${subSlug}`}
-            query={{
-              ...(selectedBrandIds.length > 0 ? { brand: selectedBrandIds.map(String) } : {}),
-              ...(validSort !== "name" ? { sort: validSort } : {}),
-            }}
-          />
-        </>
-      )}
-    </MainContainer>
+        {products.length === 0 ? (
+          <p className="text-gray-500 py-8 text-center">По выбранным фильтрам ничего не найдено</p>
+        ) : (
+          <>
+            <ProductGrid>
+              {products.map((product, i) => (
+                <ProductCard key={product.id} product={product} priority={i === 0} />
+              ))}
+            </ProductGrid>
+
+            <Pagination
+              page={currentPage}
+              totalPages={totalPages}
+              basePath={`/catalog/${slug}/${subSlug}`}
+              query={{
+                ...(selectedBrandIds.length > 0 ? { brand: selectedBrandIds.map(String) } : {}),
+                ...(validSort !== "name" ? { sort: validSort } : {}),
+              }}
+            />
+          </>
+        )}
+      </MainContainer>
+    </>
   );
 }

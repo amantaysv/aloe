@@ -27,11 +27,9 @@ export default function ProductCard({ product: p, className = "", href, priority
   const productHref = href ?? `/product/${p.id}`;
 
   return (
-    <div
-      className={`flex flex-col border border-gray-300 rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-white ${className}`}
-    >
+    <div className={`flex flex-col rounded-lg overflow-hidden ${className}`}>
       <Link className="flex-1 flex flex-col" href={productHref}>
-        <div className="relative aspect-square bg-gray-50">
+        <div className="relative p-2 aspect-square shadow-xs rounded-lg">
           <Image
             src={p.image_url}
             alt={p.name}
@@ -43,7 +41,7 @@ export default function ProductCard({ product: p, className = "", href, priority
           <ProductBadge label={p.label} />
           <FavoriteButton productId={p.id} />
         </div>
-        <div className="flex-1 flex flex-col p-3">
+        <div className="flex-1 flex flex-col py-3">
           {p.category && (
             <p className="text-xs text-gray-400 mb-1 truncate" title={p.category}>
               {p.category}
@@ -65,16 +63,14 @@ export default function ProductCard({ product: p, className = "", href, priority
           </div>
         </div>
       </Link>
-      <div className="px-3 pb-3">
-        <AddToCart
-          product={{
-            id: p.id,
-            name: p.name,
-            price: p.price,
-            image_url: p.image_url,
-          }}
-        />
-      </div>
+      <AddToCart
+        product={{
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          image_url: p.image_url,
+        }}
+      />
     </div>
   );
 }

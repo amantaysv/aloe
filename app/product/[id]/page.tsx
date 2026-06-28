@@ -3,14 +3,17 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import AddToCart from "@/components/AddToCart";
-import Breadcrumb from "@/components/Breadcrumb";
-import Currency from "@/components/Currency";
-import FavoriteButton from "@/components/FavoriteButton";
-import MainContainer from "@/components/MainContainer";
-import ProductCard from "@/components/ProductCard";
-import ProductDescription from "@/components/ProductDescription";
-import Title from "@/components/Title";
+import {
+  AddToCart,
+  Breadcrumb,
+  Currency,
+  FavoriteButton,
+  MainContainer,
+  MobileBackButton,
+  ProductCard,
+  ProductDescription,
+  Title,
+} from "@/components";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { LABEL_MAP } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
@@ -78,6 +81,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   return (
     <MainContainer>
+      <MobileBackButton />
       <Breadcrumb crumbs={breadcrumbs} />
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">

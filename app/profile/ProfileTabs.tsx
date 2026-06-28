@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Button from "@/components/Button";
-import Currency from "@/components/Currency";
-import Pagination from "@/components/Pagination";
+import { Button, Currency, Pagination } from "@/components";
 import { ORDER_STATUS } from "@/lib/constants";
 import { useCart } from "@/store/cart";
 import { useToast } from "@/store/toast";
@@ -33,7 +31,7 @@ type Profile = {
 const PAGE_SIZE = 10;
 
 export default function ProfileTabs({ initial, orders }: { initial: Profile; orders: Order[] }) {
-  const [tab, setTab] = useState<"profile" | "orders">("profile");
+  const [tab, setTab] = useState<"profile" | "orders">("orders");
   const [page, setPage] = useState(1);
   const { add } = useCart();
   const { show } = useToast();
@@ -55,8 +53,8 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
   return (
     <>
       {/* Tabs */}
-      <div className="flex border-b mb-6">
-        {(["profile", "orders"] as const).map((t) => (
+      <div className="flex justify-center mb-6">
+        {(["orders", "profile"] as const).map((t) => (
           <Button
             key={t}
             onClick={() => setTab(t)}
@@ -74,7 +72,7 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
       {tab === "orders" && (
         <>
           {orders.length === 0 ? (
-            <p className="text-gray-400 text-sm">Заказов пока нет.</p>
+            <p className="text-gray-400 text-sm text-center">Заказов пока нет.</p>
           ) : (
             <>
               <div className="flex flex-col gap-4">

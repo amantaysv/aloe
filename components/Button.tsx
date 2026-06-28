@@ -32,7 +32,12 @@ export default function Button({
           size === "md" && "px-4 py-1.5 text-sm",
           size === "lg" && "px-4 py-2.5 text-base",
         ],
-        variant === "ghost" && "text-green-600 hover:text-green-700 hover:underline",
+        variant === "ghost" && [
+          "text-green-600 hover:text-green-700 hover:underline",
+          size === "sm" && "text-xs",
+          size === "md" && "text-sm",
+          size === "lg" && "text-base",
+        ],
         variant === "icon" && [
           "flex items-center justify-center rounded transition-colors",
           size === "sm" && "w-7 h-7",

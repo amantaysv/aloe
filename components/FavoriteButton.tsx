@@ -2,7 +2,7 @@
 
 import { Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Button from "@/components/Button";
+import { Button } from "@/components";
 import { useFavorites } from "@/store/favorites";
 import { useToast } from "@/store/toast";
 
@@ -36,9 +36,9 @@ export default function FavoriteButton({ productId }: { productId: number }) {
       onClick={toggle}
       title={isFav ? "Убрать из избранного" : "В избранное"}
       className={`absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full transition-colors
-        ${isFav ? "bg-red-50 text-red-500 hover:bg-red-100" : "bg-white/80 text-gray-400 hover:text-red-400 hover:bg-white"}`}
+        ${isFav ? "md:bg-red-50 text-red-500 md:hover:bg-red-100" : "md:bg-white/80 text-gray-400 hover:text-red-400 md:hover:bg-white"}`}
     >
-      <Heart className="w-4 h-4" fill={isFav ? "currentColor" : "none"} />
+      <Heart className="size-6 md:size-4" fill={isFav ? "currentColor" : "none"} />
     </Button>
   );
 }

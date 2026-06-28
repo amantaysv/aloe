@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   MainContainer,
@@ -9,13 +10,14 @@ import {
   ProductGrid,
   Title,
 } from "@/components";
+import { getCachedCategories } from "@/lib/cached-queries";
 import { parseBrandIds, parsePage } from "@/lib/page-params";
 import { supabase } from "@/lib/supabase";
 import { getBrandsForSearch, searchProducts } from "@/services/product.service";
 
 const PAGE_SIZE = 24;
 
-export default async function SearchPage({
+export default async function CatalogPage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string; page?: string; brand?: string | string[] }>;
@@ -25,15 +27,46 @@ export default async function SearchPage({
   const currentPage = parsePage(sp.page);
   const selectedBrandIds = parseBrandIds(sp.brand);
 
+  const allCategories = await getCachedCategories();
+  const topCategories = (
+    allCategories as Array<{
+      id: number;
+      name: string;
+      parent_id: number | null;
+      slug: string;
+      image_url?: string | null;
+    }>
+  ).filter((c) => !c.parent_id);
+
   if (!q.trim()) {
     return (
       <>
         <MobileHeader>
-          <MobileSearchInput searchPath="/search" />
+          <MobileSearchInput searchPath="/catalog" />
         </MobileHeader>
         <MainContainer className="pt-20">
-          <div className="text-center py-16 text-gray-400">
-            <p className="text-lg">Введите название товара для поиска</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {topCategories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/catalog/${cat.slug}`}
+                className="relative aspect-square rounded-xl overflow-hidden bg-gray-100"
+              >
+                {cat.image_url && (
+                  <Image
+                    src={cat.image_url}
+                    alt={cat.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 50vw, 300px"
+                  />
+                )}
+                <div className="absolute inset-0 bg-black/25" />
+                <span className="absolute top-2 left-2 text-xs font-medium text-white drop-shadow leading-tight max-w-[calc(100%-1rem)]">
+                  {cat.name}
+                </span>
+              </Link>
+            ))}
           </div>
         </MainContainer>
       </>
@@ -50,7 +83,7 @@ export default async function SearchPage({
   return (
     <>
       <MobileHeader>
-        <MobileSearchInput defaultValue={q} searchPath="/search" />
+        <MobileSearchInput defaultValue={q} searchPath="/catalog" />
       </MobileHeader>
       <MainContainer className="pt-20">
         <div className="mb-6">
@@ -65,7 +98,7 @@ export default async function SearchPage({
         {products.length === 0 ? (
           <div className="text-center py-16 text-gray-500">
             <p className="text-lg">Ничего не найдено</p>
-            <Link href="/" className="text-green-600 text-sm mt-2 inline-block hover:underline">
+            <Link href="/catalog" className="text-green-600 text-sm mt-2 inline-block hover:underline">
               Вернуться в каталог
             </Link>
           </div>
@@ -79,7 +112,7 @@ export default async function SearchPage({
             <Pagination
               page={currentPage}
               totalPages={totalPages}
-              basePath="/search"
+              basePath="/catalog"
               query={selectedBrandIds.length > 0 ? { q, brand: selectedBrandIds.map(String) } : { q }}
             />
           </>

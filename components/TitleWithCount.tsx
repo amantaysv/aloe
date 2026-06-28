@@ -1,21 +1,24 @@
+import { cn } from "@/lib/cn";
 import Title, { TitleProps } from "./Title";
 
 type TitleWithCountProps = TitleProps & {
   count?: number;
   isBrands?: boolean;
+  titleClassname?: string;
 };
 
 export default function TitleWithCount({
   children,
   count,
   isBrands = false,
-  className: titleClassname,
+  className,
+  titleClassname,
 }: TitleWithCountProps) {
   return (
-    <div className="flex items-baseline gap-3 mb-6">
+    <div className={cn("flex items-baseline gap-3 mb-6", className)}>
       <Title className={titleClassname}>{children}</Title>
       {count ? (
-        <span className="text-sm text-gray-400">
+        <span className="hidden md:inline text-sm text-gray-400">
           {count} {isBrands ? "производителей" : "товаров"}
         </span>
       ) : null}
