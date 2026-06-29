@@ -1,13 +1,42 @@
 "use client";
 
-import { Baby, FlaskConical, Percent, Plus, Star } from "lucide-react";
+import { GiToothbrush } from "react-icons/gi";
+import { PiHairDryer } from "react-icons/pi";
+import { TbDiaper } from "react-icons/tb";
+import {
+  Axe,
+  Baby,
+  FlaskConical,
+  HandHeart,
+  HouseHeart,
+  MirrorRound,
+  Percent,
+  Plus,
+  Printer,
+  ShowerHead,
+  Star,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+
+const ICONS = {
+  bytovaya: FlaskConical,
+  deti: Baby,
+  dom: HouseHeart,
+  muzhchiny: Axe,
+  ofis: Printer,
+  kosmetika: MirrorRound,
+  podguzniki: TbDiaper,
+  gigiena: ShowerHead,
+  volosy: PiHairDryer,
+  rot: GiToothbrush,
+  telo: HandHeart,
+};
 
 type Category = {
   id: number;
   name: string;
-  slug: string;
+  slug: keyof typeof ICONS;
   parent_id: number | null;
 };
 
@@ -33,17 +62,12 @@ function NavItem({
       <div
         className={`w-11 h-11 rounded-full ${active ? "bg-gray-700 text-green-600" : "bg-gray-100"} transition-colors flex items-center justify-center`}
       >
-        {Icon ? <Icon /> : <div className="w-5 h-5 rounded bg-gray-300" />}
+        {Icon ? <Icon className="size-5" /> : <div className="w-5 h-5 rounded bg-gray-300" />}
       </div>
       <span className="text-[11px] text-gray-700 text-center leading-tight line-clamp-2">{label}</span>
     </Link>
   );
 }
-
-const ICONS = {
-  bytovaya: FlaskConical,
-  deti: Baby,
-};
 
 export default function CategoryNav({ categories }: { categories: Category[] }) {
   const params = useParams();

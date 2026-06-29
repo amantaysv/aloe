@@ -1,12 +1,6 @@
 import { notFound, redirect } from "next/navigation";
-import {
-  MainContainer,
-  MobileCatalogHeader,
-  MobileHeader,
-  ProductCard,
-  ProductGrid,
-  SubcategoryFilter,
-} from "@/components";
+import { MainContainer, MobileCatalogHeader, MobileHeader, SubcategoryFilter } from "@/components";
+import VirtualCategoryContent from "@/components/VirtualCategoryContent";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { parseSortParam } from "@/lib/page-params";
 import { supabase } from "@/lib/supabase";
@@ -53,18 +47,9 @@ export default async function CategoryPage({
 
       <SubcategoryFilter subcategories={subcategories} categorySlug={slug} activeSubSlug={activeSub} />
       <MainContainer>
-        <div className="space-y-10">
-          {nonEmpty.map(({ sub: s, products }) => (
-            <div key={s.id}>
-              <h2 className="text-lg font-semibold mb-4 text-center md:text-left">{s.name}</h2>
-              <ProductGrid>
-                {products.map((product, i) => (
-                  <ProductCard key={product.id} product={product} priority={i === 0} />
-                ))}
-              </ProductGrid>
-            </div>
-          ))}
-        </div>
+        <VirtualCategoryContent
+          sections={nonEmpty.map(({ sub: s, products }) => ({ id: s.id, name: s.name, products }))}
+        />
       </MainContainer>
     </>
   );
