@@ -292,7 +292,7 @@ export default function AdminProducts({
         {products.map((p) => (
           <div key={p.id} className="flex items-center gap-3 border border-gray-200 rounded-lg p-3 hover:bg-gray-50">
             <div className="relative w-12 h-12 shrink-0 bg-gray-100 rounded overflow-hidden">
-              {p.image_url && <Image src={p.image_url} alt={p.name} fill sizes="48px" className="object-contain p-1" />}
+              {p.image_url && <Image src={p.image_url} alt={p.name} fill sizes="48px" className="object-contain p-1" unoptimized />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
