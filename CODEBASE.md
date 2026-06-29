@@ -7,7 +7,7 @@
 - **Database:** Supabase (PostgreSQL + Auth + Storage + RLS)
 - **State:** Zustand 5.0.14 with persist middleware (localStorage)
 - **Styling:** Tailwind CSS 4.3.1, no dark mode
-- **UI libs:** Lucide React, React Icons, Embla Carousel, react-markdown, NextTopLoader, @tailwindcss/typography
+- **UI libs:** Lucide React, React Icons, Embla Carousel, react-markdown, NextTopLoader, @tailwindcss/typography, @tanstack/react-virtual
 - **Code quality:** ESLint 9, Prettier (120 char, import sorting)
 
 ## Directory Structure
@@ -16,7 +16,8 @@
 /
 ├── app/                    # Next.js App Router pages
 ├── components/             # 29 shared React components
-├── lib/                    # Supabase clients, caching, cn() util
+├── hooks/                  # Custom React hooks
+├── lib/                    # Supabase clients, caching, utilities
 ├── services/               # Data access layer (8 domain modules)
 ├── store/                  # Zustand stores (cart, favorites, toast, mobile-menu)
 ├── types/                  # TypeScript type definitions (index.ts)
@@ -198,6 +199,8 @@ function withBrandName(rows: ProductRow[]): Product[]; // maps brands.name → b
 | `auth.ts`             | `requireAuth()` — server-side auth guard, redirects to `/auth`  |
 | `constants.ts`        | `LABEL_MAP` (badge text/color), `ORDER_STATUS` (label/color)    |
 | `page-params.ts`      | `parsePage()`, `parseSortParam()`, `parseBrandIds()` — URL helpers |
+| `section-scroll.ts`   | Module-level singleton: `registerSectionScroller` / `scrollToSection` — lets `SubcategoryFilter` imperatively scroll `VirtualCategoryContent` without prop drilling |
+| `active-section.ts`   | Pub/sub for the currently-visible section ID: `setActiveSection` / `subscribeActiveSection` — `VirtualCategoryContent` fires updates on scroll, `SubcategoryFilter` highlights the active pill |
 
 ### Cached Queries (ISR tags & TTLs)
 
@@ -259,6 +262,8 @@ SUPABASE_SERVICE_ROLE_KEY       # server-only, used in admin actions to bypass R
 - Dynamic product/order pages: no caching (fresh per request)
 
 **Admin mutations** always use service role client (bypasses RLS). User mutations use anon client scoped by RLS to `auth.uid()`.
+
+**Category page virtual scroll:** `/catalog/[slug]` renders all subcategory sections on one page using `VirtualCategoryContent` (`@tanstack/react-virtual` window virtualizer). `SubcategoryFilter` in `scrollMode` shows pills that jump to sections. The two are decoupled via module-level singletons: `lib/section-scroll.ts` (imperative scroll command) and `lib/active-section.ts` (pub/sub for the visible section id) — no shared React state or prop drilling needed.
 
 **Image optimization:** Next.js `<Image>` with AVIF/WebP, remote domains whitelisted in `next.config.ts`.
 
