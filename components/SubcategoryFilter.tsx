@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { scrollToSection } from "@/lib/section-scroll";
+import { subscribeActiveSection } from "@/lib/active-section";
 
 type Subcategory = { id: number; name: string; slug: string };
 
@@ -18,6 +20,12 @@ export default function SubcategoryFilter({
   scrollMode?: boolean;
 }) {
   const searchParams = useSearchParams();
+  const [activeSectionId, setActiveSectionId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!scrollMode) return;
+    return subscribeActiveSection(setActiveSectionId);
+  }, [scrollMode]);
 
   if (subcategories.length === 0) return null;
 
@@ -33,7 +41,11 @@ export default function SubcategoryFilter({
               <button
                 key={s.id}
                 onClick={() => scrollToSection(s.id)}
-                className="px-4 py-2 text-xs rounded-full border border-gray-300 text-gray-600 transition-colors hover:bg-gray-50"
+                className={`px-4 py-2 text-xs rounded-full border transition-colors ${
+                  s.id === activeSectionId
+                    ? "bg-gray-700 text-white border-gray-700"
+                    : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                }`}
               >
                 {s.name}
               </button>

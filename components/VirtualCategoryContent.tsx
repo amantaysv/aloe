@@ -4,6 +4,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncEx
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import type { Product } from "@/types";
 import { registerSectionScroller } from "@/lib/section-scroll";
+import { setActiveSection } from "@/lib/active-section";
 import ProductCard from "./ProductCard";
 import ProductGrid from "./ProductGrid";
 
@@ -66,6 +67,41 @@ function VirtualizedProducts({ sections }: { sections: Section[] }) {
     },
     overscan: 3,
   });
+
+  const sectionHeaderRows = useMemo(() => {
+    const result: number[] = [];
+    let rowIdx = 0;
+    sections.forEach((s) => {
+      result.push(rowIdx);
+      rowIdx += 1 + Math.ceil(s.products.length / cols);
+    });
+    return result;
+  }, [sections, cols]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+      const containerDocTop = containerRef.current.getBoundingClientRect().top + window.scrollY;
+      const relPos = window.scrollY + 220 - containerDocTop;
+      const measurements = (
+        virtualizer as unknown as { getMeasurements: () => Array<{ start: number }> }
+      ).getMeasurements();
+      let activeIdx = 0;
+      sectionHeaderRows.forEach((rowIdx, si) => {
+        const start = measurements[rowIdx]?.start ?? Infinity;
+        if (start <= relPos) activeIdx = si;
+      });
+      setActiveSection(sections[activeIdx]?.id ?? null);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      setActiveSection(null);
+    };
+    // virtualizer is a stable class instance — safe to omit from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sections, sectionHeaderRows]);
 
   useEffect(() => {
     return registerSectionScroller((sectionId: number) => {
