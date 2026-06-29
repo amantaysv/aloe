@@ -36,7 +36,7 @@ export default function ProductCard({ product: p, className = "", href, priority
             fill
             className="object-contain p-2"
             priority={priority}
-            sizes="(max-width: 768px) 50vw, 25vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
           />
           <ProductBadge label={p.label} />
           <FavoriteButton productId={p.id} />

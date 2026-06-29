@@ -45,7 +45,7 @@ export default async function CatalogPage({
           <MobileSearchInput searchPath="/catalog" />
         </MobileHeader>
         <MainContainer className="pt-20">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}>
             {topCategories.map((cat) => (
               <Link
                 key={cat.id}

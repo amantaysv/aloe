@@ -2,16 +2,13 @@ import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
-  Breadcrumb,
   MainContainer,
   MobileCatalogHeader,
   MobileHeader,
   ProductCard,
   ProductGrid,
   SeeAllProducts,
-  SortSelect,
   SubcategoryFilter,
-  TitleWithCount,
 } from "@/components";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { parseSortParam } from "@/lib/page-params";
@@ -53,8 +50,6 @@ export default async function CategoryPage({
   const nonEmpty = sections.filter((s) => s.total > 0);
   if (!nonEmpty.length) notFound();
 
-  const totalCount = nonEmpty.reduce((acc, s) => acc + s.total, 0);
-
   return (
     <>
       <MobileHeader>
@@ -62,17 +57,7 @@ export default async function CategoryPage({
       </MobileHeader>
 
       <MainContainer className="pt-20">
-        <Breadcrumb crumbs={[{ label: "Главная", href: "/" }, { label: category.name }]} />
-
-        <TitleWithCount className="hidden md:flex" count={totalCount}>
-          {category.name}
-        </TitleWithCount>
-
         <SubcategoryFilter subcategories={subcategories} categorySlug={slug} activeSubSlug={activeSub} />
-
-        <div className="flex justify-end mb-6">
-          <SortSelect current={validSort} />
-        </div>
 
         <div className="space-y-10">
           {nonEmpty.map(({ sub: s, products, total }) => (

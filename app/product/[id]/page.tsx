@@ -5,7 +5,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   AddToCart,
-  Breadcrumb,
   Currency,
   FavoriteButton,
   MainContainer,
@@ -82,7 +81,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   return (
     <MainContainer>
       <MobileBackButton />
-      <Breadcrumb crumbs={breadcrumbs} />
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
         <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden">
@@ -153,7 +151,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       {related && related.length > 0 && (
         <section>
           <h2 className="text-xl font-bold mb-4">Похожие товары</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}>
             {related.map((p) => (
               <ProductCard key={p.id} product={p} href={`/product/${p.id}`} />
             ))}

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Breadcrumb, MainContainer, Pagination, ProductCard, ProductGrid, TitleWithCount } from "@/components";
+import { MainContainer, Pagination, ProductCard, ProductGrid, TitleWithCount } from "@/components";
 import { getCachedBrandBySlug, getCachedProductsByBrand } from "@/lib/cached-queries";
 import { parsePage } from "@/lib/page-params";
 
@@ -36,10 +36,6 @@ export default async function BrandPage({
 
   return (
     <MainContainer>
-      <Breadcrumb
-        crumbs={[{ label: "Главная", href: "/" }, { label: "Бренды", href: "/brands" }, { label: brandData.name }]}
-      />
-
       <TitleWithCount count={total}>{brandData.name}</TitleWithCount>
 
       <ProductGrid>

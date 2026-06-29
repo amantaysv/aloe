@@ -22,7 +22,7 @@ export default function SubcategoryFilter({
   const queryString = sortParam ? `?sort=${sortParam}` : "";
 
   return (
-    <div className="flex md:hidden flex-wrap gap-2 mb-6">
+    <div className="flex flex-wrap gap-2 mb-6">
       <Link
         href={`/catalog/${categorySlug}${queryString}`}
         className={`px-3 py-1 text-xs rounded-full border transition-colors ${

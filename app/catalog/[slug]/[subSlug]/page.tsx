@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import {
-  Breadcrumb,
   MainContainer,
   ManufacturerFilter,
   MobileCatalogHeader,
@@ -60,14 +59,6 @@ export default async function SubcategoryPage({
       </MobileHeader>
 
       <MainContainer className="pt-20">
-        <Breadcrumb
-          crumbs={[
-            { label: "Главная", href: "/" },
-            { label: parentCategory.name, href: `/catalog/${slug}` },
-            { label: subcategory.name },
-          ]}
-        />
-
         <TitleWithCount className="hidden md:flex" count={total}>
           {subcategory.name}
         </TitleWithCount>

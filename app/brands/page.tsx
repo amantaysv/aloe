@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Breadcrumb, MainContainer, TitleWithCount } from "@/components";
+import { MainContainer, TitleWithCount } from "@/components";
 import { getCachedBrands } from "@/lib/cached-queries";
 
 export const metadata = { title: "Бренды — Aloe.kg" };
@@ -17,8 +17,6 @@ export default async function BrandsPage() {
 
   return (
     <MainContainer>
-      <Breadcrumb crumbs={[{ label: "Главная", href: "/" }, { label: "Бренды" }]} />
-
       <TitleWithCount count={list.length} isBrands>
         Бренды
       </TitleWithCount>
