@@ -31,7 +31,7 @@ export default async function SearchPage({
         <MobileHeader>
           <MobileSearchInput searchPath="/search" />
         </MobileHeader>
-        <MainContainer className="pt-20">
+        <MainContainer>
           <div className="text-center py-16 text-gray-400">
             <p className="text-lg">Введите название товара для поиска</p>
           </div>
@@ -52,7 +52,7 @@ export default async function SearchPage({
       <MobileHeader>
         <MobileSearchInput defaultValue={q} searchPath="/search" />
       </MobileHeader>
-      <MainContainer className="pt-20">
+      <MainContainer>
         <div className="mb-6">
           <Title>
             Результаты поиска: <span className="text-green-600">«{q}»</span>

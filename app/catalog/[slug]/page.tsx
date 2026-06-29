@@ -1,5 +1,3 @@
-import { ArrowRightIcon } from "lucide-react";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
   MainContainer,
@@ -7,15 +5,12 @@ import {
   MobileHeader,
   ProductCard,
   ProductGrid,
-  SeeAllProducts,
   SubcategoryFilter,
 } from "@/components";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { parseSortParam } from "@/lib/page-params";
 import { supabase } from "@/lib/supabase";
 import { getSubcategorySection } from "@/services/product.service";
-
-const SECTION_LIMIT = 8;
 
 export default async function CategoryPage({
   params,
@@ -42,7 +37,7 @@ export default async function CategoryPage({
 
   const sections = await Promise.all(
     subcategories.map(async (s) => {
-      const { products, total } = await getSubcategorySection(supabase, s.id, validSort, SECTION_LIMIT);
+      const { products, total } = await getSubcategorySection(supabase, s.id, validSort);
       return { sub: s, products, total };
     }),
   );
@@ -56,23 +51,12 @@ export default async function CategoryPage({
         <MobileCatalogHeader title={category.name} />
       </MobileHeader>
 
-      <MainContainer className="pt-20">
-        <SubcategoryFilter subcategories={subcategories} categorySlug={slug} activeSubSlug={activeSub} />
-
+      <SubcategoryFilter subcategories={subcategories} categorySlug={slug} activeSubSlug={activeSub} />
+      <MainContainer>
         <div className="space-y-10">
-          {nonEmpty.map(({ sub: s, products, total }) => (
+          {nonEmpty.map(({ sub: s, products }) => (
             <div key={s.id}>
-              <Link
-                className="flex md:hidden items-center justify-center gap-2 text-lg font-semibold mb-4"
-                href={`/catalog/${slug}/${s.slug}`}
-              >
-                {s.name}
-                <ArrowRightIcon className="size-4" />
-              </Link>
-              <div className="hidden md:flex items-center justify-center md:justify-between mb-4">
-                <h2 className="text-lg font-semibold">{s.name}</h2>
-                <SeeAllProducts href={`/catalog/${slug}/${s.slug}`} count={total - nonEmpty.length} />
-              </div>
+              <h2 className="text-lg font-semibold mb-4 text-center md:text-left">{s.name}</h2>
               <ProductGrid>
                 {products.map((product, i) => (
                   <ProductCard key={product.id} product={product} priority={i === 0} />

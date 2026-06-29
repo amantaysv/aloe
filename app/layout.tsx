@@ -28,7 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <AuthSync />
         <Header />
         <CategoryNav categories={categories} />
-        <div className="container mx-auto">{children}</div>
+        {children}
         <MobileBottomNav />
         <Toaster />
       </body>

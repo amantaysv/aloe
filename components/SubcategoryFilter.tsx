@@ -22,33 +22,23 @@ export default function SubcategoryFilter({
   const queryString = sortParam ? `?sort=${sortParam}` : "";
 
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
-      <Link
-        href={`/catalog/${categorySlug}${queryString}`}
-        className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-          !activeSubSlug
-            ? "bg-green-600 border-green-600 text-white"
-            : "border-gray-300 text-gray-600 hover:border-green-500 hover:text-green-600"
-        }`}
-      >
-        Все
-      </Link>
-      {subcategories.map((s) => {
-        const active = s.slug === activeSubSlug;
-        return (
-          <Link
-            key={s.id}
-            href={`/catalog/${categorySlug}/${s.slug}${queryString}`}
-            className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-              active
-                ? "bg-green-600 border-green-600 text-white"
-                : "border-gray-300 text-gray-600 hover:border-green-500 hover:text-green-600"
-            }`}
-          >
-            {s.name}
-          </Link>
-        );
-      })}
+    <div className="sticky top-[166px] z-10 bg-white">
+      <div className="container mx-auto flex flex-wrap gap-2 py-2">
+        {subcategories.map((s) => {
+          const active = s.slug === activeSubSlug;
+          return (
+            <Link
+              key={s.id}
+              href={`/catalog/${categorySlug}/${s.slug}${queryString}`}
+              className={`px-4 py-2 text-xs rounded-full border transition-colors ${
+                active ? "bg-gray-700 text-white" : "border-gray-300 text-gray-600"
+              }`}
+            >
+              {s.name}
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -58,7 +58,7 @@ export default async function SubcategoryPage({
         <MobileCatalogHeader title={parentCategory.name} />
       </MobileHeader>
 
-      <MainContainer className="pt-20">
+      <MainContainer>
         <TitleWithCount className="hidden md:flex" count={total}>
           {subcategory.name}
         </TitleWithCount>

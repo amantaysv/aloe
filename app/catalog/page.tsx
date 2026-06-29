@@ -44,7 +44,7 @@ export default async function CatalogPage({
         <MobileHeader>
           <MobileSearchInput searchPath="/catalog" />
         </MobileHeader>
-        <MainContainer className="pt-20">
+        <MainContainer>
           <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}>
             {topCategories.map((cat) => (
               <Link
@@ -85,7 +85,7 @@ export default async function CatalogPage({
       <MobileHeader>
         <MobileSearchInput defaultValue={q} searchPath="/catalog" />
       </MobileHeader>
-      <MainContainer className="pt-20">
+      <MainContainer>
         <div className="mb-6">
           <Title>
             Результаты поиска: <span className="text-green-600">«{q}»</span>

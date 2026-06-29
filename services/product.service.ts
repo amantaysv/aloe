@@ -72,7 +72,6 @@ export async function getSubcategorySection(
   supabase: SupabaseClient,
   subcategoryId: string,
   sort: SortValue,
-  limit: number,
 ) {
   const orderCol = sort === "price_asc" || sort === "price_desc" ? "price" : "name";
   const ascending = sort !== "price_desc";
@@ -81,8 +80,7 @@ export async function getSubcategorySection(
     .select("*, brands(name)", { count: "exact" })
     .eq("published", true)
     .eq("category_id", subcategoryId)
-    .order(orderCol, { ascending })
-    .limit(limit);
+    .order(orderCol, { ascending });
   return { products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
 }
 
