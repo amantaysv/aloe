@@ -11,11 +11,10 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ sort?: string; sub?: string; page?: string }>;
+  searchParams: Promise<{ sort?: string }>;
 }) {
   const [{ slug }, sp] = await Promise.all([params, searchParams]);
   const validSort = parseSortParam(sp.sort);
-  const activeSub = sp.sub;
 
   const allCategories = await getCachedCategoriesWithSlug();
 
@@ -45,7 +44,7 @@ export default async function CategoryPage({
         <MobileCatalogHeader title={category.name} />
       </MobileHeader>
 
-      <SubcategoryFilter subcategories={subcategories} categorySlug={slug} activeSubSlug={activeSub} />
+      <SubcategoryFilter subcategories={subcategories} scrollMode />
       <MainContainer>
         <VirtualCategoryContent
           sections={nonEmpty.map(({ sub: s, products }) => ({ id: s.id, name: s.name, products }))}

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import type { Product } from "@/types";
+import { registerSectionScroller } from "@/lib/section-scroll";
 import ProductCard from "./ProductCard";
 import ProductGrid from "./ProductGrid";
 
@@ -65,6 +66,32 @@ function VirtualizedProducts({ sections }: { sections: Section[] }) {
     },
     overscan: 3,
   });
+
+  useEffect(() => {
+    return registerSectionScroller((sectionId: number) => {
+      if (!containerRef.current) return;
+      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
+      if (sectionIndex < 0) return;
+
+      let rowIdx = 0;
+      for (let i = 0; i < sectionIndex; i++) {
+        rowIdx += 1 + Math.ceil(sections[i].products.length / cols);
+      }
+
+      // Use actual measured positions from the virtualizer cache (falls back to
+      // estimateSize for items not yet rendered). Add containerDocTop so the
+      // calculation works regardless of how much header space the page has.
+      const measurements = (virtualizer as unknown as { getMeasurements: () => Array<{ start: number }> }).getMeasurements();
+      const itemStart = measurements[rowIdx]?.start;
+      if (itemStart == null) return;
+
+      const containerDocTop = containerRef.current.getBoundingClientRect().top + window.scrollY;
+      // 214px = desired viewport position of the section header (below the sticky bar)
+      window.scrollTo({ top: Math.max(0, containerDocTop + itemStart - 214), behavior: "auto" });
+    });
+    // virtualizer is a stable class instance — safe to omit from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sections, cols]);
 
   return (
     <div ref={containerRef} style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
