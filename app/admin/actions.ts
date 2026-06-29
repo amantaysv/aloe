@@ -117,6 +117,7 @@ export type BannerInput = {
   sort_order: number;
   active: boolean;
   link?: string | null;
+  type?: "desktop" | "mobile";
 };
 
 export async function upsertBanner(

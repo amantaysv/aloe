@@ -9,7 +9,13 @@ import { deleteBanner, reorderBanners, uploadBannerImage, upsertBanner } from ".
 
 type Banner = { id: number; image_url: string; sort_order: number; active: boolean; link?: string | null };
 
-export default function AdminBanners({ banners: initial }: { banners: Banner[] }) {
+export default function AdminBanners({
+  banners: initial,
+  type,
+}: {
+  banners: Banner[];
+  type: "desktop" | "mobile";
+}) {
   const [banners, setBanners] = useState(() => [...initial].sort((a, b) => a.sort_order - b.sort_order));
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -35,7 +41,7 @@ export default function AdminBanners({ banners: initial }: { banners: Banner[] }
     }
 
     const sort_order = banners.length;
-    const result = await upsertBanner({ image_url: upload.url, sort_order, active: true });
+    const result = await upsertBanner({ image_url: upload.url, sort_order, active: true, type });
     setUploading(false);
     if (!result.ok) {
       show(result.error, "error");
@@ -138,7 +144,11 @@ export default function AdminBanners({ banners: initial }: { banners: Banner[] }
           <>
             <ImagePlusIcon className="size-8" />
             <span className="text-sm font-medium">Нажмите или перетащите изображение</span>
-            <span className="text-xs">Рекомендуемое соотношение 3:1 (например 1200×400)</span>
+            <span className="text-xs">
+              {type === "mobile"
+                ? "Рекомендуемое соотношение 3:4 (например 600×800)"
+                : "Рекомендуемое соотношение 3:1 (например 1200×400)"}
+            </span>
           </>
         )}
       </div>
@@ -165,7 +175,9 @@ export default function AdminBanners({ banners: initial }: { banners: Banner[] }
             }`}
           >
             <GripVerticalIcon className="size-4 text-gray-400 shrink-0 cursor-grab active:cursor-grabbing" />
-            <div className="relative w-40 shrink-0 bg-gray-100 rounded-lg overflow-hidden aspect-2/1 lg:aspect-3/1">
+            <div
+              className={`relative shrink-0 bg-gray-100 rounded-lg overflow-hidden ${type === "mobile" ? "w-16 aspect-3/4" : "w-40 aspect-2/1 lg:aspect-3/1"}`}
+            >
               <Image
                 src={b.image_url}
                 alt={`Баннер ${i + 1}`}
