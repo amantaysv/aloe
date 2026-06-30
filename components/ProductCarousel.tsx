@@ -34,12 +34,9 @@ export default function ProductCarousel({
       </div>
 
       <div ref={emblaRef} className="overflow-hidden">
-        <div className="flex gap-3">
+        <div className="grid grid-flow-col auto-cols-[minmax(160px,220px)] gap-3">
           {products.map((p, i) => (
-            <div
-              key={p.id}
-              className="shrink-0 w-[calc(50%-0.375rem)] sm:w-[calc(33.333%-0.5rem)] lg:w-[calc(25%-0.5625rem)]"
-            >
+            <div key={p.id}>
               <ProductCard product={p} className="h-full" priority={i === 0} />
             </div>
           ))}
