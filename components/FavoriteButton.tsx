@@ -7,10 +7,12 @@ import { useFavorites } from "@/store/favorites";
 import { useToast } from "@/store/toast";
 
 export default function FavoriteButton({ productId }: { productId: number }) {
-  const { ids, userId, add, remove } = useFavorites();
-  const { show } = useToast();
+  const isFav = useFavorites((s) => s.ids.includes(productId));
+  const userId = useFavorites((s) => s.userId);
+  const add = useFavorites((s) => s.add);
+  const remove = useFavorites((s) => s.remove);
+  const show = useToast((s) => s.show);
   const router = useRouter();
-  const isFav = ids.includes(productId);
 
   function toggle(e: React.MouseEvent) {
     e.preventDefault();

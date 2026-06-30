@@ -173,11 +173,13 @@ function VirtualizedProducts({ sections }: { sections: Section[] }) {
   );
 }
 
+const _noop = () => () => {};
+
 // useSyncExternalStore: server snapshot = false, client snapshot = true.
 // No setState in effects — avoids the cascading-render lint error.
 const useIsClient = () =>
   useSyncExternalStore(
-    () => () => {},
+    _noop,
     () => true,
     () => false,
   );

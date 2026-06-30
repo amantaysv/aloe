@@ -16,9 +16,11 @@ type Props = {
 };
 
 export default function AddToCart({ product, size }: Props) {
-  const { add, items, increment, decrement } = useCart();
-  const { show } = useToast();
-  const item = items.find((i) => i.id === product.id);
+  const item = useCart((s) => s.items.find((i) => i.id === product.id));
+  const add = useCart((s) => s.add);
+  const increment = useCart((s) => s.increment);
+  const decrement = useCart((s) => s.decrement);
+  const show = useToast((s) => s.show);
 
   if (item) {
     return (
