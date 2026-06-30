@@ -26,7 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className={`${geist.className} ${lobster.variable}`} suppressHydrationWarning>
         <NextTopLoader color="#16a34a" showSpinner={false} />
         <AuthSync />
-        <Header />
+        <Header className="hidden lg:block" />
         <CategoryNav categories={categories} />
         {children}
         <MobileBottomNav />

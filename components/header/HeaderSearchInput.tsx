@@ -2,12 +2,13 @@
 
 import { SubmitEventHandler, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/cn";
 import { createClient } from "@/lib/supabase-browser";
 import { searchProductsAutocomplete } from "@/services/product.service";
 import SearchInput from "../SearchInput";
 import AutocompleteDropdown, { type AutocompleteProduct } from "./AutocompleteDropdown";
 
-export default function HeaderSearchInput() {
+export default function HeaderSearchInput({ className }: { className?: string }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<AutocompleteProduct[]>([]);
   const [loading, setLoading] = useState(false);
@@ -51,7 +52,7 @@ export default function HeaderSearchInput() {
   };
 
   return (
-    <form ref={searchRef} onSubmit={handleSubmit} className="relative flex flex-1">
+    <form ref={searchRef} onSubmit={handleSubmit} className={cn("relative flex flex-1", className)}>
       <SearchInput
         searchPath="/search"
         value={query}

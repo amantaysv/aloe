@@ -1,4 +1,5 @@
 import { BannerCarousel, ProductCarousel } from "@/components";
+import Header from "@/components/header/Header";
 import MainContainer from "@/components/MainContainer";
 import {
   getCachedActiveBanners,
@@ -40,45 +41,39 @@ export default async function HomePage() {
 
   return (
     <>
-      <div className="container mx-auto">
-        <BannerCarousel banners={banners} />
-      </div>
-      <MainContainer className="flex flex-col gap-8">
-        {popular.total > 0 && (
-          <ProductCarousel
-            title="Популярные товары"
-            href="/popular"
-            products={popular.products}
-            totalCount={popular.total}
-          />
-        )}
-        {newest.total > 0 && (
-          <ProductCarousel title="Новинки" href="/new" products={newest.products} totalCount={newest.total} />
-        )}
-        {onSale.total > 0 && (
-          <ProductCarousel title="Акции" href="/sale" products={onSale.products} totalCount={onSale.total} />
-        )}
-        {discounted.total > 0 && (
-          <ProductCarousel
-            title="Скидки"
-            href="/discount"
-            products={discounted.products}
-            totalCount={discounted.total}
-          />
-        )}
-        {categoryProducts.map(
-          ({ cat, products, total }) =>
-            total > 0 && (
-              <ProductCarousel
-                key={cat.id}
-                title={cat.name}
-                href={`/catalog/${cat.slug}`}
-                products={products}
-                totalCount={total}
-              />
-            ),
-        )}
-      </MainContainer>
+    <Header className="block lg:hidden" />
+    <MainContainer className="flex flex-col gap-8">
+      <BannerCarousel banners={banners} />
+      {popular.total > 0 && (
+        <ProductCarousel
+          title="Популярные товары"
+          href="/popular"
+          products={popular.products}
+          totalCount={popular.total}
+        />
+      )}
+      {newest.total > 0 && (
+        <ProductCarousel title="Новинки" href="/new" products={newest.products} totalCount={newest.total} />
+      )}
+      {onSale.total > 0 && (
+        <ProductCarousel title="Акции" href="/sale" products={onSale.products} totalCount={onSale.total} />
+      )}
+      {discounted.total > 0 && (
+        <ProductCarousel title="Скидки" href="/discount" products={discounted.products} totalCount={discounted.total} />
+      )}
+      {categoryProducts.map(
+        ({ cat, products, total }) =>
+          total > 0 && (
+            <ProductCarousel
+              key={cat.id}
+              title={cat.name}
+              href={`/catalog/${cat.slug}`}
+              products={products}
+              totalCount={total}
+            />
+          ),
+      )}
+    </MainContainer>
     </>
   );
 }

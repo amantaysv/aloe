@@ -32,7 +32,7 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
   if (banners.length === 0) return null;
 
   return (
-    <div className="relative w-full h-full overflow-hidden md:rounded-xl lg:rounded-2xl aspect-3/4 md:aspect-2/1 lg:aspect-3/1">
+    <div className="relative w-full h-full overflow-hidden md:rounded-xl lg:rounded-2xl aspect-7/3 md:aspect-2/1 lg:aspect-16/3">
       <div ref={emblaRef} className="h-full overflow-hidden">
         <div className="flex h-full">
           {banners.map((b, i) => (
