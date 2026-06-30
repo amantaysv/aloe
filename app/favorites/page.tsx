@@ -13,7 +13,7 @@ export default async function FavoritesPage() {
       <MobileHeader>
         <Title className="text-center">Избранное</Title>
       </MobileHeader>
-      <Container>
+      <Container className="pt-2 pb-20" withMain>
         <Title className="hidden md:block mb-6">Избранное</Title>
 
         {products.length === 0 ? (

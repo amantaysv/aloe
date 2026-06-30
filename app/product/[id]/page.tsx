@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   AddToCart,
+  Breadcrumb,
   Container,
   Currency,
   FavoriteButton,
@@ -79,8 +80,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       : null;
 
   return (
-    <Container>
+    <Container className="pt-2 pb-20" withMain>
       <MobileBackButton />
+      <Breadcrumb crumbs={breadcrumbs} />
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
         <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden">

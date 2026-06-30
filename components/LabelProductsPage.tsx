@@ -1,11 +1,9 @@
-import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { getProductsByLabelPaginated } from "@/services/product.service";
 import Container from "./Container";
 import Pagination from "./Pagination";
 import ProductCard from "./ProductCard";
 import ProductGrid from "./ProductGrid";
-import TitleWithCount from "./TitleWithCount";
 
 const PAGE_SIZE = 20;
 
@@ -28,12 +26,8 @@ export default async function LabelProductsPage({
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <Container>
-      <Link href="/" className="text-sm text-gray-500 hover:text-gray-800 mb-4 inline-block">
-        ← Главная
-      </Link>
-
-      <TitleWithCount count={total}>{title}</TitleWithCount>
+    <Container className="pt-2 pb-20" withMain>
+      <h2 className="text-lg font-semibold mb-4 text-center md:text-left">{title}</h2>
 
       {products.length === 0 ? (
         <p className="text-gray-400 text-sm">{emptyText}</p>

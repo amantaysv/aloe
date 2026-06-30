@@ -37,7 +37,7 @@ export default function CartPage() {
           </Button>
         </div>
       </MobileHeader>
-      <Container className="pt-20 pb-40">
+      <Container className="pt-20 md:pt-2 pb-40 md:pb-20" withMain>
         <Title className="hidden md:block mb-6">Корзина</Title>
         <div className="flex flex-col md:gap-3">
           {items.map((item) => (

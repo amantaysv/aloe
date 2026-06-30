@@ -25,7 +25,7 @@ export default function DeliveryModal() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="p-2 text-gray-400 hover:text-green-600 transition-colors"
+        className="p-2 text-gray-400 hover:text-green-600 transition-colors cursor-pointer"
         title="Доставка"
       >
         <Truck className="size-5" />

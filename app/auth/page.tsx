@@ -81,7 +81,7 @@ function AuthForm() {
 
   if (registered) {
     return (
-      <Container className="max-w-sm">
+      <Container className="max-w-sm pt-20 py-20" withMain>
         <div className="border border-gray-300 rounded-xl p-6 text-center flex flex-col gap-4">
           <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto text-green-600 text-2xl">
             ✉
@@ -110,7 +110,7 @@ function AuthForm() {
   }
 
   return (
-    <Container className="max-w-sm">
+    <Container className="max-w-sm pt-20 py-20" withMain>
       {confirmed && (
         <div className="mb-4 flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
           <span className="text-green-500 text-base">✓</span>

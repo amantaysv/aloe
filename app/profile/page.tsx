@@ -28,7 +28,7 @@ export default async function ProfilePage() {
           </span>
         </div>
       </MobileHeader>
-      <Container className="max-w-2xl pt-20">
+      <Container className="max-w-2xl py-20" withMain>
         <Title className="hidden md:block mb-6">Мой профиль</Title>
 
         <div className="flex md:hidden flex-col items-center gap-4 mb-4">

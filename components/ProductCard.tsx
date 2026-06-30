@@ -42,11 +42,6 @@ export default function ProductCard({ product: p, className = "", href, priority
           <FavoriteButton productId={p.id} />
         </div>
         <div className="flex-1 flex flex-col py-3">
-          {p.category && (
-            <p className="text-xs text-gray-400 mb-1 truncate" title={p.category}>
-              {p.category}
-            </p>
-          )}
           <p className="flex-1 text-sm font-medium line-clamp-3" title={p.name}>
             {p.name}
           </p>
