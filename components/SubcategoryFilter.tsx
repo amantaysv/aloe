@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { scrollToSection } from "@/lib/section-scroll";
 import { useActiveSectionSync } from "@/hooks/useActiveSectionSync";
 import { useDragScroll } from "@/hooks/useDragScroll";
 import { useWindowScrolled } from "@/hooks/useWindowScrolled";
+import { scrollToSection } from "@/lib/section-scroll";
 import { containerClassname } from "./Container";
 
 type Subcategory = { id: number; name: string; slug: string };
@@ -32,7 +32,7 @@ export default function SubcategoryFilter({
   const queryString = sortParam ? `?sort=${sortParam}` : "";
 
   return (
-    <div className="sticky top-41.5 right-0 left-0 z-10 bg-white">
+    <div className="sticky top-15 md:top-41.5 z-10 bg-white">
       <div
         ref={ref}
         className={`${containerClassname} flex gap-2 py-2 ${scrolled ? "flex-nowrap overflow-x-auto" : "flex-wrap"}`}
@@ -44,7 +44,10 @@ export default function SubcategoryFilter({
             return (
               <button
                 key={s.id}
-                ref={(el) => { if (el) pillRefs.current.set(s.id, el); else pillRefs.current.delete(s.id); }}
+                ref={(el) => {
+                  if (el) pillRefs.current.set(s.id, el);
+                  else pillRefs.current.delete(s.id);
+                }}
                 onClick={() => scrollToSection(s.id)}
                 className={`px-4 py-2 text-xs rounded-full border transition-colors whitespace-nowrap cursor-pointer ${
                   s.id === activeSectionId

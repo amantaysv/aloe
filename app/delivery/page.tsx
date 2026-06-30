@@ -1,5 +1,6 @@
-import { Container } from "@/components";
+import { Title } from "@/components";
 import DeliveryContent from "@/components/DeliveryContent";
+import MainContainer from "@/components/MainContainer";
 
 export const metadata = {
   title: "Доставка и оплата — Aloe.kg",
@@ -7,9 +8,9 @@ export const metadata = {
 
 export default function DeliveryPage() {
   return (
-    <Container className="max-w-2xl py-12">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-4">Доставка и оплата</h1>
+    <MainContainer className="max-w-2xl">
+      <Title className="mb-4">Доставка и оплата</Title>
       <DeliveryContent />
-    </Container>
+    </MainContainer>
   );
 }

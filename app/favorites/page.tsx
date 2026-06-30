@@ -1,5 +1,7 @@
+import { Heart } from "lucide-react";
 import Link from "next/link";
-import { Container, MobileHeader, ProductCard, ProductGrid, Title } from "@/components";
+import { MobileHeader, ProductCard, ProductGrid, Title } from "@/components";
+import MainContainer from "@/components/MainContainer";
 import { requireAuth } from "@/lib/auth";
 import { getFavoriteProducts } from "@/services/favorites.service";
 
@@ -13,12 +15,14 @@ export default async function FavoritesPage() {
       <MobileHeader>
         <Title className="text-center">Избранное</Title>
       </MobileHeader>
-      <Container className="pt-2 pb-20" withMain>
+      <MainContainer>
         <Title className="hidden md:block mb-6">Избранное</Title>
 
         {products.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
-            <p className="text-5xl mb-4">♡</p>
+            <p className="mb-4">
+              <Heart className="size-6 mx-auto" />
+            </p>
             <p className="text-lg font-medium text-gray-600">Здесь пока пусто</p>
             <p className="text-sm mt-1 mb-6">Добавляйте товары в избранное, нажимая на сердечко</p>
             <Link href="/" className="text-green-600 hover:underline text-sm">
@@ -32,7 +36,7 @@ export default async function FavoritesPage() {
             ))}
           </ProductGrid>
         )}
-      </Container>
+      </MainContainer>
     </>
   );
 }

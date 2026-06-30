@@ -16,6 +16,7 @@ import {
   Rose,
   ShowerHead,
   Star,
+  Tag,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -47,6 +48,7 @@ const specials = [
   { href: "/popular", label: "Популярное", icon: Star },
   { href: "/new", label: "Новинки", icon: Plus },
   { href: "/sale", label: "Акции", icon: Percent },
+  { href: "/brands", label: "Бренды", icon: Tag },
 ];
 
 function NavItem({
@@ -85,7 +87,7 @@ export default function CategoryNav({ categories }: { categories: Category[] }) 
   return (
     <nav className="hidden lg:block h-25.5 bg-white sticky top-16 z-40">
       <Container>
-        <div className="flex items-start gap-3 overflow-x-auto scrollbar-none pt-4 pb-2">
+        <div className="flex items-start gap-1.5 overflow-x-auto scrollbar-none pt-4 pb-2">
           {specials.map((s) => (
             <NavItem key={s.href} href={s.href} label={s.label} Icon={s.icon} />
           ))}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Container, Currency, MobileHeader, Title } from "@/components";
+import MainContainer from "@/components/MainContainer";
 import { useCart } from "@/store/cart";
 
 export default function CartPage() {
@@ -37,7 +38,7 @@ export default function CartPage() {
           </Button>
         </div>
       </MobileHeader>
-      <Container className="pt-20 md:pt-2 pb-40 md:pb-20" withMain>
+      <MainContainer className="pb-40 md:pb-20">
         <Title className="hidden md:block mb-6">Корзина</Title>
         <div className="flex flex-col md:gap-3">
           {items.map((item) => (
@@ -111,7 +112,7 @@ export default function CartPage() {
             </Button>
           </div>
         </div>
-      </Container>
+      </MainContainer>
     </>
   );
 }

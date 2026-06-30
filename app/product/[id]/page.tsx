@@ -3,17 +3,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  AddToCart,
-  Breadcrumb,
-  Container,
-  Currency,
-  FavoriteButton,
-  MobileBackButton,
-  ProductCard,
-  ProductDescription,
-  Title,
-} from "@/components";
+import { AddToCart, Breadcrumb, Currency, FavoriteButton, ProductCard, ProductDescription, Title } from "@/components";
+import MainContainer from "@/components/MainContainer";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { LABEL_MAP } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
@@ -80,8 +71,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       : null;
 
   return (
-    <Container className="pt-2 pb-20" withMain>
-      <MobileBackButton />
+    <MainContainer className="pt-4">
       <Breadcrumb crumbs={breadcrumbs} />
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
@@ -160,6 +150,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           </div>
         </section>
       )}
-    </Container>
+    </MainContainer>
   );
 }

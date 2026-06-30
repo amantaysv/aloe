@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { getProductsByLabelPaginated } from "@/services/product.service";
-import Container from "./Container";
+import MainContainer from "./MainContainer";
 import Pagination from "./Pagination";
 import ProductCard from "./ProductCard";
 import ProductGrid from "./ProductGrid";
@@ -26,7 +26,7 @@ export default async function LabelProductsPage({
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <Container className="pt-2 pb-20" withMain>
+    <MainContainer>
       <h2 className="text-lg font-semibold mb-4 text-center md:text-left">{title}</h2>
 
       {products.length === 0 ? (
@@ -41,6 +41,6 @@ export default async function LabelProductsPage({
           <Pagination page={page} totalPages={totalPages} basePath={basePath} />
         </>
       )}
-    </Container>
+    </MainContainer>
   );
 }

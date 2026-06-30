@@ -3,7 +3,8 @@
 import { Suspense, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Container, Title } from "@/components";
+import { Button, Title } from "@/components";
+import MainContainer from "@/components/MainContainer";
 import { createClient } from "@/lib/supabase-browser";
 
 const ERROR_MAP: Record<string, string> = {
@@ -81,7 +82,7 @@ function AuthForm() {
 
   if (registered) {
     return (
-      <Container className="max-w-sm pt-20 py-20" withMain>
+      <MainContainer className="pt-20">
         <div className="border border-gray-300 rounded-xl p-6 text-center flex flex-col gap-4">
           <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto text-green-600 text-2xl">
             ✉
@@ -105,12 +106,12 @@ function AuthForm() {
             Войти в аккаунт
           </Button>
         </div>
-      </Container>
+      </MainContainer>
     );
   }
 
   return (
-    <Container className="max-w-sm pt-20 py-20" withMain>
+    <MainContainer className="max-w-sm pt-20">
       {confirmed && (
         <div className="mb-4 flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
           <span className="text-green-500 text-base">✓</span>
@@ -178,6 +179,6 @@ function AuthForm() {
           </Button>
         </p>
       </div>
-    </Container>
+    </MainContainer>
   );
 }

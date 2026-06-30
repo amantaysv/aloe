@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Container,
   ManufacturerFilter,
   MobileHeader,
   MobileSearchInput,
@@ -10,6 +9,7 @@ import {
   ProductGrid,
   Title,
 } from "@/components";
+import MainContainer from "@/components/MainContainer";
 import { getCachedCategories } from "@/lib/cached-queries";
 import { parseBrandIds, parsePage } from "@/lib/page-params";
 import { supabase } from "@/lib/supabase";
@@ -44,7 +44,7 @@ export default async function CatalogPage({
         <MobileHeader>
           <MobileSearchInput searchPath="/catalog" />
         </MobileHeader>
-        <Container className="pt-20 md:pt-2" withMain>
+        <MainContainer>
           <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}>
             {topCategories.map((cat) => (
               <Link
@@ -68,7 +68,7 @@ export default async function CatalogPage({
               </Link>
             ))}
           </div>
-        </Container>
+        </MainContainer>
       </>
     );
   }
@@ -85,15 +85,15 @@ export default async function CatalogPage({
       <MobileHeader>
         <MobileSearchInput defaultValue={q} searchPath="/catalog" />
       </MobileHeader>
-      <Container>
-        <div className="mb-6">
+      <MainContainer>
+        <div className="mb-4">
           <Title>
             Результаты поиска: <span className="text-green-600">«{q}»</span>
           </Title>
           <p className="text-sm text-gray-500 mt-1">Найдено: {total} товаров</p>
         </div>
 
-        <ManufacturerFilter manufacturers={brands} className="mb-6" />
+        <ManufacturerFilter manufacturers={brands} className="mb-4" />
 
         {products.length === 0 ? (
           <div className="text-center py-16 text-gray-500">
@@ -117,7 +117,7 @@ export default async function CatalogPage({
             />
           </>
         )}
-      </Container>
+      </MainContainer>
     </>
   );
 }
