@@ -1,4 +1,5 @@
-import { Container, Currency } from "@/components";
+import { Container } from "@/components";
+import { Truck } from "lucide-react";
 
 export const metadata = {
   title: "Доставка и оплата — Aloe.kg",
@@ -6,63 +7,68 @@ export const metadata = {
 
 export default function DeliveryPage() {
   return (
-    <Container className="max-w-xl py-12">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-12">Доставка и оплата</h1>
+    <Container className="max-w-2xl py-12">
+      <h1 className="text-2xl font-semibold text-gray-900 mb-8">Доставка и оплата</h1>
 
       <div className="space-y-10 divide-y divide-gray-100">
         <section className="pt-0">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Доставка</h2>
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-baseline justify-between">
-                <span className="text-gray-800">По Бишкеку и жилмассивам</span>
-                <span className="text-lg font-semibold text-gray-900">
-                  150 <Currency />
-                </span>
-              </div>
-              <p className="text-sm text-gray-400 mt-1">
-                Минимальная сумма заказа — 500 <Currency />
-              </p>
+          <h2 className="text-base font-bold text-gray-900 mb-4">
+            По центру города и микрорайонам г.Бишкек
+          </h2>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Truck className="w-5 h-5 text-gray-400 shrink-0" />
+              <span className="font-semibold text-gray-900 min-w-35">Доставка 200 сом</span>
+              <span className="text-gray-500 text-sm">при заказе от 500 сом</span>
             </div>
-            <div>
-              <div className="flex items-baseline justify-between">
-                <span className="text-gray-800">Регионы</span>
-                <span className="text-lg font-semibold text-gray-900">
-                  от 290 <Currency />
-                </span>
-              </div>
-              <p className="text-sm text-gray-400 mt-1">Итоговая цена сообщается по телефону после заказа</p>
-            </div>
-            <div className="text-sm text-green-600">
-              Бесплатно при заказе от 5 000 <Currency /> по Бишкеку
+            <div className="flex items-center gap-3">
+              <Truck className="w-5 h-5 text-gray-400 shrink-0" />
+              <span className="font-semibold text-gray-900 min-w-35">Доставка 0 сом</span>
+              <span className="text-gray-500 text-sm">при заказе от 10 000 сом</span>
             </div>
           </div>
         </section>
 
         <section className="pt-10">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Оплата</h2>
-          <div className="flex gap-6 text-gray-800">
-            <span>Наличными</span>
-            <span>Элсом</span>
-            <span>MegaPay</span>
+          <h2 className="text-base font-bold text-gray-900 mb-4">
+            Жил.массивы и отдалённые районы
+          </h2>
+          <div className="flex items-center gap-3">
+            <Truck className="w-5 h-5 text-gray-400 shrink-0" />
+            <span className="font-semibold text-gray-900 min-w-35">Доставка 300 сом</span>
+            <span className="text-gray-500 text-sm">при заказе от 500 сом</span>
           </div>
         </section>
 
         <section className="pt-10">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">График</h2>
-          <div className="space-y-2 text-gray-700 text-sm">
-            <p>6 дней в неделю, понедельник — выходной</p>
-            <p>Заявки до 15:00 — доставка в тот же день до 20:00</p>
-            <p>Заявки после 15:00 — доставка на следующий день</p>
-          </div>
+          <h2 className="text-base font-bold text-gray-900 mb-4">Срочная доставка</h2>
+          <p className="text-sm text-gray-600">Отправляется Яндекс курьером и оплачивается получателем</p>
         </section>
 
         <section className="pt-10">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Возврат</h2>
-          <p className="text-sm text-gray-700 leading-relaxed">
-            В течение двух дней — только нового, неиспользованного товара. Расходы по доставке до пункта возврата несёт
-            покупатель.
+          <h2 className="text-base font-bold text-gray-900 mb-4">Доставка в регионы</h2>
+          <p className="text-sm text-gray-600">
+            Осуществляется Ылдам Экспресс и рассчитывается по WhatsApp после оформления заказа
           </p>
+        </section>
+
+        <section className="pt-10">
+          <h2 className="text-base font-bold text-gray-900 mb-3">Информация о доставке</h2>
+          <div className="space-y-2 text-sm text-gray-700">
+            <p>Принимаем заказы на сайте 24/7</p>
+            <p>Обрабатываем заказы с 10:00 до 18:00</p>
+            <p>Доставляем по предварительной договорённости с 13:00 до 20:00</p>
+            <p>Срочная доставка отправляется с 10:00 до 18:00</p>
+            <p>Понедельник — выходной</p>
+          </div>
+        </section>
+
+        <section className="pt-10">
+          <h2 className="text-base font-bold text-gray-900 mb-3">Способы оплаты</h2>
+          <div className="space-y-2 text-sm text-gray-700">
+            <p>Наличными</p>
+            <p>Электронные кошельки (мБанк, Оптима и др.) — после подтверждения заказа через WhatsApp</p>
+          </div>
         </section>
       </div>
     </Container>

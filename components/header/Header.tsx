@@ -1,6 +1,7 @@
-import { Heart, Truck } from "lucide-react";
+import { Heart } from "lucide-react";
 import Link from "next/link";
 import Container from "../Container";
+import DeliveryModal from "../DeliveryModal";
 import AuthButton from "./AuthButton";
 import CartIcon from "./CartIcon";
 import HeaderSearchInput from "./HeaderSearchInput";
@@ -24,9 +25,7 @@ export default function Header() {
         <HeaderSearchInput />
 
         <div className="flex items-center gap-2 text-gray-600">
-          <Link href="/delivery" className="p-2 text-gray-400 hover:text-green-600 transition-colors" title="Доставка">
-            <Truck className="size-5" />
-          </Link>
+          <DeliveryModal />
           <Link href="/favorites" className="p-2 text-gray-400 hover:text-red-400 transition-colors" title="Избранное">
             <Heart className="size-5" />
           </Link>
