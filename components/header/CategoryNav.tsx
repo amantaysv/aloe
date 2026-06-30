@@ -13,6 +13,7 @@ import {
   Percent,
   Plus,
   Printer,
+  Rose,
   ShowerHead,
   Star,
 } from "lucide-react";
@@ -24,6 +25,7 @@ const ICONS = {
   bytovaya: FlaskConical,
   deti: Baby,
   dom: HouseHeart,
+  zhenshiny: Rose,
   muzhchiny: Axe,
   ofis: Printer,
   kosmetika: MirrorRound,
@@ -59,7 +61,11 @@ function NavItem({
   Icon?: React.ElementType;
 }) {
   return (
-    <Link href={href} className={`flex flex-col items-center gap-1.5 rounded-lg transition-colors shrink-0 w-18`}>
+    <Link
+      href={href}
+      onNavigate={() => window.scrollTo(0, 0)}
+      className={`flex flex-col items-center gap-1.5 rounded-lg transition-colors shrink-0 w-18`}
+    >
       <div
         className={`w-11 h-11 rounded-full ${active ? "bg-gray-700 text-green-600" : "bg-gray-100"} transition-colors flex items-center justify-center`}
       >

@@ -45,7 +45,7 @@ export default async function CategoryPage({
       </MobileHeader>
 
       <SubcategoryFilter subcategories={subcategories} scrollMode />
-      <Container className="py-2">
+      <Container className="pt-2 pb-20">
         <VirtualCategoryContent
           sections={nonEmpty.map(({ sub: s, products }) => ({ id: s.id, name: s.name, products }))}
         />

@@ -2,9 +2,9 @@
 
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import type { Product } from "@/types";
-import { registerSectionScroller } from "@/lib/section-scroll";
 import { setActiveSection } from "@/lib/active-section";
+import { registerSectionScroller } from "@/lib/section-scroll";
+import type { Product } from "@/types";
 import ProductCard from "./ProductCard";
 import ProductGrid from "./ProductGrid";
 
@@ -117,7 +117,9 @@ function VirtualizedProducts({ sections }: { sections: Section[] }) {
       // Use actual measured positions from the virtualizer cache (falls back to
       // estimateSize for items not yet rendered). Add containerDocTop so the
       // calculation works regardless of how much header space the page has.
-      const measurements = (virtualizer as unknown as { getMeasurements: () => Array<{ start: number }> }).getMeasurements();
+      const measurements = (
+        virtualizer as unknown as { getMeasurements: () => Array<{ start: number }> }
+      ).getMeasurements();
       const itemStart = measurements[rowIdx]?.start;
       if (itemStart == null) return;
 
@@ -154,10 +156,7 @@ function VirtualizedProducts({ sections }: { sections: Section[] }) {
                 {row.name}
               </h2>
             ) : (
-              <div
-                className="grid gap-4 pb-4"
-                style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
-              >
+              <div className="grid gap-4 pb-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
                 {row.items.map((product) => (
                   <ProductCard
                     key={product.id}
