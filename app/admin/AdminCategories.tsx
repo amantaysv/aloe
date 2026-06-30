@@ -1,13 +1,14 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ChevronRightIcon, ImagePlusIcon, Loader2Icon, PencilIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
+import { ChevronRightIcon, GripVerticalIcon, ImagePlusIcon, Loader2Icon, PencilIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components";
-import { deleteCategory, uploadCategoryImage, upsertCategory, type CategoryInput } from "./actions";
+import { useToast } from "@/store/toast";
+import { deleteCategory, reorderSubcategories, uploadCategoryImage, upsertCategory, type CategoryInput } from "./actions";
 import { Field, adminInputCls as inp } from "./admin-ui";
 
-type Category = { id: number; name: string; parent_id: number | null; slug: string; image_url?: string | null };
+type Category = { id: number; name: string; parent_id: number | null; slug: string; image_url?: string | null; sort_order: number };
 
 const empty: CategoryInput = { name: "", parent_id: null, slug: "", image_url: null };
 
@@ -23,7 +24,10 @@ export default function AdminCategories({
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [dragOverId, setDragOverId] = useState<number | null>(null);
+  const dragIndex = useRef<{ parentId: number; index: number } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { show } = useToast();
 
   const parents = categories.filter((c) => !c.parent_id);
   const subs = categories.filter((c) => c.parent_id);
@@ -105,9 +109,39 @@ export default function AdminCategories({
     setCategories((prev) => {
       const exists = prev.find((c) => c.id === editing.id);
       if (exists) return prev.map((c) => (c.id === editing.id ? { ...c, ...updated } : c));
-      return [...prev, { id: result.id, ...updated }];
+      const siblingCount = prev.filter((c) => c.parent_id === editing.parent_id).length;
+      return [...prev, { id: result.id, sort_order: siblingCount, ...updated }];
     });
     close();
+  }
+
+  function onDragStart(parentId: number, index: number) {
+    dragIndex.current = { parentId, index };
+  }
+
+  async function onDrop(parentId: number, dropIndex: number) {
+    const drag = dragIndex.current;
+    dragIndex.current = null;
+    setDragOverId(null);
+    if (!drag || drag.parentId !== parentId || drag.index === dropIndex) return;
+
+    const children = categories
+      .filter((c) => c.parent_id === parentId)
+      .sort((a, b) => a.sort_order - b.sort_order);
+
+    const next = [...children];
+    const [moved] = next.splice(drag.index, 1);
+    next.splice(dropIndex, 0, moved);
+    const reordered = next.map((c, i) => ({ ...c, sort_order: i }));
+
+    setCategories((prev) => {
+      const others = prev.filter((c) => c.parent_id !== parentId);
+      return [...others, ...reordered];
+    });
+
+    const result = await reorderSubcategories(reordered.map(({ id, sort_order }) => ({ id, sort_order })));
+    if (!result.ok) show(result.error, "error");
+    else show("Порядок сохранён", "success");
   }
 
   async function handleDelete(id: number) {
@@ -137,7 +171,7 @@ export default function AdminCategories({
 
       <div className="space-y-1">
         {parents.map((parent) => {
-          const children = subs.filter((s) => s.parent_id === parent.id);
+          const children = subs.filter((s) => s.parent_id === parent.id).sort((a, b) => a.sort_order - b.sort_order);
           const parentLocked = usedCategoryIds.has(parent.id) || children.some((s) => usedCategoryIds.has(s.id));
           return (
             <div key={parent.id}>
@@ -175,13 +209,22 @@ export default function AdminCategories({
                 </div>
               </div>
 
-              {children.map((sub) => {
+              {children.map((sub, i) => {
                 const subLocked = usedCategoryIds.has(sub.id);
                 return (
                   <div
                     key={sub.id}
-                    className="flex items-center gap-2 pl-9 pr-3 py-1.5 rounded-lg hover:bg-gray-50 group"
+                    draggable
+                    onDragStart={() => onDragStart(parent.id, i)}
+                    onDragOver={(e) => { e.preventDefault(); setDragOverId(sub.id); }}
+                    onDragLeave={() => setDragOverId(null)}
+                    onDrop={() => onDrop(parent.id, i)}
+                    onDragEnd={() => { dragIndex.current = null; setDragOverId(null); }}
+                    className={`flex items-center gap-2 pl-6 pr-3 py-1.5 rounded-lg group transition-colors ${
+                      dragOverId === sub.id ? "bg-green-50 border border-green-300" : "hover:bg-gray-50"
+                    }`}
                   >
+                    <GripVerticalIcon className="size-4 text-gray-300 shrink-0 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="flex-1 min-w-0">
                       <span className="text-sm text-gray-700">{sub.name}</span>
                       <span className="text-xs text-gray-400 ml-2">{sub.slug}</span>

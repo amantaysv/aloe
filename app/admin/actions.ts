@@ -83,7 +83,19 @@ export async function upsertCategory(
     if (error) return { ok: false, error: error.message };
     return { ok: true, id: data.id };
   }
-  const { data: row, error } = await db.from("categories").insert(fields).select("id").single();
+  let sort_order = 0;
+  if (data.parent_id !== null) {
+    const { count } = await db
+      .from("categories")
+      .select("id", { count: "exact", head: true })
+      .eq("parent_id", data.parent_id);
+    sort_order = count ?? 0;
+  }
+  const { data: row, error } = await db
+    .from("categories")
+    .insert({ ...fields, sort_order })
+    .select("id")
+    .single();
   if (error) return { ok: false, error: error.message };
   return { ok: true, id: row.id };
 }
@@ -108,6 +120,19 @@ export async function deleteCategory(id: number): Promise<{ ok: true } | { ok: f
   await assertAdmin();
   const { error } = await adminDb().from("categories").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function reorderSubcategories(
+  items: { id: number; sort_order: number }[],
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  await assertAdmin();
+  const db = adminDb();
+  const results = await Promise.all(
+    items.map(({ id, sort_order }) => db.from("categories").update({ sort_order }).eq("id", id)),
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) return { ok: false, error: failed.error.message };
   return { ok: true };
 }
 
