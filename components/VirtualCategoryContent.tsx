@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { setActiveSection } from "@/lib/active-section";
 import { registerSectionScroller } from "@/lib/section-scroll";
+import { useIsClient } from "@/hooks/useIsClient";
 import type { Product } from "@/types";
 import ProductCard from "./ProductCard";
 import ProductGrid from "./ProductGrid";
@@ -172,17 +173,6 @@ function VirtualizedProducts({ sections }: { sections: Section[] }) {
     </div>
   );
 }
-
-const _noop = () => () => {};
-
-// useSyncExternalStore: server snapshot = false, client snapshot = true.
-// No setState in effects — avoids the cascading-render lint error.
-const useIsClient = () =>
-  useSyncExternalStore(
-    _noop,
-    () => true,
-    () => false,
-  );
 
 export default function VirtualCategoryContent({ sections }: { sections: Section[] }) {
   const isClient = useIsClient();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@/components";
 import { saveProfile } from "./actions";
 
@@ -16,6 +16,9 @@ export default function ProfileForm({ initial }: Props) {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => () => clearTimeout(savedTimerRef.current), []);
 
   function handleCancel() {
     setName(initial.name);
@@ -34,7 +37,7 @@ export default function ProfileForm({ initial }: Props) {
         await saveProfile({ name, phone, address });
         setSaved(true);
         setEditing(false);
-        setTimeout(() => setSaved(false), 3000);
+        savedTimerRef.current = setTimeout(() => setSaved(false), 3000);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Ошибка сохранения");
       }

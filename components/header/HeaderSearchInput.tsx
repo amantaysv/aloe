@@ -1,6 +1,6 @@
 "use client";
 
-import { SubmitEventHandler, useEffect, useRef, useState } from "react";
+import { SubmitEventHandler, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { createClient } from "@/lib/supabase-browser";
@@ -14,6 +14,7 @@ export default function HeaderSearchInput({ className }: { className?: string })
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const searchRef = useRef<HTMLFormElement>(null);
+  const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function HeaderSearchInput({ className }: { className?: string })
           return;
         }
         setLoading(true);
-        const data = await searchProductsAutocomplete(createClient(), query);
+        const data = await searchProductsAutocomplete(supabase, query);
         setResults(data as AutocompleteProduct[]);
         setOpen(true);
         setLoading(false);
@@ -33,7 +34,7 @@ export default function HeaderSearchInput({ className }: { className?: string })
       query.length < 2 ? 0 : 300,
     );
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, supabase]);
 
   useEffect(() => {
     function handleOutsideClick(e: MouseEvent) {

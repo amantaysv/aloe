@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { HandbagIcon, Heart, Home, ShoppingBasketIcon, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useIsClient } from "@/hooks/useIsClient";
 import { useCart } from "@/store/cart";
 
 const items = [
@@ -16,14 +16,9 @@ const items = [
 export default function MobileBottomNav() {
   const pathname = usePathname();
   const count = useCart((s) => s.count());
-  const [mounted, setMounted] = useState(false);
+  const isClient = useIsClient();
 
-  const badge = mounted && count > 0 ? count : 0;
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-  }, []);
+  const badge = isClient && count > 0 ? count : 0;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden safe-area-pb pb-2 px-4">

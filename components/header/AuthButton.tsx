@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { LogInIcon, User as UserIcon } from "lucide-react";
 import Link from "next/link";
@@ -8,19 +8,19 @@ import { createClient } from "@/lib/supabase-browser";
 
 export default function AuthButton() {
   const [user, setUser] = useState<User | null>(null);
-  const supabase = createClient();
+  const supabaseAuth = useMemo(() => createClient().auth, []);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    supabaseAuth.getUser().then(({ data }) => setUser(data.user));
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_, session) => {
+    } = supabaseAuth.onAuthStateChange((_, session) => {
       setUser(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [supabaseAuth]);
 
   if (user) {
     return (

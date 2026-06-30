@@ -14,6 +14,8 @@ type ToastStore = {
   remove: (id: string) => void;
 };
 
+const timers = new Map<string, ReturnType<typeof setTimeout>>();
+
 export const useToast = create<ToastStore>((set) => ({
   toasts: [],
 
@@ -22,15 +24,23 @@ export const useToast = create<ToastStore>((set) => ({
     set((state) => ({
       toasts: [...state.toasts.slice(-2), { id, message, type }],
     }));
-    setTimeout(() => {
+    const timer = setTimeout(() => {
+      timers.delete(id);
       set((state) => ({
         toasts: state.toasts.filter((t) => t.id !== id),
       }));
     }, 3500);
+    timers.set(id, timer);
   },
 
-  remove: (id) =>
+  remove: (id) => {
+    const timer = timers.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      timers.delete(id);
+    }
     set((state) => ({
       toasts: state.toasts.filter((t) => t.id !== id),
-    })),
+    }));
+  },
 }));
