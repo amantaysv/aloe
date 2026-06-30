@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { MainContainer, MobileCatalogHeader, MobileHeader, SubcategoryFilter } from "@/components";
+import { Container, MobileCatalogHeader, MobileHeader, SubcategoryFilter } from "@/components";
 import VirtualCategoryContent from "@/components/VirtualCategoryContent";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { parseSortParam } from "@/lib/page-params";
@@ -45,11 +45,11 @@ export default async function CategoryPage({
       </MobileHeader>
 
       <SubcategoryFilter subcategories={subcategories} scrollMode />
-      <MainContainer>
+      <Container className="py-2">
         <VirtualCategoryContent
           sections={nonEmpty.map(({ sub: s, products }) => ({ id: s.id, name: s.name, products }))}
         />
-      </MainContainer>
+      </Container>
     </>
   );
 }

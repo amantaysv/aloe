@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import Container from "../Container";
 
 const ICONS = {
   bytovaya: FlaskConical,
@@ -77,7 +78,7 @@ export default function CategoryNav({ categories }: { categories: Category[] }) 
 
   return (
     <nav className="hidden lg:block h-25.5 bg-white sticky top-16 z-40">
-      <div className="container mx-auto">
+      <Container>
         <div className="flex items-start gap-3 overflow-x-auto scrollbar-none pt-4 pb-2">
           {specials.map((s) => (
             <NavItem key={s.href} href={s.href} label={s.label} Icon={s.icon} />
@@ -92,7 +93,7 @@ export default function CategoryNav({ categories }: { categories: Category[] }) 
             />
           ))}
         </div>
-      </div>
+      </Container>
     </nav>
   );
 }

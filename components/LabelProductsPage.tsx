@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { getProductsByLabelPaginated } from "@/services/product.service";
-import MainContainer from "./MainContainer";
+import Container from "./Container";
 import Pagination from "./Pagination";
 import ProductCard from "./ProductCard";
 import ProductGrid from "./ProductGrid";
@@ -28,7 +28,7 @@ export default async function LabelProductsPage({
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <MainContainer>
+    <Container>
       <Link href="/" className="text-sm text-gray-500 hover:text-gray-800 mb-4 inline-block">
         ← Главная
       </Link>
@@ -47,6 +47,6 @@ export default async function LabelProductsPage({
           <Pagination page={page} totalPages={totalPages} basePath={basePath} />
         </>
       )}
-    </MainContainer>
+    </Container>
   );
 }

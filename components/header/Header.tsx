@@ -1,5 +1,6 @@
 import { Heart, Truck } from "lucide-react";
 import Link from "next/link";
+import Container from "../Container";
 import AuthButton from "./AuthButton";
 import CartIcon from "./CartIcon";
 import HeaderSearchInput from "./HeaderSearchInput";
@@ -8,7 +9,7 @@ import Logo from "./Logo";
 export default function Header() {
   return (
     <header className="hidden lg:block h-16 bg-green-50 sticky top-0 z-50">
-      <div className="container mx-auto h-full flex items-center gap-2 lg:gap-4">
+      <Container className="h-full flex items-center gap-2 lg:gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0 lg:w-56">
           <Logo />
@@ -32,7 +33,7 @@ export default function Header() {
           <CartIcon />
           <AuthButton />
         </div>
-      </div>
+      </Container>
     </header>
   );
 }

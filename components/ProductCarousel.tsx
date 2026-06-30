@@ -27,7 +27,7 @@ export default function ProductCarousel({
   const hiddenCount = Math.max(0, (totalCount ?? products.length) - visibleCount);
 
   return (
-    <section className="mb-10">
+    <section>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-xl font-bold">{title}</h2>
         {hiddenCount > 0 && seeAllHref && <SeeAllProducts href={seeAllHref} count={hiddenCount} />}

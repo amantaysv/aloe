@@ -23,6 +23,7 @@
 
   ::-webkit-scrollbar {
     width: 4px;
+    height: 2px;
   }
   ::-webkit-scrollbar-track {
     background-color: transparent;
@@ -60,8 +61,12 @@
 }
 
 @keyframes banner-progress {
-  from { width: 0% }
-  to { width: 100% }
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
 }
 
 .animate-banner-progress {

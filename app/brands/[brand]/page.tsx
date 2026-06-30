@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { MainContainer, Pagination, ProductCard, ProductGrid, TitleWithCount } from "@/components";
+import { Container, Pagination, ProductCard, ProductGrid, TitleWithCount } from "@/components";
 import { getCachedBrandBySlug, getCachedProductsByBrand } from "@/lib/cached-queries";
 import { parsePage } from "@/lib/page-params";
 
@@ -35,7 +35,7 @@ export default async function BrandPage({
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <MainContainer>
+    <Container>
       <TitleWithCount count={total}>{brandData.name}</TitleWithCount>
 
       <ProductGrid>
@@ -45,6 +45,6 @@ export default async function BrandPage({
       </ProductGrid>
 
       <Pagination page={currentPage} totalPages={totalPages} basePath={`/brands/${brand}`} />
-    </MainContainer>
+    </Container>
   );
 }

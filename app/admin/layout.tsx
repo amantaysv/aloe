@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { MainContainer, Title } from "@/components";
+import { Container, Title } from "@/components";
 import { createClient } from "@/lib/supabase-server";
 import AdminNav from "./AdminNav";
 
@@ -13,10 +13,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!user || user.app_metadata?.role !== "admin") notFound();
 
   return (
-    <MainContainer>
+    <Container>
       <Title className="mb-6">Админ</Title>
       <AdminNav />
       {children}
-    </MainContainer>
+    </Container>
   );
 }

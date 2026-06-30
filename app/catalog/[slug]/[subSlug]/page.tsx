@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import {
-  MainContainer,
+  Container,
   ManufacturerFilter,
   MobileCatalogHeader,
   MobileHeader,
@@ -58,7 +58,7 @@ export default async function SubcategoryPage({
         <MobileCatalogHeader title={parentCategory.name} />
       </MobileHeader>
 
-      <MainContainer>
+      <Container>
         <TitleWithCount className="hidden md:flex" count={total}>
           {subcategory.name}
         </TitleWithCount>
@@ -99,7 +99,7 @@ export default async function SubcategoryPage({
             />
           </>
         )}
-      </MainContainer>
+      </Container>
     </>
   );
 }

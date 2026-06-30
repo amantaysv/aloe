@@ -8,7 +8,7 @@ export { default as Currency } from "./Currency";
 export { default as FavoriteButton } from "./FavoriteButton";
 export { Header } from "./header";
 export { default as LabelProductsPage } from "./LabelProductsPage";
-export { default as MainContainer } from "./MainContainer";
+export { default as Container } from "./Container";
 export { default as ManufacturerFilter } from "./ManufacturerFilter";
 export { default as MobileBackButton } from "./MobileBackButton";
 export { default as MobileBottomNav } from "./MobileBottomNav";

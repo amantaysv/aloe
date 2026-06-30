@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MainContainer, MobileHeader, ProductCard, ProductGrid, Title } from "@/components";
+import { Container, MobileHeader, ProductCard, ProductGrid, Title } from "@/components";
 import { requireAuth } from "@/lib/auth";
 import { getFavoriteProducts } from "@/services/favorites.service";
 
@@ -13,7 +13,7 @@ export default async function FavoritesPage() {
       <MobileHeader>
         <Title className="text-center">Избранное</Title>
       </MobileHeader>
-      <MainContainer>
+      <Container>
         <Title className="hidden md:block mb-6">Избранное</Title>
 
         {products.length === 0 ? (
@@ -32,7 +32,7 @@ export default async function FavoritesPage() {
             ))}
           </ProductGrid>
         )}
-      </MainContainer>
+      </Container>
     </>
   );
 }

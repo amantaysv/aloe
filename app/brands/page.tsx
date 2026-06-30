@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MainContainer, TitleWithCount } from "@/components";
+import { Container, TitleWithCount } from "@/components";
 import { getCachedBrands } from "@/lib/cached-queries";
 
 export const metadata = { title: "Бренды — Aloe.kg" };
@@ -16,7 +16,7 @@ export default async function BrandsPage() {
   const letters = Object.keys(grouped).sort((a, b) => a.localeCompare(b, "ru"));
 
   return (
-    <MainContainer>
+    <Container>
       <TitleWithCount count={list.length} isBrands>
         Бренды
       </TitleWithCount>
@@ -54,6 +54,6 @@ export default async function BrandsPage() {
           </section>
         ))}
       </div>
-    </MainContainer>
+    </Container>
   );
 }

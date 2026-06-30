@@ -5,9 +5,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   AddToCart,
+  Container,
   Currency,
   FavoriteButton,
-  MainContainer,
   MobileBackButton,
   ProductCard,
   ProductDescription,
@@ -79,7 +79,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       : null;
 
   return (
-    <MainContainer>
+    <Container>
       <MobileBackButton />
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
@@ -158,6 +158,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           </div>
         </section>
       )}
-    </MainContainer>
+    </Container>
   );
 }

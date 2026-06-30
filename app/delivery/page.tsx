@@ -1,4 +1,4 @@
-import { Currency, MainContainer } from "@/components";
+import { Container, Currency } from "@/components";
 
 export const metadata = {
   title: "Доставка и оплата — Aloe.kg",
@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function DeliveryPage() {
   return (
-    <MainContainer className="max-w-xl py-12">
+    <Container className="max-w-xl py-12">
       <h1 className="text-2xl font-semibold text-gray-900 mb-12">Доставка и оплата</h1>
 
       <div className="space-y-10 divide-y divide-gray-100">
@@ -65,6 +65,6 @@ export default function DeliveryPage() {
           </p>
         </section>
       </div>
-    </MainContainer>
+    </Container>
   );
 }
