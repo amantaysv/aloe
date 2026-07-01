@@ -11,7 +11,6 @@ export { default as LabelProductsPage } from "./LabelProductsPage";
 export { default as Container } from "./Container";
 export { default as ManufacturerFilter } from "./ManufacturerFilter";
 export { default as MobileBottomNav } from "./MobileBottomNav";
-export { default as MobileCatalogHeader } from "./MobileCatalogHeader";
 export { default as MobileHeader } from "./MobileHeader";
 export { default as MobileSearchInput } from "./MobileSearchInput";
 export { default as Pagination } from "./Pagination";
