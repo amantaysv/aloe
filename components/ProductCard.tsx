@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { LABEL_MAP } from "@/lib/constants";
@@ -23,7 +24,7 @@ function ProductBadge({ label }: { label: Product["label"] }) {
   );
 }
 
-export default function ProductCard({ product: p, className = "", href, priority = false }: Props) {
+function ProductCard({ product: p, className = "", href, priority = false }: Props) {
   const productHref = href ?? `/product/${p.id}`;
 
   return (
@@ -69,3 +70,5 @@ export default function ProductCard({ product: p, className = "", href, priority
     </div>
   );
 }
+
+export default memo(ProductCard);
