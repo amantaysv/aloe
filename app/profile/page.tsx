@@ -1,5 +1,4 @@
-import { MobileHeader, Title } from "@/components";
-import MainContainer from "@/components/MainContainer";
+import { MainContainer, MobileHeader, Title } from "@/components";
 import { requireAuth } from "@/lib/auth";
 import { getUserOrders } from "@/services/order.service";
 import { getProfile } from "@/services/profile.service";

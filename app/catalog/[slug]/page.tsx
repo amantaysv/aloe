@@ -1,7 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { MobileHeader, SubcategoryFilter } from "@/components";
-import MainContainer from "@/components/MainContainer";
-import VirtualCategoryContent from "@/components/VirtualCategoryContent";
+import { MainContainer, MobileHeader, SubcategoryFilter, VirtualCategoryContent } from "@/components";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { parseSortParam } from "@/lib/page-params";
 import { supabase } from "@/lib/supabase";

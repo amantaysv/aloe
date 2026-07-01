@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import {
+  MainContainer,
   ManufacturerFilter,
   MobileHeader,
   Pagination,
@@ -9,7 +10,6 @@ import {
   SubcategoryFilter,
   TitleWithCount,
 } from "@/components";
-import MainContainer from "@/components/MainContainer";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { parseBrandIds, parsePage, parseSortParam } from "@/lib/page-params";
 import { supabase } from "@/lib/supabase";

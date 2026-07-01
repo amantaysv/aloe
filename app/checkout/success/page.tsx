@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { Title } from "@/components";
-import MainContainer from "@/components/MainContainer";
+import { MainContainer, Title } from "@/components";
 
 export const metadata = {
   title: "Заказ оформлен — Aloe.kg",

@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { MobileHeader, Title } from "@/components";
-import MainContainer from "@/components/MainContainer";
+import { MainContainer, MobileHeader, Title } from "@/components";
 import { getCachedBrands } from "@/lib/cached-queries";
 
 export const metadata = { title: "Бренды — Aloe.kg" };

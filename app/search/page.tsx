@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  MainContainer,
   ManufacturerFilter,
   MobileHeader,
   MobileSearchInput,
@@ -8,7 +9,6 @@ import {
   ProductGrid,
   Title,
 } from "@/components";
-import MainContainer from "@/components/MainContainer";
 import { parseBrandIds, parsePage } from "@/lib/page-params";
 import { supabase } from "@/lib/supabase";
 import { getBrandsForSearch, searchProducts } from "@/services/product.service";

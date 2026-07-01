@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
+  MainContainer,
   ManufacturerFilter,
   MobileHeader,
   MobileSearchInput,
@@ -9,7 +10,6 @@ import {
   ProductGrid,
   Title,
 } from "@/components";
-import MainContainer from "@/components/MainContainer";
 import { getCachedCategories } from "@/lib/cached-queries";
 import { parseBrandIds, parsePage } from "@/lib/page-params";
 import { supabase } from "@/lib/supabase";
@@ -17,8 +17,7 @@ import { getBrandsForSearch, searchProducts } from "@/services/product.service";
 
 const PAGE_SIZE = 24;
 
-const SPECIALS_BASE_URL =
-  "https://dnlburbuchxzxdmhuczu.supabase.co/storage/v1/object/public/categories/specials";
+const SPECIALS_BASE_URL = "https://dnlburbuchxzxdmhuczu.supabase.co/storage/v1/object/public/categories/specials";
 
 const specials: Array<{ href: string; label: string; image_url?: string | null }> = [
   { href: "/popular", label: "Популярное", image_url: `${SPECIALS_BASE_URL}/popular.webp` },

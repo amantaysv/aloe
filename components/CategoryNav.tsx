@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { GiToothbrush } from "react-icons/gi";
 import { PiHairDryer } from "react-icons/pi";
 import { TbDiaper } from "react-icons/tb";
@@ -20,8 +21,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import Container from "../Container";
+import Container from "./Container";
 
 const ICONS = {
   bytovaya: FlaskConical,

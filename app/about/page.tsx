@@ -1,5 +1,4 @@
-import { MobileHeader, Title } from "@/components";
-import MainContainer from "@/components/MainContainer";
+import { MainContainer, MobileHeader, Title } from "@/components";
 
 export const metadata = {
   title: "О нас — Aloe.kg",

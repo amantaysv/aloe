@@ -1,6 +1,4 @@
-import { MobileHeader, Title } from "@/components";
-import DeliveryContent from "@/components/DeliveryContent";
-import MainContainer from "@/components/MainContainer";
+import { DeliveryContent, MainContainer, MobileHeader, Title } from "@/components";
 
 export const metadata = {
   title: "Доставка и оплата — Aloe.kg",

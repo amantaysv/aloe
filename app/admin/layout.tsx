@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
-import { MobileHeader, Title } from "@/components";
-import MainContainer from "@/components/MainContainer";
+import { MainContainer, MobileHeader, Title } from "@/components";
 import { createClient } from "@/lib/supabase-server";
 import AdminNav from "./AdminNav";
 

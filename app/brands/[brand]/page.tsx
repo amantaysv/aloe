@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Breadcrumb, Title } from "@/components";
-import MainContainer from "@/components/MainContainer";
+import { Breadcrumb, MainContainer, Title } from "@/components";
 import { getCachedBrandBySlug, getCachedProductsByBrand } from "@/lib/cached-queries";
 import BrandProductsInfinite from "./BrandProductsInfinite";
 

@@ -1,5 +1,4 @@
-import { MobileHeader, Title } from "@/components";
-import MainContainer from "@/components/MainContainer";
+import { MainContainer, MobileHeader, Title } from "@/components";
 import { createClient } from "@/lib/supabase-server";
 import { getProfile } from "@/services/profile.service";
 import CheckoutForm from "./CheckoutForm";

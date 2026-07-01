@@ -1,7 +1,6 @@
 import { Heart } from "lucide-react";
 import Link from "next/link";
-import { MobileHeader, ProductCard, ProductGrid, Title } from "@/components";
-import MainContainer from "@/components/MainContainer";
+import { MainContainer, MobileHeader, ProductCard, ProductGrid, Title } from "@/components";
 import { requireAuth } from "@/lib/auth";
 import { getFavoriteProducts } from "@/services/favorites.service";
 
