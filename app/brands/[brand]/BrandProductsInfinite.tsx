@@ -1,0 +1,56 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { ProductGrid, ProductCard } from "@/components";
+import type { Product } from "@/types";
+import { loadMoreBrandProducts } from "./actions";
+
+type Props = {
+  brandId: number;
+  brandName: string;
+  pageSize: number;
+  initialProducts: Product[];
+  total: number;
+};
+
+export default function BrandProductsInfinite({ brandId, brandName, pageSize, initialProducts, total }: Props) {
+  const [products, setProducts] = useState(initialProducts);
+  const pageRef = useRef(1);
+  const loadingRef = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0].isIntersecting) return;
+        if (loadingRef.current || pageRef.current * pageSize >= total) return;
+
+        loadingRef.current = true;
+        const nextPage = pageRef.current + 1;
+        loadMoreBrandProducts(brandId, nextPage, pageSize).then(({ products: more }) => {
+          pageRef.current = nextPage;
+          setProducts((prev) => [...prev, ...more.map((p) => ({ ...p, brand_name: brandName }))]);
+          loadingRef.current = false;
+        });
+      },
+      { rootMargin: "600px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [brandId, brandName, pageSize, total]);
+
+  return (
+    <>
+      <ProductGrid>
+        {products.map((product, i) => (
+          <ProductCard key={product.id} product={product} priority={i === 0} />
+        ))}
+      </ProductGrid>
+      <div ref={sentinelRef} className="h-px" />
+    </>
+  );
+}

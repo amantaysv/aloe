@@ -80,7 +80,14 @@ export default function CheckoutForm({ initial }: Props) {
           {items.map((item) => (
             <div key={item.id} className="flex items-center gap-3">
               <div className="relative w-10 h-10 shrink-0 bg-white rounded border">
-                <Image src={item.image_url} alt={item.name} fill sizes="40px" className="object-contain p-0.5" unoptimized />
+                <Image
+                  src={item.image_url}
+                  alt={item.name}
+                  fill
+                  sizes="40px"
+                  className="object-contain p-0.5"
+                  unoptimized
+                />
               </div>
               <p className="flex-1 text-sm line-clamp-1">{item.name}</p>
               <p className="text-sm shrink-0 text-gray-600">
@@ -116,7 +123,7 @@ export default function CheckoutForm({ initial }: Props) {
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="Ваше имя"
           />
         </div>
@@ -127,7 +134,7 @@ export default function CheckoutForm({ initial }: Props) {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             type="tel"
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full border rounded-lg px-3 py-2 text-bas md:text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="+996 700 000 000"
           />
         </div>
@@ -137,7 +144,7 @@ export default function CheckoutForm({ initial }: Props) {
           <input
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="Улица, дом, квартира"
           />
         </div>
@@ -147,7 +154,7 @@ export default function CheckoutForm({ initial }: Props) {
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
             rows={2}
             placeholder="Дополнительная информация, ориентиры..."
           />

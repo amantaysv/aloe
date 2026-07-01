@@ -132,7 +132,7 @@ function AuthForm() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-green-500"
+          className="border border-gray-300 rounded-lg px-4 py-2 text-base md:text-sm focus:outline-none focus:border-green-500"
         />
         <input
           type="password"
@@ -140,7 +140,7 @@ function AuthForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-green-500"
+          className="border border-gray-300 rounded-lg px-4 py-2 text-base  md:text-sm focus:outline-none focus:border-green-500"
         />
 
         {error && <p className="text-red-500 text-sm bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>}

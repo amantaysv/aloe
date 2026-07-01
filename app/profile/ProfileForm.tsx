@@ -45,7 +45,7 @@ export default function ProfileForm({ initial }: Props) {
   }
 
   const inputCls = (active: boolean) =>
-    `w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition-colors ${
+    `w-full border border-gray-300 rounded-lg px-3 py-2 text-base md:text-sm transition-colors ${
       active
         ? "focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
         : "bg-gray-50 text-gray-500 cursor-default"

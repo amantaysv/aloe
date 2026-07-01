@@ -27,7 +27,7 @@ export default function SearchInput({ value, onChange, searchPath, loading, inpu
         value={value}
         onChange={(e) => onChange(e.currentTarget.value)}
         placeholder="Я ищу..."
-        className={`w-full md:border md:border-gray-300 rounded-lg pl-9 py-2 text-sm focus:outline-none focus:border-green-500 ${value ? "pr-8" : "pr-4"}`}
+        className={`w-full md:border md:border-gray-300 rounded-lg pl-9 py-2 text-base md:text-sm focus:outline-none focus:border-green-500 ${value ? "pr-8" : "pr-4"}`}
         {...inputProps}
       />
       {value && !loading && (
