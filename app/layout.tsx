@@ -17,7 +17,13 @@ export const metadata: Metadata = {
   description: "Интернет-магазин бытовой химии и косметики",
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({
+  children,
+  modal,
+}: {
+  children: React.ReactNode;
+  modal: React.ReactNode;
+}) {
   const categories = await getCachedCategories();
 
   return (
@@ -31,6 +37,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Footer />
         <MobileBottomNav />
         <Toaster />
+        {modal}
       </body>
     </html>
   );
