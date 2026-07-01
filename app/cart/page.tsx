@@ -15,9 +15,7 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <>
-        <MobileHeader>
-          <Title className="text-center">Корзина</Title>
-        </MobileHeader>
+        <MobileHeader title="Корзина" />
         <Container className="text-center py-16 pt-28">
           <p className="text-gray-500 text-lg">Корзина пуста</p>
           <Link href="/" className="text-green-600 text-sm mt-2 inline-block hover:underline">
@@ -30,13 +28,10 @@ export default function CartPage() {
 
   return (
     <>
-      <MobileHeader>
-        <div className="flex items-center">
-          <Title className="flex-1 text-center">Корзина</Title>
-          <Button variant="ghost" size="md" onClick={clear} className="absolute right-4">
-            Очистить
-          </Button>
-        </div>
+      <MobileHeader title="Корзина">
+        <Button variant="ghost" size="md" onClick={clear} className="absolute right-4">
+          Очистить
+        </Button>
       </MobileHeader>
       <MainContainer className="pb-40 md:pb-20">
         <Title className="hidden md:block mb-6">Корзина</Title>

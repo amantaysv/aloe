@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import {
   Container,
   ManufacturerFilter,
-  MobileCatalogHeader,
   MobileHeader,
   Pagination,
   ProductCard,
@@ -54,9 +53,7 @@ export default async function SubcategoryPage({
 
   return (
     <>
-      <MobileHeader>
-        <MobileCatalogHeader title={parentCategory.name} />
-      </MobileHeader>
+      <MobileHeader title={parentCategory.name} />
 
       <Container>
         <TitleWithCount className="hidden md:flex" count={total}>

@@ -1,4 +1,4 @@
-import { Title } from "@/components";
+import { MobileHeader, Title } from "@/components";
 import DeliveryContent from "@/components/DeliveryContent";
 import MainContainer from "@/components/MainContainer";
 
@@ -8,9 +8,12 @@ export const metadata = {
 
 export default function DeliveryPage() {
   return (
-    <MainContainer className="max-w-2xl">
-      <Title className="mb-4">Доставка и оплата</Title>
-      <DeliveryContent />
-    </MainContainer>
+    <>
+      <MobileHeader title="Доставка и оплата" withBackButton />
+      <MainContainer className="max-w-2xl">
+        <Title className="hidden md:block mb-4">Доставка и оплата</Title>
+        <DeliveryContent />
+      </MainContainer>
+    </>
   );
 }

@@ -12,9 +12,7 @@ export default async function FavoritesPage() {
 
   return (
     <>
-      <MobileHeader>
-        <Title className="text-center">Избранное</Title>
-      </MobileHeader>
+      <MobileHeader title="Избранное" />
       <MainContainer>
         <Title className="hidden md:block mb-6">Избранное</Title>
 

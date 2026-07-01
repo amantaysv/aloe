@@ -20,13 +20,10 @@ export default async function ProfilePage() {
 
   return (
     <>
-      <MobileHeader>
-        <div className="flex items-center">
-          <Title className="flex-1 text-center">Мой профиль</Title>
-          <span className="absolute right-4">
-            <LogoutButton />
-          </span>
-        </div>
+      <MobileHeader title="Мой профиль">
+        <span className="absolute right-4">
+          <LogoutButton />
+        </span>
       </MobileHeader>
       <Container className="max-w-2xl py-20" withMain>
         <Title className="hidden md:block mb-6">Мой профиль</Title>

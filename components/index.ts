@@ -6,6 +6,7 @@ export { default as Button } from "./Button";
 export { default as CatalogSidebar } from "./CatalogSidebar";
 export { default as Currency } from "./Currency";
 export { default as FavoriteButton } from "./FavoriteButton";
+export { default as Footer } from "./Footer";
 export { Header } from "./header";
 export { default as LabelProductsPage } from "./LabelProductsPage";
 export { default as Container } from "./Container";

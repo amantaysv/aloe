@@ -66,10 +66,10 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
       {banners.length > 1 && (
         <>
           <div className="md:hidden">
-            <div className="absolute bottom-0 left-0 right-0 h-16 bg-linear-to-b from-transparent to-white pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none" />
             <Button onClick={scrollPrev} className="absolute left-0 top-0 w-1/2 h-full" />
             <Button onClick={scrollNext} className="absolute right-0 top-0 w-1/2 h-full" />
-            <div className="absolute bottom-4 left-0 right-0 flex gap-1 px-2 pb-2">
+            <div className="absolute bottom-0 left-0 right-0 flex gap-1 px-2 pb-2">
               {banners.map((_, i) => (
                 <div key={i} className="flex-1 h-1 rounded-full bg-white/40 overflow-hidden">
                   {i < selected && <div className="h-full w-full bg-green-600" />}

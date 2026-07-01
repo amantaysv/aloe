@@ -18,9 +18,7 @@ export default async function BrandsPage() {
 
   return (
     <>
-      <MobileHeader>
-        <Title className="text-center">Бренды</Title>
-      </MobileHeader>
+      <MobileHeader title="Бренды" />
       <MainContainer>
         <Title className="hidden md:block mb-4">Бренды</Title>
 

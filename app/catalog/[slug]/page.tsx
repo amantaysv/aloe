@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { MobileCatalogHeader, MobileHeader, SubcategoryFilter } from "@/components";
+import { MobileHeader, SubcategoryFilter } from "@/components";
 import MainContainer from "@/components/MainContainer";
 import VirtualCategoryContent from "@/components/VirtualCategoryContent";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
@@ -41,9 +41,7 @@ export default async function CategoryPage({
 
   return (
     <>
-      <MobileHeader>
-        <MobileCatalogHeader title={category.name} />
-      </MobileHeader>
+      <MobileHeader title={category.name} withBackButton />
 
       <SubcategoryFilter subcategories={subcategories} scrollMode />
       <MainContainer>

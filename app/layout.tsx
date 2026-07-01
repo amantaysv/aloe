@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Lobster } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
-import { AuthSync, Header, MobileBottomNav, Toaster } from "@/components";
+import { AuthSync, Footer, Header, MobileBottomNav, Toaster } from "@/components";
 import CategoryNav from "@/components/header/CategoryNav";
 import { getCachedCategories } from "@/lib/cached-queries";
 import "./globals.css";
@@ -23,12 +23,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="ru">
-      <body className={`${geist.className} ${lobster.variable}`} suppressHydrationWarning>
+      <body
+        className={`${geist.className} ${lobster.variable} min-h-screen flex flex-col`}
+        suppressHydrationWarning
+      >
         <NextTopLoader color="#16a34a" showSpinner={false} />
         <AuthSync />
         <Header className="hidden lg:block" />
         <CategoryNav categories={categories} />
         {children}
+        <Footer />
         <MobileBottomNav />
         <Toaster />
       </body>

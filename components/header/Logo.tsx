@@ -1,4 +1,7 @@
-export default function Logo() {
+import Link from "next/link";
+import { cn } from "@/lib/cn";
+
+function LogoIcon() {
   return (
     <svg width="36" viewBox="0 0 246 195" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
@@ -85,5 +88,19 @@ export default function Logo() {
         </linearGradient>
       </defs>
     </svg>
+  );
+}
+
+export default function Logo({ withIcon, className }: { withIcon?: boolean; className?: string }) {
+  return (
+    <Link href="/" className={cn("flex items-center gap-2 shrink-0", className)}>
+      {withIcon ? <LogoIcon /> : null}
+      <span
+        className="text-2xl lg:text-3xl leading-none"
+        style={{ fontFamily: "var(--font-lobster), cursive", color: "#2A9540" }}
+      >
+        Алоэ
+      </span>
+    </Link>
   );
 }
