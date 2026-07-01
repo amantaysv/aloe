@@ -2,7 +2,6 @@ export const LABEL_MAP = {
   popular: { text: "Хит", cls: "bg-green-600" },
   new: { text: "Новинка", cls: "bg-blue-500" },
   sale: { text: "Акция", cls: "bg-orange-500" },
-  discount: { text: "Скидка", cls: "bg-red-500" },
 } as const;
 
 export const ORDER_STATUS: Record<string, { label: string; cls: string }> = {

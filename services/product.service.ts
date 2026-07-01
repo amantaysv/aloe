@@ -5,11 +5,7 @@ import { withBrandName } from "@/types";
 export type SortValue = "name" | "price_asc" | "price_desc";
 export type AdminProductsSort = "id-desc" | "name-asc" | "price-asc" | "price-desc";
 
-export async function getProductsByLabel(
-  supabase: SupabaseClient,
-  label: "popular" | "new" | "sale" | "discount",
-  limit = 10,
-) {
+export async function getProductsByLabel(supabase: SupabaseClient, label: "popular" | "new" | "sale", limit = 10) {
   const { data, count } = await supabase
     .from("products")
     .select("*, brands(name)", { count: "exact" })
@@ -68,11 +64,7 @@ export async function getRelatedProducts(supabase: SupabaseClient, categoryId: s
   return withBrandName((data ?? []) as unknown as ProductRow[]);
 }
 
-export async function getSubcategorySection(
-  supabase: SupabaseClient,
-  subcategoryId: string,
-  sort: SortValue,
-) {
+export async function getSubcategorySection(supabase: SupabaseClient, subcategoryId: string, sort: SortValue) {
   const orderCol = sort === "price_asc" || sort === "price_desc" ? "price" : "name";
   const ascending = sort !== "price_desc";
   const { data, count } = await supabase

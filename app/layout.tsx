@@ -23,10 +23,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="ru">
-      <body
-        className={`${geist.className} ${lobster.variable} min-h-screen flex flex-col`}
-        suppressHydrationWarning
-      >
+      <body className={`${geist.className} ${lobster.variable} min-h-screen flex flex-col`} suppressHydrationWarning>
         <NextTopLoader color="#16a34a" showSpinner={false} />
         <AuthSync />
         <Header className="hidden lg:block" />

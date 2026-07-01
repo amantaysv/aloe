@@ -6,7 +6,11 @@ export async function getCategories(supabase: SupabaseClient) {
 }
 
 export async function getCategoriesWithSlug(supabase: SupabaseClient) {
-  const { data } = await supabase.from("categories").select("id, name, parent_id, slug").order("sort_order").order("name");
+  const { data } = await supabase
+    .from("categories")
+    .select("id, name, parent_id, slug")
+    .order("sort_order")
+    .order("name");
   return data ?? [];
 }
 

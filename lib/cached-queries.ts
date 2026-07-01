@@ -27,7 +27,7 @@ export const getCachedActiveBanners = unstable_cache(() => getActiveBanners(supa
 });
 
 export const getCachedProductsByLabel = unstable_cache(
-  (label: "popular" | "new" | "sale" | "discount", limit?: number) => getProductsByLabel(supabase, label, limit),
+  (label: "popular" | "new" | "sale", limit?: number) => getProductsByLabel(supabase, label, limit),
   ["products-by-label"],
   { revalidate: 60, tags: ["products"] },
 );

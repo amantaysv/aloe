@@ -2,9 +2,9 @@
 
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import { useIsClient } from "@/hooks/useIsClient";
 import { setActiveSection } from "@/lib/active-section";
 import { registerSectionScroller } from "@/lib/section-scroll";
-import { useIsClient } from "@/hooks/useIsClient";
 import type { Product } from "@/types";
 import ProductCard from "./ProductCard";
 import ProductGrid from "./ProductGrid";

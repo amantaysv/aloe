@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { subscribeActiveSection } from "@/lib/active-section";
 
-export function useActiveSectionSync(scrollMode: boolean | undefined, containerRef: React.RefObject<HTMLElement | null>) {
+export function useActiveSectionSync(
+  scrollMode: boolean | undefined,
+  containerRef: React.RefObject<HTMLElement | null>,
+) {
   const [activeSectionId, setActiveSectionId] = useState<number | null>(null);
   const pillRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
 
