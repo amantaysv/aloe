@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { Container, Title } from "@/components";
+import { MobileHeader, Title } from "@/components";
+import MainContainer from "@/components/MainContainer";
 import { createClient } from "@/lib/supabase-server";
 import AdminNav from "./AdminNav";
 
@@ -13,10 +14,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!user || user.app_metadata?.role !== "admin") notFound();
 
   return (
-    <Container>
-      <Title className="mb-6">Админ</Title>
-      <AdminNav />
-      {children}
-    </Container>
+    <>
+      <MobileHeader title="Админ" withGoToMainButton />
+      <MainContainer>
+        <Title className="hidden md:block mb-4 md:mb-6">Админ</Title>
+        <AdminNav />
+        {children}
+      </MainContainer>
+    </>
   );
 }
