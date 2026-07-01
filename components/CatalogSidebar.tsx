@@ -17,7 +17,6 @@ const specials = [
   { href: "/popular", label: "Популярные" },
   { href: "/new", label: "Новинки" },
   { href: "/sale", label: "Акции" },
-  { href: "/discount", label: "Скидки" },
   { href: "/brands", label: "Бренды" },
 ];
 

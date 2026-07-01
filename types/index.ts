@@ -13,7 +13,7 @@ export type Product = {
   product_url: string;
   category: string;
   category_id: number;
-  label?: "popular" | "new" | "sale" | "discount" | null;
+  label?: "popular" | "new" | "sale" | null;
   old_price?: number | null;
   description?: string | null;
   brand_id?: number | null;

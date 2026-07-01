@@ -9,11 +9,10 @@ import {
 } from "@/lib/cached-queries";
 
 export default async function HomePage() {
-  const [popular, newest, onSale, discounted, banners, allCategories] = await Promise.all([
+  const [popular, newest, onSale, banners, allCategories] = await Promise.all([
     getCachedProductsByLabel("popular"),
     getCachedProductsByLabel("new"),
     getCachedProductsByLabel("sale"),
-    getCachedProductsByLabel("discount"),
     getCachedActiveBanners(),
     getCachedCategoriesWithSlug(),
   ]);
@@ -57,14 +56,6 @@ export default async function HomePage() {
         )}
         {onSale.total > 0 && (
           <ProductCarousel title="Акции" href="/sale" products={onSale.products} totalCount={onSale.total} />
-        )}
-        {discounted.total > 0 && (
-          <ProductCarousel
-            title="Скидки"
-            href="/discount"
-            products={discounted.products}
-            totalCount={discounted.total}
-          />
         )}
         {categoryProducts.map(
           ({ cat, products, total }) =>

@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import {
-  Container,
   ManufacturerFilter,
   MobileHeader,
   Pagination,
@@ -10,6 +9,7 @@ import {
   SubcategoryFilter,
   TitleWithCount,
 } from "@/components";
+import MainContainer from "@/components/MainContainer";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
 import { parseBrandIds, parsePage, parseSortParam } from "@/lib/page-params";
 import { supabase } from "@/lib/supabase";
@@ -55,7 +55,7 @@ export default async function SubcategoryPage({
     <>
       <MobileHeader title={parentCategory.name} />
 
-      <Container>
+      <MainContainer>
         <TitleWithCount className="hidden md:flex" count={total}>
           {subcategory.name}
         </TitleWithCount>
@@ -96,7 +96,7 @@ export default async function SubcategoryPage({
             />
           </>
         )}
-      </Container>
+      </MainContainer>
     </>
   );
 }

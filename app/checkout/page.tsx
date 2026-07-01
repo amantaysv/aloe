@@ -1,4 +1,5 @@
-import { Container, Title } from "@/components";
+import { MobileHeader, Title } from "@/components";
+import MainContainer from "@/components/MainContainer";
 import { createClient } from "@/lib/supabase-server";
 import { getProfile } from "@/services/profile.service";
 import CheckoutForm from "./CheckoutForm";
@@ -25,9 +26,12 @@ export default async function CheckoutPage() {
   }
 
   return (
-    <Container className="max-w-xl">
-      <Title className="mb-6">Оформление заказа</Title>
-      <CheckoutForm initial={initial} />
-    </Container>
+    <>
+      <MobileHeader title="Оформление заказа" withBackButton />
+      <MainContainer className="max-w-xl">
+        <Title className="hidden md:block mb-4 md:mb-6">Оформление заказа</Title>
+        <CheckoutForm initial={initial} />
+      </MainContainer>
+    </>
   );
 }

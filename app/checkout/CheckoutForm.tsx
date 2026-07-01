@@ -74,7 +74,7 @@ export default function CheckoutForm({ initial }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Cart summary */}
-      <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+      <div className="md:border md:border-gray-300 md:rounded-lg md:p-4 md:bg-gray-50">
         <h2 className="font-semibold mb-3">Ваш заказ</h2>
         <div className="space-y-2">
           {items.map((item) => (

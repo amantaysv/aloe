@@ -4,7 +4,7 @@ import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, Container, Currency, MobileHeader, Title } from "@/components";
+import { Button, Currency, MobileHeader, Title } from "@/components";
 import MainContainer from "@/components/MainContainer";
 import { useCart } from "@/store/cart";
 
@@ -16,12 +16,12 @@ export default function CartPage() {
     return (
       <>
         <MobileHeader title="Корзина" />
-        <Container className="text-center py-16 pt-28">
+        <MainContainer className="text-center py-16 pt-28">
           <p className="text-gray-500 text-lg">Корзина пуста</p>
           <Link href="/" className="text-green-600 text-sm mt-2 inline-block hover:underline">
             Перейти в каталог
           </Link>
-        </Container>
+        </MainContainer>
       </>
     );
   }
