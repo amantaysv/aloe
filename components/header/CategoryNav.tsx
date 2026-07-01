@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import Container from "../Container";
 
 const ICONS = {
@@ -84,10 +85,31 @@ export default function CategoryNav({ categories }: { categories: Category[] }) 
 
   const parents = categories.filter((c) => !c.parent_id);
 
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [showLeftFade, setShowLeftFade] = useState(false);
+  const [showRightFade, setShowRightFade] = useState(false);
+
+  const updateFades = () => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    setShowLeftFade(el.scrollLeft > 0);
+    setShowRightFade(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  };
+
+  useEffect(() => {
+    updateFades();
+    window.addEventListener("resize", updateFades);
+    return () => window.removeEventListener("resize", updateFades);
+  }, [parents.length]);
+
   return (
     <nav className="hidden md:block h-25.5 bg-white sticky top-16 z-40">
-      <Container>
-        <div className="flex items-start gap-1.5 overflow-x-auto scrollbar-none pt-4 pb-2">
+      <Container className="relative">
+        <div
+          ref={scrollerRef}
+          onScroll={updateFades}
+          className="flex items-start gap-1.5 overflow-x-auto scrollbar-none pt-4 pb-2"
+        >
           {specials.map((s) => (
             <NavItem key={s.href} href={s.href} label={s.label} Icon={s.icon} />
           ))}
@@ -101,6 +123,12 @@ export default function CategoryNav({ categories }: { categories: Category[] }) 
             />
           ))}
         </div>
+        <div
+          className={`pointer-events-none absolute top-0 left-0 h-full w-8 bg-linear-to-r from-white to-transparent transition-opacity duration-200 ${showLeftFade ? "opacity-100" : "opacity-0"}`}
+        />
+        <div
+          className={`pointer-events-none absolute top-0 right-0 h-full w-8 bg-linear-to-l from-white to-transparent transition-opacity duration-200 ${showRightFade ? "opacity-100" : "opacity-0"}`}
+        />
       </Container>
     </nav>
   );
