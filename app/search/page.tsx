@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  Container,
   ManufacturerFilter,
   MobileHeader,
   MobileSearchInput,
@@ -9,6 +8,7 @@ import {
   ProductGrid,
   Title,
 } from "@/components";
+import MainContainer from "@/components/MainContainer";
 import { parseBrandIds, parsePage } from "@/lib/page-params";
 import { supabase } from "@/lib/supabase";
 import { getBrandsForSearch, searchProducts } from "@/services/product.service";
@@ -31,11 +31,11 @@ export default async function SearchPage({
         <MobileHeader>
           <MobileSearchInput searchPath="/search" />
         </MobileHeader>
-        <Container className="pt-2 pb-4" withMain>
+        <MainContainer>
           <div className="text-center py-16 text-gray-400">
             <p className="text-lg">Введите название товара для поиска</p>
           </div>
-        </Container>
+        </MainContainer>
       </>
     );
   }
@@ -52,7 +52,7 @@ export default async function SearchPage({
       <MobileHeader>
         <MobileSearchInput defaultValue={q} searchPath="/search" />
       </MobileHeader>
-      <Container className="pt-2 pb-20" withMain>
+      <MainContainer>
         <div className="mb-4 md:mb-6">
           <Title>
             Результаты поиска: <span className="text-green-600">«{q}»</span>
@@ -84,7 +84,7 @@ export default async function SearchPage({
             />
           </>
         )}
-      </Container>
+      </MainContainer>
     </>
   );
 }

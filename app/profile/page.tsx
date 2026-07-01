@@ -1,4 +1,5 @@
-import { Container, MobileHeader, Title } from "@/components";
+import { MobileHeader, Title } from "@/components";
+import MainContainer from "@/components/MainContainer";
 import { requireAuth } from "@/lib/auth";
 import { getUserOrders } from "@/services/order.service";
 import { getProfile } from "@/services/profile.service";
@@ -25,7 +26,7 @@ export default async function ProfilePage() {
           <LogoutButton />
         </span>
       </MobileHeader>
-      <Container className="max-w-2xl py-20" withMain>
+      <MainContainer className="max-w-2xl">
         <Title className="hidden md:block mb-6">Мой профиль</Title>
 
         <div className="flex md:hidden flex-col items-center gap-4 mb-4">
@@ -54,7 +55,7 @@ export default async function ProfilePage() {
         </div>
 
         <ProfileTabs initial={initial} orders={orders as Parameters<typeof ProfileTabs>[0]["orders"]} />
-      </Container>
+      </MainContainer>
     </>
   );
 }

@@ -1,0 +1,84 @@
+"use client";
+
+import { Button } from "@/components";
+import type { SortBy } from "./AdminProducts";
+
+const LABEL_FILTERS = [
+  { value: "", label: "Все" },
+  { value: "popular", label: "Хит" },
+  { value: "new", label: "Новинка" },
+  { value: "sale", label: "Акция" },
+  { value: "none", label: "Без метки" },
+];
+
+const PUBLISHED_FILTERS = [
+  { value: "", label: "Все статусы" },
+  { value: "yes", label: "Опубликованные" },
+  { value: "no", label: "Скрытые" },
+];
+
+type Props = {
+  label: string;
+  published: string;
+  sort: SortBy;
+  onLabelChange: (value: string) => void;
+  onPublishedChange: (value: string) => void;
+  onSortChange: (value: string) => void;
+};
+
+export default function ProductFilterBar({
+  label,
+  published,
+  sort,
+  onLabelChange,
+  onPublishedChange,
+  onSortChange,
+}: Props) {
+  return (
+    <div className="flex flex-wrap flex-col md:flex-row items-start md:items-center gap-2 mb-4">
+      <div className="flex flex-wrap flex-col md:flex-row gap-2 flex-1">
+        <div className="flex flex-wrap gap-1">
+          {LABEL_FILTERS.map((l) => (
+            <Button
+              key={l.value}
+              onClick={() => onLabelChange(l.value)}
+              className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
+                label === l.value
+                  ? "bg-green-600 text-white border-green-600"
+                  : "border-gray-300 text-gray-600 hover:border-green-500 hover:text-green-600"
+              }`}
+            >
+              {l.label}
+            </Button>
+          ))}
+        </div>
+        <div className="hidden md:block w-px h-4 bg-gray-300 self-center mx-1" />
+        <div className="flex flex-wrap gap-1">
+          {PUBLISHED_FILTERS.map((p) => (
+            <Button
+              key={p.value}
+              onClick={() => onPublishedChange(p.value)}
+              className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
+                published === p.value
+                  ? "bg-gray-700 text-white border-gray-700"
+                  : "border-gray-300 text-gray-600 hover:border-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {p.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+      <select
+        value={sort}
+        onChange={(e) => onSortChange(e.target.value)}
+        className="border border-gray-300 rounded-lg px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 hover:cursor-pointer"
+      >
+        <option value="id-desc">Сначала новые</option>
+        <option value="name-asc">По алфавиту</option>
+        <option value="price-asc">Цена ↑</option>
+        <option value="price-desc">Цена ↓</option>
+      </select>
+    </div>
+  );
+}

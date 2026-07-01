@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { PencilIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Button } from "@/components";
 import { deleteBrand, upsertBrand, type BrandInput } from "./actions";
-import { adminInputCls as inp, Field } from "./admin-ui";
+import { Field, adminInputCls as inp } from "./admin-ui";
 
 type Brand = { id: number; name: string; slug: string };
 
@@ -104,7 +104,13 @@ export default function AdminBrands({
                   <PencilIcon className="size-4" />
                 </Button>
                 {!locked && (
-                  <Button variant="icon" iconColor="danger" size="sm" onClick={() => handleDelete(brand.id)} aria-label="Удалить">
+                  <Button
+                    variant="icon"
+                    iconColor="danger"
+                    size="sm"
+                    onClick={() => handleDelete(brand.id)}
+                    aria-label="Удалить"
+                  >
                     <Trash2Icon className="size-4" />
                   </Button>
                 )}
@@ -159,4 +165,3 @@ export default function AdminBrands({
     </>
   );
 }
-

@@ -18,7 +18,7 @@ export default function CartPage() {
         <MobileHeader title="Корзина" />
         <MainContainer className="text-center py-16 pt-28">
           <p className="text-gray-500 text-lg">Корзина пуста</p>
-          <Link href="/" className="text-green-600 text-sm mt-2 inline-block hover:underline">
+          <Link href="/catalog" className="text-green-600 text-sm mt-2 inline-block hover:underline">
             Перейти в каталог
           </Link>
         </MainContainer>
@@ -35,12 +35,9 @@ export default function CartPage() {
       </MobileHeader>
       <MainContainer className="pb-40 md:pb-20">
         <Title className="hidden md:block mb-6">Корзина</Title>
-        <div className="flex flex-col md:gap-3">
+        <div className="flex flex-col divide-y divide-gray-100">
           {items.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-2 md:gap-4 border-b md:border border-gray-300 md:rounded-lg p-2 md:p-3"
-            >
+            <div key={item.id} className="flex items-center gap-2 md:gap-4 p-2 md:p-3">
               <div className="relative size-16 md:size-20 shrink-0 bg-gray-50 rounded">
                 <Image
                   src={item.image_url}
@@ -57,21 +54,11 @@ export default function CartPage() {
                     {item.price} <Currency />
                   </p>
                   <div className="flex items-center gap-1 md:gap-2 shrink-0 rounded-full bg-gray-200">
-                    <Button
-                      variant="icon"
-                      size="sm"
-                      onClick={() => decrement(item.id)}
-                      className="md:border border-gray-300"
-                    >
+                    <Button variant="icon" size="sm" onClick={() => decrement(item.id)} className="rounded-full">
                       {item.quantity === 1 ? <Trash2Icon className="size-4" /> : <MinusIcon className="size-4" />}
                     </Button>
                     <span className="w-6 text-center text-sm">{item.quantity}</span>
-                    <Button
-                      variant="icon"
-                      size="sm"
-                      onClick={() => increment(item.id)}
-                      className="md:border border-gray-300"
-                    >
+                    <Button variant="icon" size="sm" onClick={() => increment(item.id)} className="rounded-full">
                       <PlusIcon className="size-4" />
                     </Button>
                   </div>

@@ -9,13 +9,7 @@ import { deleteBanner, reorderBanners, uploadBannerImage, upsertBanner } from ".
 
 type Banner = { id: number; image_url: string; sort_order: number; active: boolean; link?: string | null };
 
-export default function AdminBanners({
-  banners: initial,
-  type,
-}: {
-  banners: Banner[];
-  type: "desktop" | "mobile";
-}) {
+export default function AdminBanners({ banners: initial, type }: { banners: Banner[]; type: "desktop" | "mobile" }) {
   const [banners, setBanners] = useState(() => [...initial].sort((a, b) => a.sort_order - b.sort_order));
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -147,7 +141,7 @@ export default function AdminBanners({
             <span className="text-xs">
               {type === "mobile"
                 ? "Рекомендуемое соотношение 3:4 (например 600×800)"
-                : "Рекомендуемое соотношение 3:1 (например 1200×400)"}
+                : "Рекомендуемое соотношение 7:3 (например 1400×600)"}
             </span>
           </>
         )}

@@ -1,14 +1,36 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ChevronRightIcon, GripVerticalIcon, ImagePlusIcon, Loader2Icon, PencilIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
+import {
+  ChevronRightIcon,
+  GripVerticalIcon,
+  ImagePlusIcon,
+  Loader2Icon,
+  PencilIcon,
+  PlusIcon,
+  Trash2Icon,
+  XIcon,
+} from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components";
 import { useToast } from "@/store/toast";
-import { deleteCategory, reorderSubcategories, uploadCategoryImage, upsertCategory, type CategoryInput } from "./actions";
+import {
+  deleteCategory,
+  reorderSubcategories,
+  uploadCategoryImage,
+  upsertCategory,
+  type CategoryInput,
+} from "./actions";
 import { Field, adminInputCls as inp } from "./admin-ui";
 
-type Category = { id: number; name: string; parent_id: number | null; slug: string; image_url?: string | null; sort_order: number };
+type Category = {
+  id: number;
+  name: string;
+  parent_id: number | null;
+  slug: string;
+  image_url?: string | null;
+  sort_order: number;
+};
 
 const empty: CategoryInput = { name: "", parent_id: null, slug: "", image_url: null };
 
@@ -125,9 +147,7 @@ export default function AdminCategories({
     setDragOverId(null);
     if (!drag || drag.parentId !== parentId || drag.index === dropIndex) return;
 
-    const children = categories
-      .filter((c) => c.parent_id === parentId)
-      .sort((a, b) => a.sort_order - b.sort_order);
+    const children = categories.filter((c) => c.parent_id === parentId).sort((a, b) => a.sort_order - b.sort_order);
 
     const next = [...children];
     const [moved] = next.splice(drag.index, 1);
@@ -188,7 +208,7 @@ export default function AdminCategories({
                   <span className="text-sm font-semibold">{parent.name}</span>
                   <span className="text-xs text-gray-400 ml-2">{parent.slug}</span>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex gap-1 md:opacity-0 md:group-hover:opacity-100 md:transition-opacity">
                   <Button
                     variant="icon"
                     iconColor="green"
@@ -216,10 +236,16 @@ export default function AdminCategories({
                     key={sub.id}
                     draggable
                     onDragStart={() => onDragStart(parent.id, i)}
-                    onDragOver={(e) => { e.preventDefault(); setDragOverId(sub.id); }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOverId(sub.id);
+                    }}
                     onDragLeave={() => setDragOverId(null)}
                     onDrop={() => onDrop(parent.id, i)}
-                    onDragEnd={() => { dragIndex.current = null; setDragOverId(null); }}
+                    onDragEnd={() => {
+                      dragIndex.current = null;
+                      setDragOverId(null);
+                    }}
                     className={`flex items-center gap-2 pl-6 pr-3 py-1.5 rounded-lg group transition-colors ${
                       dragOverId === sub.id ? "bg-green-50 border border-green-300" : "hover:bg-gray-50"
                     }`}

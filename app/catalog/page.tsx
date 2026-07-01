@@ -17,6 +17,16 @@ import { getBrandsForSearch, searchProducts } from "@/services/product.service";
 
 const PAGE_SIZE = 24;
 
+const SPECIALS_BASE_URL =
+  "https://dnlburbuchxzxdmhuczu.supabase.co/storage/v1/object/public/categories/specials";
+
+const specials: Array<{ href: string; label: string; image_url?: string | null }> = [
+  { href: "/popular", label: "Популярное", image_url: `${SPECIALS_BASE_URL}/popular.webp` },
+  { href: "/new", label: "Новинки", image_url: `${SPECIALS_BASE_URL}/new.webp` },
+  { href: "/sale", label: "Акции", image_url: `${SPECIALS_BASE_URL}/sale.webp` },
+  { href: "/brands", label: "Бренды", image_url: `${SPECIALS_BASE_URL}/brands.webp` },
+];
+
 export default async function CatalogPage({
   searchParams,
 }: {
@@ -46,6 +56,27 @@ export default async function CatalogPage({
         </MobileHeader>
         <MainContainer>
           <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}>
+            {specials.map((s) => (
+              <Link
+                key={s.href}
+                href={s.href}
+                className="relative aspect-square rounded-xl overflow-hidden bg-gray-100"
+              >
+                {s.image_url && (
+                  <Image
+                    src={s.image_url}
+                    alt={s.label}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 50vw, 300px"
+                  />
+                )}
+                <div className="absolute inset-0 bg-black/25" />
+                <span className="absolute top-2 left-2 text-xs font-medium text-white drop-shadow leading-tight max-w-[calc(100%-1rem)]">
+                  {s.label}
+                </span>
+              </Link>
+            ))}
             {topCategories.map((cat) => (
               <Link
                 key={cat.id}

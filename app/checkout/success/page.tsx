@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Container, Title } from "@/components";
+import { Title } from "@/components";
+import MainContainer from "@/components/MainContainer";
 
 export const metadata = {
   title: "Заказ оформлен — Aloe.kg",
@@ -10,23 +11,25 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const shortId = id ?? "—";
 
   return (
-    <Container className="max-w-lg text-center">
-      <div className="text-6xl mb-4">✅</div>
-      <Title className="mb-2">Заказ оформлен!</Title>
-      <p className="text-gray-500 mb-1">
-        Номер заказа: <span className="font-mono font-bold text-gray-700">#{shortId}</span>
-      </p>
-      <p className="text-gray-500 text-sm mb-8">
-        Мы свяжемся с вами по телефону для подтверждения. Доставка производится в день заказа (при заявке до 15:00).
-      </p>
-      <div className="flex gap-3 justify-center">
-        <Link href="/" className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
-          На главную
-        </Link>
-        <Link href="/profile" className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
-          Мои заказы
-        </Link>
-      </div>
-    </Container>
+    <>
+      <MainContainer className="max-w-lg text-center pt-20">
+        <div className="text-6xl mb-4">✅</div>
+        <Title className="mb-2">Заказ оформлен!</Title>
+        <p className="text-gray-500 mb-1">
+          Номер заказа: <span className="font-mono font-bold text-gray-700">#{shortId}</span>
+        </p>
+        <p className="text-gray-500 text-sm mb-8">
+          Мы свяжемся с вами по телефону для подтверждения. Доставка производится в день заказа (при заявке до 15:00).
+        </p>
+        <div className="flex gap-3 justify-center">
+          <Link href="/" className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+            На главную
+          </Link>
+          <Link href="/profile" className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
+            Мои заказы
+          </Link>
+        </div>
+      </MainContainer>
+    </>
   );
 }

@@ -14,7 +14,7 @@ export default function Container({
   if (withMain)
     return (
       <main>
-        <div className={cn(containerClassname, className)}>{children}</div>;
+        <div className={cn(containerClassname, className)}>{children}</div>
       </main>
     );
 
