@@ -5,17 +5,17 @@
 - **Framework:** Next.js 16.2.9 (App Router, Server Components, Server Actions, React 19)
 - **Language:** TypeScript 6.0.3 (strict mode, path alias `@/*` → root)
 - **Database:** Supabase (PostgreSQL + Auth + Storage + RLS)
-- **State:** Zustand 5.0.14 with persist middleware (localStorage)
+- **State:** Zustand 5.0.14 (only the cart store uses `persist`/localStorage; favorites/toast/mobile-menu don't — both cart and favorites also rehydrate from Supabase on auth)
 - **Styling:** Tailwind CSS 4.3.1, no dark mode
-- **UI libs:** Lucide React, React Icons, Embla Carousel, react-markdown, NextTopLoader, @tailwindcss/typography, @tanstack/react-virtual
-- **Code quality:** ESLint 9, Prettier (120 char, import sorting)
+- **UI libs:** Lucide React, React Icons, Embla Carousel (+ autoplay), react-markdown, nextjs-toploader, @tailwindcss/typography, @tanstack/react-virtual
+- **Code quality:** ESLint 9, Prettier (120 char, import sorting via `@ianvs/prettier-plugin-sort-imports`)
 
 ## Directory Structure
 
 ```
 /
 ├── app/                    # Next.js App Router pages
-├── components/             # 29 shared React components
+├── components/             # ~30 shared React components (barrel: components/index.ts)
 ├── hooks/                  # Custom React hooks
 ├── lib/                    # Supabase clients, caching, utilities
 ├── services/               # Data access layer (8 domain modules)
@@ -29,7 +29,7 @@
 ## App Routes
 
 ```
-/                           # Home page (carousels: popular, new, sale, discount, categories)
+/                           # Home page (carousels: popular, new, sale, categories)
 /auth                       # Login / register (email+password, Google OAuth)
 /auth/confirm               # Email OTP verification & OAuth PKCE callback (route.ts)
 /product/[id]               # Product detail page
@@ -37,53 +37,60 @@
 /catalog/[slug]             # Category listing with filters
 /catalog/[slug]/[subSlug]   # Subcategory listing with filters
 /brands                     # All brands index (alphabetical)
-/brands/[brand]             # Brand product listing
+/brands/[brand]             # Brand product listing (infinite scroll)
 /search                     # Search results with filters
 /cart                       # Shopping cart
-/checkout                   # Order form + payment success
+/checkout                   # Order form
+/checkout/success           # Order confirmation
 /profile                    # User profile, orders, favorites (auth required)
 /favorites                  # Saved items
 /delivery                   # Delivery info
-/popular /new /sale /discount  # Label-based product pages
+/about                      # About page (static)
+/contacts                   # Contacts page (static)
+/legal-entities             # Info for corporate/legal clients (static)
+/popular /new /sale         # Label-based product pages
 /admin                      # Admin dashboard (role: admin)
 /admin/orders               # Order management
 /admin/products             # Product CRUD
-/admin/categories           # Category management
+/admin/categories           # Category management (drag-to-reorder)
 /admin/brands               # Brand management
-/admin/banners              # Banner carousel management
+/admin/banners              # Banner carousel management (desktop/mobile tabs)
 ```
+
+Note: the `discount` label/route from earlier iterations has been removed — `Product["label"]` is now only `"popular" | "new" | "sale" | null`.
 
 ## Database Schema (Supabase / PostgreSQL)
 
 ### products
 
-| column      | type        | notes                                              |
-| ----------- | ----------- | -------------------------------------------------- |
-| id          | int         | PK                                                 |
-| external_id | text        |                                                    |
-| name        | text        |                                                    |
-| price       | numeric     |                                                    |
-| old_price   | numeric     | nullable                                           |
-| image_url   | text        |                                                    |
-| product_url | text        |                                                    |
-| category    | text        | string label                                       |
-| category_id | int         | FK → categories.id                                 |
-| label       | text        | `popular` \| `new` \| `sale` \| `discount` \| null |
-| description | text        | nullable                                           |
-| brand_id    | int         | FK → brands.id                                     |
-| seo_text    | text        | nullable                                           |
-| published   | boolean     |                                                    |
-| created_at  | timestamptz |                                                    |
+| column      | type        | notes                                |
+| ----------- | ----------- | ------------------------------------ |
+| id          | int         | PK                                   |
+| external_id | text        |                                      |
+| name        | text        |                                      |
+| price       | numeric     |                                      |
+| old_price   | numeric     | nullable                             |
+| image_url   | text        |                                      |
+| product_url | text        |                                      |
+| category    | text        | string label                         |
+| category_id | int         | FK → categories.id                   |
+| label       | text        | `popular` \| `new` \| `sale` \| null |
+| description | text        | nullable                             |
+| brand_id    | int         | FK → brands.id                       |
+| seo_text    | text        | nullable                             |
+| published   | boolean     |                                      |
+| created_at  | timestamptz |                                      |
 
 ### categories
 
-| column    | type | notes                                  |
-| --------- | ---- | -------------------------------------- |
-| id        | int  | PK                                     |
-| name      | text |                                        |
-| slug      | text |                                        |
-| parent_id | int  | self-referential FK (null = top-level) |
-| image_url | text | nullable                               |
+| column     | type | notes                                            |
+| ---------- | ---- | ------------------------------------------------ |
+| id         | int  | PK                                               |
+| name       | text |                                                  |
+| slug       | text |                                                  |
+| parent_id  | int  | self-referential FK (null = top-level)           |
+| image_url  | text | nullable                                         |
+| sort_order | int  | manual ordering, editable via admin drag-reorder |
 
 ### brands
 
@@ -95,13 +102,14 @@
 
 ### banners
 
-| column     | type    | notes    |
-| ---------- | ------- | -------- |
-| id         | int     | PK       |
-| image_url  | text    |          |
-| sort_order | int     |          |
-| active     | boolean |          |
-| link       | text    | nullable |
+| column     | type    | notes                 |
+| ---------- | ------- | --------------------- |
+| id         | int     | PK                    |
+| image_url  | text    |                       |
+| sort_order | int     |                       |
+| active     | boolean |                       |
+| link       | text    | nullable              |
+| type       | text    | `desktop` \| `mobile` |
 
 ### profiles
 
@@ -115,18 +123,18 @@
 
 ### orders
 
-| column           | type        | notes                    |
-| ---------------- | ----------- | ------------------------ |
-| id               | int         | PK                       |
-| user_id          | uuid        | nullable FK → auth.users |
-| customer_name    | text        |                          |
-| customer_phone   | text        |                          |
-| customer_address | text        |                          |
-| comment          | text        |                          |
-| items            | jsonb       | array of cart items      |
-| total            | numeric     |                          |
-| status           | text        | `new` \| ...             |
-| created_at       | timestamptz |                          |
+| column           | type        | notes                                                              |
+| ---------------- | ----------- | ------------------------------------------------------------------ |
+| id               | int         | PK                                                                 |
+| user_id          | uuid        | nullable FK → auth.users (guest checkout allowed)                  |
+| customer_name    | text        |                                                                    |
+| customer_phone   | text        |                                                                    |
+| customer_address | text        |                                                                    |
+| comment          | text        | nullable                                                           |
+| items            | jsonb       | array of cart items                                                |
+| total            | numeric     |                                                                    |
+| status           | text        | `new` \| `confirmed` \| `processing` \| `delivered` \| `cancelled` |
+| created_at       | timestamptz |                                                                    |
 
 ### cart_items
 
@@ -160,7 +168,7 @@ type Product = {
   product_url: string;
   category: string;
   category_id: number;
-  label?: "popular" | "new" | "sale" | "discount" | null;
+  label?: "popular" | "new" | "sale" | null;
   old_price?: number | null;
   description?: string | null;
   brand_id?: number | null;
@@ -176,30 +184,30 @@ function withBrandName(rows: ProductRow[]): Product[]; // maps brands.name → b
 
 ## Services (`/services/`)
 
-| file                   | purpose                         |
-| ---------------------- | ------------------------------- |
-| `product.service.ts`   | Product CRUD, filtering, search |
-| `brand.service.ts`     | Brand queries                   |
-| `category.service.ts`  | Category tree queries           |
-| `order.service.ts`     | Order creation & listing        |
-| `profile.service.ts`   | User profile read/write         |
-| `cart.service.ts`      | DB cart sync (auth users)       |
-| `favorites.service.ts` | DB favorites sync (auth users)  |
-| `banner.service.ts`    | Banner queries                  |
+| file                   | purpose                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| `product.service.ts`   | Product CRUD, label/category/brand queries, search, autocomplete, admin listing |
+| `brand.service.ts`     | Brand queries (public + admin)                                                  |
+| `category.service.ts`  | Category tree queries (public + admin, ordered by `sort_order`)                 |
+| `order.service.ts`     | Order creation & listing, admin listing + status counts                         |
+| `profile.service.ts`   | User profile read/write                                                         |
+| `cart.service.ts`      | DB cart sync (auth users): load/upsert/delete/clear/reconcile                   |
+| `favorites.service.ts` | DB favorites sync (auth users): load ids, add/remove, full product list         |
+| `banner.service.ts`    | Banner queries, split by `type` (`desktop`/`mobile`)                            |
 
 ## Lib Utilities (`/lib/`)
 
-| file                  | purpose                                                         |
-| --------------------- | --------------------------------------------------------------- |
-| `supabase-server.ts`  | `createClient()` — SSR Supabase with cookies                    |
-| `supabase-browser.ts` | `createClient()` — client-side Supabase                         |
-| `supabase.ts`         | Direct anon-key client (used by `unstable_cache()` wrappers)    |
-| `cn.ts`               | `cn(...classes)` — clsx + tailwind-merge                        |
-| `cached-queries.ts`   | ISR-cached wrappers via `unstable_cache()`                      |
-| `auth.ts`             | `requireAuth()` — server-side auth guard, redirects to `/auth`  |
-| `constants.ts`        | `LABEL_MAP` (badge text/color), `ORDER_STATUS` (label/color)    |
-| `page-params.ts`      | `parsePage()`, `parseSortParam()`, `parseBrandIds()` — URL helpers |
-| `section-scroll.ts`   | Module-level singleton: `registerSectionScroller` / `scrollToSection` — lets `SubcategoryFilter` imperatively scroll `VirtualCategoryContent` without prop drilling |
+| file                  | purpose                                                                                                                                                                                        |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `supabase-server.ts`  | `createClient()` — SSR Supabase with cookies                                                                                                                                                   |
+| `supabase-browser.ts` | `createClient()` — client-side Supabase                                                                                                                                                        |
+| `supabase.ts`         | Direct anon-key client (used by `unstable_cache()` wrappers)                                                                                                                                   |
+| `cn.ts`               | `cn(...classes)` — clsx + tailwind-merge                                                                                                                                                       |
+| `cached-queries.ts`   | ISR-cached wrappers via `unstable_cache()`                                                                                                                                                     |
+| `auth.ts`             | `requireAuth()` — server-side auth guard, redirects to `/auth`                                                                                                                                 |
+| `constants.ts`        | `LABEL_MAP` (badge text/color for `popular`/`new`/`sale`), `ORDER_STATUS` (label/color)                                                                                                        |
+| `page-params.ts`      | `parsePage()`, `parseSortParam()`, `parseBrandIds()` — URL helpers                                                                                                                             |
+| `section-scroll.ts`   | Module-level singleton: `registerSectionScroller` / `scrollToSection` — lets `SubcategoryFilter` imperatively scroll `VirtualCategoryContent` without prop drilling                            |
 | `active-section.ts`   | Pub/sub for the currently-visible section ID: `setActiveSection` / `subscribeActiveSection` — `VirtualCategoryContent` fires updates on scroll, `SubcategoryFilter` highlights the active pill |
 
 ### Cached Queries (ISR tags & TTLs)
@@ -218,18 +226,19 @@ function withBrandName(rows: ProductRow[]): Product[]; // maps brands.name → b
 
 ## Zustand Stores (`/store/`)
 
-- **cart store** — cart items array, persisted to localStorage; syncs with DB when user logs in
-- **favorites store** — product IDs, syncs with DB on auth
-- **toast store** — notification queue (no persistence)
-- **mobile-menu store** — boolean open/close state for mobile nav (no persistence)
+- **cart store** (`store/cart.ts`) — cart items array, persisted to localStorage (key `"cart"`, only `items` is persisted); syncs with DB when user logs in (local items win on conflict, DB-only items appended, `reconcileCartItems` pushes local-only items back).
+- **favorites store** (`store/favorites.ts`) — product IDs; syncs with DB on auth. No persist middleware.
+- **toast store** (`store/toast.ts`) — notification queue, auto-dismiss after 3.5s, keeps at most 3 toasts.
+- **mobile-menu store** (`store/mobile-menu.ts`) — boolean open/close state for mobile nav.
 
 ## Server Actions
 
-| file                      | actions                                                                                                                                                                                                                           |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app/checkout/actions.ts` | `createOrder()`                                                                                                                                                                                                                   |
-| `app/profile/actions.ts`  | `saveProfile()`                                                                                                                                                                                                                   |
-| `app/admin/actions.ts`    | `upsertProduct()`, `deleteProduct()`, `uploadProductImage()`, `upsertCategory()`, `deleteCategory()`, `uploadCategoryImage()`, `upsertBrand()`, `deleteBrand()`, `getBrands()`, `upsertBanner()`, `deleteBanner()`, `uploadBannerImage()`, `reorderBanners()`, `updateOrderStatus()` |
+| file                            | actions                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/checkout/actions.ts`       | `createOrder()` — inserts via service-role client so guest (unauthenticated) checkout is allowed; clears server-side cart on success                                                                                                                                                                                                                                                |
+| `app/profile/actions.ts`        | `saveProfile()`                                                                                                                                                                                                                                                                                                                                                                     |
+| `app/brands/[brand]/actions.ts` | `loadMoreBrandProducts()` — cached, paginated, backs the infinite-scroll brand page                                                                                                                                                                                                                                                                                                 |
+| `app/admin/actions.ts`          | `upsertProduct()`, `deleteProduct()`, `uploadProductImage()`, `upsertCategory()`, `deleteCategory()`, `uploadCategoryImage()`, `reorderSubcategories()`, `upsertBrand()`, `deleteBrand()`, `getBrands()`, `upsertBanner()`, `deleteBanner()`, `uploadBannerImage()`, `reorderBanners()`, `updateOrderStatus()` — all gated by `assertAdmin()` and run through a service-role client |
 
 ## Auth
 
@@ -238,8 +247,8 @@ function withBrandName(rows: ProductRow[]): Product[]; // maps brands.name → b
 - **Email flow:** sign up → email OTP → `/auth/confirm` route → redirect
 - **OAuth flow:** Google PKCE → `/auth/confirm` code exchange
 - **Admin check:** `user.app_metadata?.role === "admin"`
-- **Server auth:** `createClient()` from `supabase-server.ts` (reads cookies)
-- **Client sync:** `AuthSync` component listens to auth state, updates Zustand stores
+- **Server auth:** `createClient()` from `supabase-server.ts` (reads cookies); admin server actions additionally re-check via `assertAdmin()` before using the service-role client
+- **Client sync:** `AuthSync` component listens to `onAuthStateChange` and calls `setUser()` on both the cart and favorites stores
 - **Protected routes:** `/admin/*` (401 redirect if not admin), `/profile` (redirect to `/auth`)
 
 ## Environment Variables
@@ -247,7 +256,7 @@ function withBrandName(rows: ProductRow[]): Product[]; // maps brands.name → b
 ```
 NEXT_PUBLIC_SUPABASE_URL        # https://dnlburbuchxzxdmhuczu.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY   # public/client-safe
-SUPABASE_SERVICE_ROLE_KEY       # server-only, used in admin actions to bypass RLS
+SUPABASE_SERVICE_ROLE_KEY       # server-only, used in admin actions + guest checkout to bypass RLS
 ```
 
 ## Key Patterns
@@ -256,14 +265,21 @@ SUPABASE_SERVICE_ROLE_KEY       # server-only, used in admin actions to bypass R
 
 **Data fetching strategy:**
 
-- RSC + `unstable_cache()` for static/semi-static data (categories, carousels)
+- RSC + `unstable_cache()` for static/semi-static data (categories, brands, banners, carousels)
 - React `cache()` for per-request deduplication
 - `Promise.all()` for parallel queries
 - Dynamic product/order pages: no caching (fresh per request)
+- Brand pages use `IntersectionObserver`-driven infinite scroll (`BrandProductsInfinite`) backed by a cached, paginated server action
 
-**Admin mutations** always use service role client (bypasses RLS). User mutations use anon client scoped by RLS to `auth.uid()`.
+**Admin mutations** always use a service-role client (bypasses RLS) and are gated by an `assertAdmin()` check inside the action itself (not just route-level middleware). User mutations use the anon client scoped by RLS to `auth.uid()`.
 
 **Category page virtual scroll:** `/catalog/[slug]` renders all subcategory sections on one page using `VirtualCategoryContent` (`@tanstack/react-virtual` window virtualizer). `SubcategoryFilter` in `scrollMode` shows pills that jump to sections. The two are decoupled via module-level singletons: `lib/section-scroll.ts` (imperative scroll command) and `lib/active-section.ts` (pub/sub for the visible section id) — no shared React state or prop drilling needed.
+
+**`ProductCard` is `React.memo`-wrapped:** it renders inside the virtualized category grid, carousels, and infinite-scroll brand pages, whose parents re-render on every scroll tick / page load — memoizing avoids re-rendering every visible card (and its `AddToCart`/`FavoriteButton` children) when its own props haven't changed.
+
+**Admin list pages** (products/categories/brands/orders) share `useAdminListNav()` (syncs filters to the URL query string, resets pagination on filter change) and `useDebouncedSearch()` (debounces search input before triggering navigation).
+
+**Drag-to-reorder** for admin categories and banners shares one hook, `useDragReorder()` — tracks drag/drop indices per group and hands back a reordered array; the caller persists the new `sort_order` via a server action (`reorderSubcategories()` / `reorderBanners()`).
 
 **Image optimization:** Next.js `<Image>` with AVIF/WebP, remote domains whitelisted in `next.config.ts`.
 
