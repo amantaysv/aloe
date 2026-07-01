@@ -170,7 +170,7 @@ export default function AdminBanners({ banners: initial, type }: { banners: Bann
           >
             <GripVerticalIcon className="size-4 text-gray-400 shrink-0 cursor-grab active:cursor-grabbing" />
             <div
-              className={`relative shrink-0 bg-gray-100 rounded-lg overflow-hidden ${type === "mobile" ? "w-16 aspect-3/4" : "w-40 aspect-2/1 lg:aspect-3/1"}`}
+              className={`relative shrink-0 bg-gray-100 rounded-lg overflow-hidden ${type === "mobile" ? "w-16 aspect-5/2" : "w-40 aspect-4/1 lg:aspect-6/1"}`}
             >
               <Image
                 src={b.image_url}

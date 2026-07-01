@@ -9,8 +9,8 @@ import Logo from "./Logo";
 
 export default function Header({ className }: { className?: string }) {
   return (
-    <header className={`${className ?? "hidden lg:block"} h-16 bg-green-50 sticky top-0 z-50`}>
-      <Container className="h-full flex items-center gap-2 lg:gap-4">
+    <header className={`${className ?? "hidden md:block"} h-16 bg-green-50 sticky top-0 z-50`}>
+      <Container className="h-full flex items-center gap-2 md:gap-4">
         {/* Logo */}
         <Logo className="md:w-40 lg:w-56" withIcon />
 

@@ -85,7 +85,7 @@ export default function CategoryNav({ categories }: { categories: Category[] }) 
   const parents = categories.filter((c) => !c.parent_id);
 
   return (
-    <nav className="hidden lg:block h-25.5 bg-white sticky top-16 z-40">
+    <nav className="hidden md:block h-25.5 bg-white sticky top-16 z-40">
       <Container>
         <div className="flex items-start gap-1.5 overflow-x-auto scrollbar-none pt-4 pb-2">
           {specials.map((s) => (

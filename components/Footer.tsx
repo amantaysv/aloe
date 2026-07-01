@@ -11,7 +11,7 @@ const links = [
 
 export default function Footer() {
   return (
-    <footer className="mt-auto bg-green-50 pb-20 lg:pb-6 pt-6">
+    <footer className="mt-auto bg-green-50 pb-20 md:pb-6 pt-6">
       <Container className="flex flex-col md:flex-row items-center justify-center md:justify-between gap-4">
         <Logo />
 

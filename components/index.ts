@@ -3,7 +3,6 @@ export { default as AuthSync } from "./AuthSync";
 export { default as BannerCarousel } from "./BannerCarousel";
 export { default as Breadcrumb } from "./Breadcrumb";
 export { default as Button } from "./Button";
-export { default as CatalogSidebar } from "./CatalogSidebar";
 export { default as Currency } from "./Currency";
 export { default as FavoriteButton } from "./FavoriteButton";
 export { default as Footer } from "./Footer";

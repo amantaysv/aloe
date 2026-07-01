@@ -40,7 +40,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <Header className="block lg:hidden" />
+      <Header className="block md:hidden" />
       <MainContainer className="flex flex-col gap-4 md:gap-8">
         <BannerCarousel banners={banners} />
         {popular.total > 0 && (
