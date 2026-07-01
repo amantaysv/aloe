@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Search, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Button, Currency, Pagination } from "@/components";
 import { ORDER_STATUS } from "@/lib/constants";
 import OrderStatusSelect from "./OrderStatusSelect";
+import { useAdminListNav, useDebouncedSearch } from "./useAdminListNav";
 
 type Order = {
   id: number;
@@ -42,39 +42,13 @@ export default function AdminOrders({
   statusFilter,
   statusCounts,
 }: Props) {
-  const router = useRouter();
+  const navigate = useAdminListNav();
+  const search = useDebouncedSearch(q, (value) => navigate({ q: value }));
   const [localStatus, setLocalStatus] = useState<Record<number, string>>({});
-  const [searchInput, setSearchInput] = useState(q);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const orders = initial.map((o) => ({ ...o, status: localStatus[o.id] ?? o.status }));
 
   const activeStatuses = new Set(statusFilter ? statusFilter.split(",") : []);
-
-  function navigate(updates: { q?: string; status?: string; page?: number }) {
-    const params = new URLSearchParams(window.location.search);
-    if ("q" in updates) {
-      if (updates.q) params.set("q", updates.q!);
-      else params.delete("q");
-      params.delete("page");
-    }
-    if ("status" in updates) {
-      if (updates.status) params.set("status", updates.status!);
-      else params.delete("status");
-      params.delete("page");
-    }
-    if ("page" in updates) {
-      if (updates.page && updates.page > 1) params.set("page", String(updates.page));
-      else params.delete("page");
-    }
-    router.replace(`?${params.toString()}`);
-  }
-
-  function handleSearch(value: string) {
-    setSearchInput(value);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => navigate({ q: value }), 400);
-  }
 
   function toggleStatus(key: string) {
     const next = new Set(activeStatuses);
@@ -122,17 +96,14 @@ export default function AdminOrders({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
-          value={searchInput}
-          onChange={(e) => handleSearch(e.target.value)}
+          value={search.value}
+          onChange={(e) => search.onChange(e.target.value)}
           placeholder="Поиск по имени или телефону..."
           className="w-full border border-gray-300 rounded-lg pl-9 pr-9 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
         />
-        {searchInput && (
+        {search.value && (
           <Button
-            onClick={() => {
-              setSearchInput("");
-              navigate({ q: "" });
-            }}
+            onClick={search.clear}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
             <X className="w-4 h-4" />

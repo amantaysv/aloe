@@ -10,6 +10,7 @@ import ProductEditDrawer from "./ProductEditDrawer";
 import ProductFilterBar from "./ProductFilterBar";
 import ProductList from "./ProductList";
 import ProductSearchBar from "./ProductSearchBar";
+import { useAdminListNav, useDebouncedSearch } from "./useAdminListNav";
 
 const empty: ProductInput = {
   name: "",
@@ -53,8 +54,8 @@ export default function AdminProducts({
   categories,
 }: Props) {
   const router = useRouter();
-  const [searchInput, setSearchInput] = useState(q);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navigate = useAdminListNav({ sort: "id-desc" });
+  const search = useDebouncedSearch(q, (value) => navigate({ q: value }));
 
   const [editing, setEditing] = useState<ProductInput | null>(null);
   const [saving, setSaving] = useState(false);
@@ -62,41 +63,6 @@ export default function AdminProducts({
   const [error, setError] = useState("");
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
   const brandsLoadedRef = useRef(false);
-
-  function navigate(updates: { q?: string; label?: string; published?: string; sort?: string; page?: number }) {
-    const params = new URLSearchParams(window.location.search);
-    if ("q" in updates) {
-      if (updates.q) params.set("q", updates.q!);
-      else params.delete("q");
-      params.delete("page");
-    }
-    if ("label" in updates) {
-      if (updates.label) params.set("label", updates.label!);
-      else params.delete("label");
-      params.delete("page");
-    }
-    if ("published" in updates) {
-      if (updates.published) params.set("published", updates.published!);
-      else params.delete("published");
-      params.delete("page");
-    }
-    if ("sort" in updates) {
-      if (updates.sort && updates.sort !== "id-desc") params.set("sort", updates.sort!);
-      else params.delete("sort");
-      params.delete("page");
-    }
-    if ("page" in updates) {
-      if (updates.page && updates.page > 1) params.set("page", String(updates.page));
-      else params.delete("page");
-    }
-    router.replace(`?${params.toString()}`);
-  }
-
-  function handleSearch(value: string) {
-    setSearchInput(value);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => navigate({ q: value }), 400);
-  }
 
   async function loadBrands() {
     if (brandsLoadedRef.current) return;
@@ -189,14 +155,7 @@ export default function AdminProducts({
         </Button>
       </div>
 
-      <ProductSearchBar
-        value={searchInput}
-        onChange={handleSearch}
-        onClear={() => {
-          setSearchInput("");
-          navigate({ q: "" });
-        }}
-      />
+      <ProductSearchBar value={search.value} onChange={search.onChange} onClear={search.clear} />
 
       <ProductFilterBar
         label={label}

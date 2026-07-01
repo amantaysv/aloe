@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Button } from "@/components";
 import { useToast } from "@/store/toast";
 import { deleteBanner, reorderBanners, uploadBannerImage, upsertBanner } from "./actions";
+import { useDragReorder } from "./useDragReorder";
 
 type Banner = { id: number; image_url: string; sort_order: number; active: boolean; link?: string | null };
 
@@ -13,13 +14,12 @@ export default function AdminBanners({ banners: initial, type }: { banners: Bann
   const [banners, setBanners] = useState(() => [...initial].sort((a, b) => a.sort_order - b.sort_order));
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [dragOverId, setDragOverId] = useState<number | null>(null);
   const [links, setLinks] = useState<Record<number, string>>(() =>
     Object.fromEntries(initial.map((b) => [b.id, b.link ?? ""])),
   );
   const [savingLink, setSavingLink] = useState<Record<number, boolean>>({});
   const fileRef = useRef<HTMLInputElement>(null);
-  const dragIndex = useRef<number | null>(null);
+  const drag = useDragReorder();
   const { show } = useToast();
 
   async function handleFile(file: File) {
@@ -72,24 +72,9 @@ export default function AdminBanners({ banners: initial, type }: { banners: Bann
     show("Баннер удалён", "info");
   }
 
-  function onDragStart(index: number) {
-    dragIndex.current = index;
-  }
-
-  function onDragOver(e: React.DragEvent, id: number) {
-    e.preventDefault();
-    setDragOverId(id);
-  }
-
   async function onDrop(dropIndex: number) {
-    const from = dragIndex.current;
-    dragIndex.current = null;
-    setDragOverId(null);
-    if (from === null || from === dropIndex) return;
-
-    const next = [...banners];
-    const [moved] = next.splice(from, 1);
-    next.splice(dropIndex, 0, moved);
+    const next = drag.onDrop(type, banners, dropIndex);
+    if (!next) return;
     const reordered = next.map((b, i) => ({ ...b, sort_order: i }));
     setBanners(reordered);
 
@@ -152,16 +137,13 @@ export default function AdminBanners({ banners: initial, type }: { banners: Bann
           <div
             key={b.id}
             draggable
-            onDragStart={() => onDragStart(i)}
-            onDragOver={(e) => onDragOver(e, b.id)}
-            onDragLeave={() => setDragOverId(null)}
+            onDragStart={() => drag.onDragStart(type, i)}
+            onDragOver={(e) => drag.onDragOver(e, type, i)}
+            onDragLeave={drag.onDragLeave}
             onDrop={() => onDrop(i)}
-            onDragEnd={() => {
-              dragIndex.current = null;
-              setDragOverId(null);
-            }}
+            onDragEnd={drag.onDragEnd}
             className={`flex items-center gap-3 border rounded-xl p-3 transition-colors ${
-              dragOverId === b.id
+              drag.isOver(type, i)
                 ? "border-green-400 bg-green-50"
                 : b.active
                   ? "border-gray-200"

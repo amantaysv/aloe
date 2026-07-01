@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PencilIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
+import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components";
 import { deleteBrand, upsertBrand, type BrandInput } from "./actions";
 import { Field, adminInputCls as inp } from "./admin-ui";
+import AdminDrawer from "./AdminDrawer";
 
 type Brand = { id: number; name: string; slug: string };
 
@@ -121,46 +122,32 @@ export default function AdminBrands({
       </div>
 
       {editing && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/40" onClick={close} />
-          <div className="relative ml-auto w-full max-w-md bg-white h-full overflow-y-auto shadow-xl flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-              <h2 className="text-lg font-bold">{editing.isNew ? "Новый бренд" : "Редактировать бренд"}</h2>
-              <Button onClick={close} aria-label="Закрыть" className="text-gray-400 hover:text-gray-700">
-                <XIcon className="size-5" />
-              </Button>
-            </div>
+        <AdminDrawer
+          title={editing.isNew ? "Новый бренд" : "Редактировать бренд"}
+          onClose={close}
+          saving={saving}
+          onSave={save}
+          error={error}
+        >
+          <Field label="Slug *">
+            <input
+              value={editing.slug}
+              onChange={(e) => set("slug", e.target.value.toLowerCase().replace(/\s+/g, "-"))}
+              className={inp}
+              placeholder="garnier"
+            />
+            <p className="text-xs text-gray-400 mt-1">Используется в URL: /brands/slug</p>
+          </Field>
 
-            <div className="flex-1 px-6 py-5 space-y-4">
-              {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
-
-              <Field label="Slug *">
-                <input
-                  value={editing.slug}
-                  onChange={(e) => set("slug", e.target.value.toLowerCase().replace(/\s+/g, "-"))}
-                  className={inp}
-                  placeholder="garnier"
-                />
-                <p className="text-xs text-gray-400 mt-1">Используется в URL: /brands/slug</p>
-              </Field>
-
-              <Field label="Название *">
-                <input
-                  value={editing.name}
-                  onChange={(e) => set("name", e.target.value)}
-                  className={inp}
-                  placeholder="Garnier"
-                />
-              </Field>
-            </div>
-
-            <div className="px-6 py-4 border-t border-gray-200 sticky bottom-0 bg-white">
-              <Button variant="primary" size="lg" onClick={save} disabled={saving} className="w-full">
-                {saving ? "Сохранение..." : "Сохранить"}
-              </Button>
-            </div>
-          </div>
-        </div>
+          <Field label="Название *">
+            <input
+              value={editing.name}
+              onChange={(e) => set("name", e.target.value)}
+              className={inp}
+              placeholder="Garnier"
+            />
+          </Field>
+        </AdminDrawer>
       )}
     </>
   );

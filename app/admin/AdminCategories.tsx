@@ -9,7 +9,6 @@ import {
   PencilIcon,
   PlusIcon,
   Trash2Icon,
-  XIcon,
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components";
@@ -22,6 +21,8 @@ import {
   type CategoryInput,
 } from "./actions";
 import { Field, adminInputCls as inp } from "./admin-ui";
+import AdminDrawer from "./AdminDrawer";
+import { useDragReorder } from "./useDragReorder";
 
 type Category = {
   id: number;
@@ -46,10 +47,9 @@ export default function AdminCategories({
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
-  const [dragOverId, setDragOverId] = useState<number | null>(null);
-  const dragIndex = useRef<{ parentId: number; index: number } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const { show } = useToast();
+  const drag = useDragReorder();
 
   const parents = categories.filter((c) => !c.parent_id);
   const subs = categories.filter((c) => c.parent_id);
@@ -137,21 +137,10 @@ export default function AdminCategories({
     close();
   }
 
-  function onDragStart(parentId: number, index: number) {
-    dragIndex.current = { parentId, index };
-  }
-
   async function onDrop(parentId: number, dropIndex: number) {
-    const drag = dragIndex.current;
-    dragIndex.current = null;
-    setDragOverId(null);
-    if (!drag || drag.parentId !== parentId || drag.index === dropIndex) return;
-
     const children = categories.filter((c) => c.parent_id === parentId).sort((a, b) => a.sort_order - b.sort_order);
-
-    const next = [...children];
-    const [moved] = next.splice(drag.index, 1);
-    next.splice(dropIndex, 0, moved);
+    const next = drag.onDrop(parentId, children, dropIndex);
+    if (!next) return;
     const reordered = next.map((c, i) => ({ ...c, sort_order: i }));
 
     setCategories((prev) => {
@@ -235,19 +224,13 @@ export default function AdminCategories({
                   <div
                     key={sub.id}
                     draggable
-                    onDragStart={() => onDragStart(parent.id, i)}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setDragOverId(sub.id);
-                    }}
-                    onDragLeave={() => setDragOverId(null)}
+                    onDragStart={() => drag.onDragStart(parent.id, i)}
+                    onDragOver={(e) => drag.onDragOver(e, parent.id, i)}
+                    onDragLeave={drag.onDragLeave}
                     onDrop={() => onDrop(parent.id, i)}
-                    onDragEnd={() => {
-                      dragIndex.current = null;
-                      setDragOverId(null);
-                    }}
+                    onDragEnd={drag.onDragEnd}
                     className={`flex items-center gap-2 pl-6 pr-3 py-1.5 rounded-lg group transition-colors ${
-                      dragOverId === sub.id ? "bg-green-50 border border-green-300" : "hover:bg-gray-50"
+                      drag.isOver(parent.id, i) ? "bg-green-50 border border-green-300" : "hover:bg-gray-50"
                     }`}
                   >
                     <GripVerticalIcon className="size-4 text-gray-300 shrink-0 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -274,124 +257,110 @@ export default function AdminCategories({
       </div>
 
       {editing && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/40" onClick={close} />
-          <div className="relative ml-auto w-full max-w-md bg-white h-full overflow-y-auto shadow-xl flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-              <h2 className="text-lg font-bold">{editing.isNew ? "Новая категория" : "Редактировать категорию"}</h2>
-              <Button onClick={close} className="text-gray-400 hover:text-gray-700">
-                <XIcon className="size-5" />
-              </Button>
-            </div>
+        <AdminDrawer
+          title={editing.isNew ? "Новая категория" : "Редактировать категорию"}
+          onClose={close}
+          saving={saving}
+          onSave={save}
+          error={error}
+        >
+          <Field label="Slug *">
+            <input
+              value={editing.slug}
+              onChange={(e) => set("slug", e.target.value.toLowerCase().replace(/\s+/g, "-"))}
+              className={inp}
+              placeholder="bytovaya-khimiya"
+            />
+            <p className="text-xs text-gray-400 mt-1">Используется в URL: /catalog/slug</p>
+          </Field>
 
-            <div className="flex-1 px-6 py-5 space-y-4">
-              {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+          <Field label="Название *">
+            <input
+              value={editing.name}
+              onChange={(e) => set("name", e.target.value)}
+              className={inp}
+              placeholder="Бытовая химия"
+            />
+          </Field>
 
-              <Field label="Slug *">
-                <input
-                  value={editing.slug}
-                  onChange={(e) => set("slug", e.target.value.toLowerCase().replace(/\s+/g, "-"))}
-                  className={inp}
-                  placeholder="bytovaya-khimiya"
-                />
-                <p className="text-xs text-gray-400 mt-1">Используется в URL: /catalog/slug</p>
-              </Field>
+          <Field label="Родительская категория">
+            <select
+              value={editing.parent_id ?? ""}
+              onChange={(e) => set("parent_id", e.target.value ? parseInt(e.target.value) : null)}
+              className={inp}
+            >
+              <option value="">— Верхний уровень</option>
+              {parents
+                .filter((p) => p.id !== editing.id)
+                .map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+            </select>
+          </Field>
 
-              <Field label="Название *">
-                <input
-                  value={editing.name}
-                  onChange={(e) => set("name", e.target.value)}
-                  className={inp}
-                  placeholder="Бытовая химия"
-                />
-              </Field>
-
-              <Field label="Родительская категория">
-                <select
-                  value={editing.parent_id ?? ""}
-                  onChange={(e) => set("parent_id", e.target.value ? parseInt(e.target.value) : null)}
-                  className={inp}
-                >
-                  <option value="">— Верхний уровень</option>
-                  {parents
-                    .filter((p) => p.id !== editing.id)
-                    .map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                </select>
-              </Field>
-
-              {!editing.parent_id && (
-                <Field label="Изображение">
-                  <input ref={fileRef} type="file" accept="image/*" onChange={onFileChange} className="hidden" />
-                  {editing.image_url ? (
-                    <div className="relative group w-full aspect-square rounded-xl overflow-hidden bg-gray-100">
-                      <Image
-                        src={editing.image_url}
-                        alt="Изображение категории"
-                        fill
-                        className="object-cover"
-                        sizes="400px"
-                      />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        <Button
-                          variant="icon"
-                          onClick={() => !uploading && fileRef.current?.click()}
-                          disabled={uploading}
-                          className="bg-white/90 hover:bg-white text-gray-700"
-                          title="Заменить"
-                        >
-                          {uploading ? (
-                            <Loader2Icon className="size-4 animate-spin" />
-                          ) : (
-                            <ImagePlusIcon className="size-4" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="icon"
-                          iconColor="danger"
-                          onClick={() => set("image_url", null)}
-                          className="bg-white/90 hover:bg-white"
-                          title="Удалить"
-                        >
-                          <Trash2Icon className="size-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div
+          {!editing.parent_id && (
+            <Field label="Изображение">
+              <input ref={fileRef} type="file" accept="image/*" onChange={onFileChange} className="hidden" />
+              {editing.image_url ? (
+                <div className="relative group w-full aspect-square rounded-xl overflow-hidden bg-gray-100">
+                  <Image
+                    src={editing.image_url}
+                    alt="Изображение категории"
+                    fill
+                    className="object-cover"
+                    sizes="400px"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <Button
+                      variant="icon"
                       onClick={() => !uploading && fileRef.current?.click()}
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        const file = e.dataTransfer.files?.[0];
-                        if (file && file.type.startsWith("image/")) handleImageFile(file);
-                      }}
-                      className="border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-green-500 hover:text-green-600 transition-colors cursor-pointer select-none py-8"
+                      disabled={uploading}
+                      className="bg-white/90 hover:bg-white text-gray-700"
+                      title="Заменить"
                     >
                       {uploading ? (
-                        <Loader2Icon className="size-6 animate-spin text-green-600" />
+                        <Loader2Icon className="size-4 animate-spin" />
                       ) : (
-                        <>
-                          <ImagePlusIcon className="size-6" />
-                          <span className="text-sm">Нажмите или перетащите изображение</span>
-                        </>
+                        <ImagePlusIcon className="size-4" />
                       )}
-                    </div>
+                    </Button>
+                    <Button
+                      variant="icon"
+                      iconColor="danger"
+                      onClick={() => set("image_url", null)}
+                      className="bg-white/90 hover:bg-white"
+                      title="Удалить"
+                    >
+                      <Trash2Icon className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onClick={() => !uploading && fileRef.current?.click()}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file && file.type.startsWith("image/")) handleImageFile(file);
+                  }}
+                  className="border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-green-500 hover:text-green-600 transition-colors cursor-pointer select-none py-8"
+                >
+                  {uploading ? (
+                    <Loader2Icon className="size-6 animate-spin text-green-600" />
+                  ) : (
+                    <>
+                      <ImagePlusIcon className="size-6" />
+                      <span className="text-sm">Нажмите или перетащите изображение</span>
+                    </>
                   )}
-                </Field>
+                </div>
               )}
-            </div>
-
-            <div className="px-6 py-4 border-t border-gray-200 sticky bottom-0 bg-white">
-              <Button variant="primary" size="lg" onClick={save} disabled={saving} className="w-full">
-                {saving ? "Сохранение..." : "Сохранить"}
-              </Button>
-            </div>
-          </div>
-        </div>
+            </Field>
+          )}
+        </AdminDrawer>
       )}
     </>
   );
