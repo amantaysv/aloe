@@ -193,16 +193,18 @@ export async function getAdminProducts(
     q?: string;
     label?: string;
     published?: string;
+    categoryId?: number;
     sort?: AdminProductsSort;
     page?: number;
     pageSize?: number;
   },
 ) {
-  const { q = "", label = "", published = "", sort = "id-desc", page = 1, pageSize = 20 } = options;
+  const { q = "", label = "", published = "", categoryId, sort = "id-desc", page = 1, pageSize = 20 } = options;
   const from = (page - 1) * pageSize;
 
   let query = supabase.from("products").select("*", { count: "exact" });
-  if (q) query = query.or(`name.ilike.%${q}%,category.ilike.%${q}%`);
+  if (q) query = query.ilike("name", `%${q}%`);
+  if (categoryId) query = query.eq("category_id", categoryId);
   if (label === "none") query = query.is("label", null);
   else if (label) query = query.eq("label", label);
   if (published === "yes") query = query.eq("published", true);

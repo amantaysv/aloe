@@ -17,10 +17,12 @@ export default async function ProductsPage({
   const q = sp.q ?? "";
   const label = sp.label ?? "";
   const published = sp.published ?? "";
+  const category = sp.category ?? "";
+  const categoryId = category ? parseInt(category) || undefined : undefined;
   const sort = (sp.sort ?? "id-desc") as AdminProductsSort;
 
   const [{ products, total }, allCategories] = await Promise.all([
-    getAdminProducts(supabase, { q, label, published, sort, page: currentPage, pageSize: PAGE_SIZE }),
+    getAdminProducts(supabase, { q, label, published, categoryId, sort, page: currentPage, pageSize: PAGE_SIZE }),
     getAdminCategories(supabase),
   ]);
 
@@ -52,6 +54,7 @@ export default async function ProductsPage({
       q={q}
       label={label}
       published={published}
+      category={category}
       sort={sort}
       categories={categories as Parameters<typeof AdminProducts>[0]["categories"]}
     />

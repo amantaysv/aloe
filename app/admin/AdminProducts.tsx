@@ -36,6 +36,7 @@ type Props = {
   q: string;
   label: string;
   published: string;
+  category: string;
   sort: SortBy;
   categories: { id: number; name: string; depth: number; selectable: boolean }[];
 };
@@ -48,6 +49,7 @@ export default function AdminProducts({
   q,
   label,
   published,
+  category,
   sort,
   categories,
 }: Props) {
@@ -156,9 +158,12 @@ export default function AdminProducts({
       <ProductFilterBar
         label={label}
         published={published}
+        category={category}
+        categories={categories}
         sort={sort}
         onLabelChange={(value) => navigate({ label: value })}
         onPublishedChange={(value) => navigate({ published: value })}
+        onCategoryChange={(value) => navigate({ category: value })}
         onSortChange={(value) => navigate({ sort: value })}
       />
 

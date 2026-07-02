@@ -19,18 +19,24 @@ const PUBLISHED_FILTERS = [
 type Props = {
   label: string;
   published: string;
+  category: string;
+  categories: { id: number; name: string; depth: number }[];
   sort: SortBy;
   onLabelChange: (value: string) => void;
   onPublishedChange: (value: string) => void;
+  onCategoryChange: (value: string) => void;
   onSortChange: (value: string) => void;
 };
 
 export default function ProductFilterBar({
   label,
   published,
+  category,
+  categories,
   sort,
   onLabelChange,
   onPublishedChange,
+  onCategoryChange,
   onSortChange,
 }: Props) {
   return (
@@ -68,6 +74,18 @@ export default function ProductFilterBar({
           ))}
         </div>
       </div>
+      <select
+        value={category}
+        onChange={(e) => onCategoryChange(e.target.value)}
+        className="border border-gray-300 rounded-lg px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 hover:cursor-pointer"
+      >
+        <option value="">Все категории</option>
+        {categories.map((c) => (
+          <option key={c.id} value={c.id}>
+            {"--".repeat(c.depth) + c.name}
+          </option>
+        ))}
+      </select>
       <select
         value={sort}
         onChange={(e) => onSortChange(e.target.value)}
