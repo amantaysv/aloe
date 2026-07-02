@@ -18,7 +18,7 @@ import {
   WashingMachine,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import Container from "./Container";
 
 const ICONS = {
@@ -76,6 +76,7 @@ function NavItem({
 }
 
 export default function CategoryNav({ categories }: { categories: Category[] }) {
+  const pathname = usePathname();
   const params = useParams();
   const activeParentSlug = params?.slug as string | undefined;
 
@@ -107,7 +108,7 @@ export default function CategoryNav({ categories }: { categories: Category[] }) 
           className="flex items-start gap-1.5 overflow-x-auto scrollbar-none pt-4 pb-2"
         >
           {specials.map((s) => (
-            <NavItem key={s.href} href={s.href} label={s.label} Icon={s.icon} />
+            <NavItem key={s.href} href={s.href} label={s.label} active={pathname === s.href} Icon={s.icon} />
           ))}
           {parents.map((category) => (
             <NavItem
