@@ -1,6 +1,8 @@
 "use client";
 
-import ReactMarkdown from "react-markdown";
+import dynamic from "next/dynamic";
+
+const ReactMarkdown = dynamic(() => import("react-markdown"));
 
 export default function ProductDescription({ text }: { text: string }) {
   return (
