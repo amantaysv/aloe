@@ -28,20 +28,20 @@ export default async function ProductsPage({
 
   // Products may only be assigned to "leaf" categories (a subcategory or sub-subcategory with
   // no children of its own) — top-level categories and categories that have sub-subcategories
-  // are just organizational nodes, not something a product should link to directly.
-  const byId = new Map(allCategories.map((c) => [c.id, c]));
-  const hasChildren = new Set(allCategories.filter((c) => c.parent_id).map((c) => c.parent_id));
-  const categories = allCategories
-    .filter((c) => c.parent_id && !hasChildren.has(c.id))
-    .map((c) => {
-      const path: string[] = [];
-      let node: typeof c | undefined = c;
-      while (node) {
-        path.unshift(node.name);
-        node = node.parent_id ? byId.get(node.parent_id) : undefined;
-      }
-      return { id: c.id, name: c.name, path: path.join(" / ") };
-    });
+  // are just organizational nodes, not something a product should link to directly. They're still
+  // included in the select (disabled) so the tree structure is visible via indentation.
+  function buildCategoryTree(
+    parentId: number | null,
+    depth: number,
+  ): { id: number; name: string; depth: number; selectable: boolean }[] {
+    return allCategories
+      .filter((c) => c.parent_id === parentId)
+      .flatMap((c) => {
+        const selectable = !allCategories.some((child) => child.parent_id === c.id);
+        return [{ id: c.id, name: c.name, depth, selectable }, ...buildCategoryTree(c.id, depth + 1)];
+      });
+  }
+  const categories = buildCategoryTree(null, 0);
 
   return (
     <AdminProducts

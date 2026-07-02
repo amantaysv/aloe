@@ -14,7 +14,7 @@ const LABELS = [
 type Props = {
   editing: ProductInput;
   brands: { id: number; name: string }[];
-  categories: { id: number; name: string; path: string }[];
+  categories: { id: number; name: string; depth: number; selectable: boolean }[];
   saving: boolean;
   uploading: boolean;
   error: string;
@@ -75,12 +75,12 @@ export default function ProductEditDrawer({
       <div className="grid grid-cols-2 gap-4">
         <Field label="Категория *">
           <select
-            value={editing.category_id}
+            value={categories.some((c) => c.selectable && c.id === editing.category_id) ? editing.category_id : ""}
             onChange={(e) => {
-              const cat = categories.find((c) => String(c.id) === e.target.value);
+              const cat = categories.find((c) => c.selectable && String(c.id) === e.target.value);
               if (cat) {
                 onChange("category_id", cat.id);
-                onChange("category", cat.name); // leaf category name, not the breadcrumb path
+                onChange("category", cat.name);
               }
             }}
             className={inp}
@@ -89,8 +89,8 @@ export default function ProductEditDrawer({
               Выберите
             </option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.path}
+              <option key={c.id} value={c.id} disabled={!c.selectable}>
+                {"--".repeat(c.depth) + c.name}
               </option>
             ))}
           </select>
