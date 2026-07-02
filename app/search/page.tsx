@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   MainContainer,
@@ -14,6 +15,18 @@ import { supabase } from "@/lib/supabase";
 import { getBrandsForSearch, searchProducts } from "@/services/product.service";
 
 const PAGE_SIZE = 24;
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}): Promise<Metadata> {
+  const { q } = await searchParams;
+  return {
+    title: q?.trim() ? `${q} — поиск | Aloe.kg` : "Поиск — Aloe.kg",
+    robots: { index: false, follow: true },
+  };
+}
 
 export default async function SearchPage({
   searchParams,

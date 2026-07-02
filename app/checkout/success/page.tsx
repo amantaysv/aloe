@@ -3,6 +3,7 @@ import { MainContainer, Title } from "@/components";
 
 export const metadata = {
   title: "Заказ оформлен — Aloe.kg",
+  robots: { index: false, follow: false },
 };
 
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {

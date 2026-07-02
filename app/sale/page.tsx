@@ -1,6 +1,9 @@
 import { LabelProductsPage } from "@/components";
 
-export const metadata = { title: "Акции — Aloe.kg" };
+export const metadata = {
+  title: "Акции — Aloe.kg",
+  description: "Товары со скидкой в интернет-магазине Aloe.kg: бытовая химия и косметика по акционным ценам.",
+};
 
 export default async function SalePage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page = "1" } = await searchParams;

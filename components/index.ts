@@ -10,6 +10,7 @@ export { default as DeliveryContent } from "./DeliveryContent";
 export { default as FavoriteButton } from "./FavoriteButton";
 export { default as Footer } from "./Footer";
 export { Header } from "./header";
+export { default as JsonLd } from "./JsonLd";
 export { default as LabelProductsPage } from "./LabelProductsPage";
 export { default as MainContainer } from "./MainContainer";
 export { default as ManufacturerFilter } from "./ManufacturerFilter";

@@ -1,7 +1,26 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MainContainer, MobileHeader, SubcategoryFilter, VirtualCategoryContent } from "@/components";
 import { getCachedCategoriesWithSlug, getCachedSubcategorySection } from "@/lib/cached-queries";
 import { parseBrandIds, parseSortParam } from "@/lib/page-params";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string; subSlug: string }>;
+}): Promise<Metadata> {
+  const { slug, subSlug } = await params;
+  const allCategories = await getCachedCategoriesWithSlug();
+  const parentCategory = allCategories?.find((c) => c.slug === slug && c.parent_id === null);
+  if (!parentCategory) return {};
+  const subcategory = allCategories?.find((c) => c.slug === subSlug && c.parent_id === parentCategory.id);
+  if (!subcategory) return {};
+  return {
+    title: `${subcategory.name} — ${parentCategory.name} | Aloe.kg`,
+    description: `${subcategory.name} в категории «${parentCategory.name}»: каталог товаров с ценами и доставкой по Бишкеку. Aloe.kg.`,
+    alternates: { canonical: `/catalog/${slug}/${subSlug}` },
+  };
+}
 
 export default async function SubcategoryPage({
   params,

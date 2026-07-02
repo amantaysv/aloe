@@ -4,6 +4,11 @@ import { MainContainer, MobileHeader, ProductCard, ProductGrid, Title } from "@/
 import { requireAuth } from "@/lib/auth";
 import { getFavoriteProducts } from "@/services/favorites.service";
 
+export const metadata = {
+  title: "Избранное — Aloe.kg",
+  robots: { index: false, follow: true },
+};
+
 export default async function FavoritesPage() {
   const { supabase, user } = await requireAuth();
 

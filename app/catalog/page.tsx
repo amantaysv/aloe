@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -25,6 +26,25 @@ const specials: Array<{ href: string; label: string; image_url?: string | null }
   { href: "/sale", label: "Акции", image_url: `${SPECIALS_BASE_URL}/sale.webp` },
   { href: "/brands", label: "Бренды", image_url: `${SPECIALS_BASE_URL}/brands.webp` },
 ];
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}): Promise<Metadata> {
+  const { q } = await searchParams;
+  if (q?.trim()) {
+    return {
+      title: `${q} — поиск | Aloe.kg`,
+      robots: { index: false, follow: true },
+    };
+  }
+  return {
+    title: "Каталог — Aloe.kg",
+    description: "Каталог бытовой химии и косметики: все категории товаров интернет-магазина Aloe.kg.",
+    alternates: { canonical: "/catalog" },
+  };
+}
 
 export default async function CatalogPage({
   searchParams,

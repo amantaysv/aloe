@@ -1,6 +1,9 @@
 import { LabelProductsPage } from "@/components";
 
-export const metadata = { title: "Популярные товары — Aloe.kg" };
+export const metadata = {
+  title: "Популярные товары — Aloe.kg",
+  description: "Самые популярные товары в интернет-магазине Aloe.kg по количеству покупок.",
+};
 
 export default async function PopularPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page = "1" } = await searchParams;

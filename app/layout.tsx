@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Lobster } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
-import { AuthSync, CategoryNav, Footer, Header, MobileBottomNav, Toaster } from "@/components";
+import { AuthSync, CategoryNav, Footer, Header, JsonLd, MobileBottomNav, Toaster } from "@/components";
 import { getCachedCategories } from "@/lib/cached-queries";
+import { SITE_URL } from "@/lib/constants";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"] });
@@ -12,9 +13,44 @@ const lobster = Lobster({
   variable: "--font-lobster",
 });
 
+const SITE_DESCRIPTION = "Интернет-магазин бытовой химии и косметики";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Aloe.kg",
-  description: "Интернет-магазин бытовой химии и косметики",
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    locale: "ru_RU",
+    siteName: "Aloe.kg",
+    url: SITE_URL,
+    title: "Aloe.kg",
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary",
+    title: "Aloe.kg",
+    description: SITE_DESCRIPTION,
+  },
+};
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Aloe.kg",
+  url: SITE_URL,
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${SITE_URL}/search?q={search_term_string}`,
+    "query-input": "required name=search_term_string",
+  },
+};
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Aloe.kg",
+  url: SITE_URL,
 };
 
 export default async function RootLayout({
@@ -29,6 +65,8 @@ export default async function RootLayout({
   return (
     <html lang="ru">
       <body className={`${geist.className} ${lobster.variable} min-h-screen flex flex-col`} suppressHydrationWarning>
+        <JsonLd data={websiteJsonLd} />
+        <JsonLd data={organizationJsonLd} />
         <NextTopLoader color="#16a34a" showSpinner={false} />
         <AuthSync />
         <Header className="hidden md:block" />

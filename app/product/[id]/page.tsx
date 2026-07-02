@@ -8,13 +8,14 @@ import {
   Breadcrumb,
   Currency,
   FavoriteButton,
+  JsonLd,
   MainContainer,
   ProductCard,
   ProductDescription,
   Title,
 } from "@/components";
 import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
-import { LABEL_MAP } from "@/lib/constants";
+import { LABEL_MAP, SITE_URL } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import { getProduct, getRelatedProducts } from "@/services/product.service";
 import type { ProductRow } from "@/types";
@@ -38,12 +39,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const { data: product } = await getCachedProduct(id);
   if (!product) return {};
-  const seo = product.seo_text || product.name;
+  const title = `${product.name} — купить в Бишкеке | Aloe.kg`;
+  const description =
+    product.seo_text || product.description || `${product.name} — цена ${product.price} с. Доставка по Бишкеку.`;
   return {
-    title: seo,
-    description: seo,
-    keywords: seo,
-    other: { title: seo },
+    title,
+    description,
+    alternates: { canonical: `/product/${id}` },
+    openGraph: {
+      title: product.name,
+      description,
+      url: `/product/${id}`,
+      images: [{ url: product.image_url }],
+    },
   };
 }
 
@@ -90,8 +98,37 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       ? Math.round(((product.old_price - product.price) / product.old_price) * 100)
       : null;
 
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    image: [product.image_url],
+    description: product.description || product.seo_text || product.name,
+    ...(brandInfo && { brand: { "@type": "Brand", name: brandInfo.name } }),
+    offers: {
+      "@type": "Offer",
+      url: `${SITE_URL}/product/${product.id}`,
+      priceCurrency: "KGS",
+      price: product.price,
+      availability: "https://schema.org/InStock",
+    },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbs.map((crumb, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: crumb.label,
+      item: `${SITE_URL}${crumb.href ?? `/product/${product.id}`}`,
+    })),
+  };
+
   return (
     <MainContainer>
+      <JsonLd data={productJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       <Breadcrumb crumbs={breadcrumbs} />
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">

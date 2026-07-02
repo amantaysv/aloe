@@ -5,6 +5,7 @@ import CheckoutForm from "./CheckoutForm";
 
 export const metadata = {
   title: "Оформление заказа — Aloe.kg",
+  robots: { index: false, follow: true },
 };
 
 export default async function CheckoutPage() {

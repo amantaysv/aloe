@@ -3,7 +3,7 @@ import { MainContainer, MobileHeader, Title } from "@/components";
 import { createClient } from "@/lib/supabase-server";
 import AdminNav from "./AdminNav";
 
-export const metadata = { title: "Админ" };
+export const metadata = { title: "Админ", robots: { index: false, follow: false } };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();

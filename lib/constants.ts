@@ -1,3 +1,5 @@
+export const SITE_URL = "https://aloe.kg";
+
 export const LABEL_MAP = {
   new: { text: "Новинка", cls: "bg-blue-500" },
   sale: { text: "Акция", cls: "bg-orange-500" },

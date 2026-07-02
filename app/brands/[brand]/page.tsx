@@ -10,7 +10,13 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
   const { brand } = await params;
   const data = await getCachedBrandBySlug(brand);
   if (!data) return {};
-  return { title: `${data.name} — Бренды — Aloe.kg` };
+  const description = `Товары бренда ${data.name} в интернет-магазине Aloe.kg. Доставка по Бишкеку.`;
+  return {
+    title: `${data.name} — Бренды — Aloe.kg`,
+    description,
+    alternates: { canonical: `/brands/${brand}` },
+    openGraph: { title: data.name, description, url: `/brands/${brand}` },
+  };
 }
 
 export default async function BrandPage({ params }: { params: Promise<{ brand: string }> }) {

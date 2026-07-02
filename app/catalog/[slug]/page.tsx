@@ -1,7 +1,24 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { MainContainer, MobileHeader, SubcategoryFilter, VirtualCategoryContent } from "@/components";
 import { getCachedCategoriesWithSlug, getCachedSubcategorySection } from "@/lib/cached-queries";
 import { parseSortParam } from "@/lib/page-params";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const allCategories = await getCachedCategoriesWithSlug();
+  const category = allCategories?.find((c) => c.slug === slug);
+  if (!category || category.parent_id) return {};
+  return {
+    title: `${category.name} — купить в Бишкеке | Aloe.kg`,
+    description: `${category.name}: широкий выбор товаров по выгодным ценам с доставкой по Бишкеку в интернет-магазине Aloe.kg.`,
+    alternates: { canonical: `/catalog/${slug}` },
+  };
+}
 
 export default async function CategoryPage({
   params,

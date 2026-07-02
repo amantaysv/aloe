@@ -5,7 +5,7 @@ import { getProfile } from "@/services/profile.service";
 import LogoutButton from "./LogoutButton";
 import ProfileTabs from "./ProfileTabs";
 
-export const metadata = { title: "Профиль — Aloe.kg" };
+export const metadata = { title: "Профиль — Aloe.kg", robots: { index: false, follow: true } };
 
 export default async function ProfilePage() {
   const { supabase, user } = await requireAuth();
