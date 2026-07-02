@@ -58,9 +58,10 @@ function buildRows(sections: Section[], cols: number): VirtualRow[] {
   return rows;
 }
 
-function VirtualizedProducts({ sections }: { sections: Section[] }) {
+function VirtualizedProducts({ sections, initialSectionId }: { sections: Section[]; initialSectionId?: number }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [cols, setCols] = useState(3);
+  const didInitialScroll = useRef(false);
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -123,10 +124,10 @@ function VirtualizedProducts({ sections }: { sections: Section[] }) {
   }, [sections, sectionHeaderRows]);
 
   useEffect(() => {
-    return registerSectionScroller((sectionId: number) => {
-      if (!containerRef.current) return;
+    const getScrollTarget = (sectionId: number): number | null => {
+      if (!containerRef.current) return null;
       const sectionIndex = sections.findIndex((s) => s.id === sectionId);
-      if (sectionIndex < 0) return;
+      if (sectionIndex < 0) return null;
 
       let rowIdx = 0;
       for (let i = 0; i < sectionIndex; i++) {
@@ -140,15 +141,48 @@ function VirtualizedProducts({ sections }: { sections: Section[] }) {
         virtualizer as unknown as { getMeasurements: () => Array<{ start: number }> }
       ).getMeasurements();
       const itemStart = measurements[rowIdx]?.start;
-      if (itemStart == null) return;
+      if (itemStart == null) return null;
 
       const containerDocTop = containerRef.current.getBoundingClientRect().top + window.scrollY;
       // 214px = desired viewport position of the section header (below the sticky bar)
-      window.scrollTo({ top: Math.max(0, containerDocTop + itemStart - 214), behavior: "auto" });
+      return Math.max(0, containerDocTop + itemStart - 214);
+    };
+
+    const unregister = registerSectionScroller((sectionId) => {
+      const target = getScrollTarget(sectionId);
+      if (target != null) window.scrollTo({ top: target, behavior: "auto" });
     });
+
+    // `cols` starts at a default guess and only reflects the real container width once the
+    // layout effect above has measured it — skip locking in the initial scroll until then,
+    // otherwise it computes a target using the wrong row layout and lands on the wrong section.
+    const measuredCols = containerRef.current
+      ? Math.max(2, Math.floor((containerRef.current.offsetWidth + 16) / ITEM_WIDTH))
+      : null;
+    if (initialSectionId != null && !didInitialScroll.current && measuredCols === cols) {
+      didInitialScroll.current = true;
+      const target = getScrollTarget(initialSectionId);
+      if (target != null) {
+        // The App Router's own post-navigation scroll handling briefly fights our scroll
+        // during the first few frames after mount, so keep reasserting the target position
+        // until it settles (bailing out once the user scrolls on their own).
+        let frame = 0;
+        const holdPosition = () => {
+          if (Math.abs(window.scrollY - target) > 2 && Math.abs(window.scrollY) < 2) {
+            window.scrollTo({ top: target, behavior: "auto" });
+          }
+          frame++;
+          if (frame < 20) requestAnimationFrame(holdPosition);
+        };
+        window.scrollTo({ top: target, behavior: "auto" });
+        requestAnimationFrame(holdPosition);
+      }
+    }
+
+    return unregister;
     // virtualizer is a stable class instance — safe to omit from deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sections, cols]);
+  }, [sections, cols, initialSectionId]);
 
   return (
     <div ref={containerRef} style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
@@ -195,7 +229,13 @@ function VirtualizedProducts({ sections }: { sections: Section[] }) {
   );
 }
 
-export default function VirtualCategoryContent({ sections }: { sections: Section[] }) {
+export default function VirtualCategoryContent({
+  sections,
+  initialSectionId,
+}: {
+  sections: Section[];
+  initialSectionId?: number;
+}) {
   const isClient = useIsClient();
 
   if (!isClient) {
@@ -223,5 +263,5 @@ export default function VirtualCategoryContent({ sections }: { sections: Section
     ));
   }
 
-  return <VirtualizedProducts sections={sections} />;
+  return <VirtualizedProducts sections={sections} initialSectionId={initialSectionId} />;
 }

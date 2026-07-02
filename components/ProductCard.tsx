@@ -45,23 +45,7 @@ function ProductCard({ product: p, className = "", href, priority = false }: Pro
           <FavoriteButton productId={p.id} />
         </div>
         <div className="flex-1 flex flex-col py-3">
-          <p
-            role="link"
-            tabIndex={0}
-            className="flex-1 text-sm font-medium line-clamp-3 hover:underline w-fit"
-            title={p.name}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              window.location.href = productHref;
-            }}
-            onKeyDown={(e) => {
-              if (e.key !== "Enter") return;
-              e.preventDefault();
-              e.stopPropagation();
-              window.location.href = productHref;
-            }}
-          >
+          <p className="flex-1 text-sm font-medium line-clamp-3 w-fit" title={p.name}>
             {p.name}
           </p>
           {p.brand_name && <p className="text-xs text-gray-400 mt-0.5 truncate">{p.brand_name}</p>}

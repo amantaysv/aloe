@@ -71,8 +71,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   ]);
 
   // product.category_id may point at a subcategory (2 levels) or a sub-subcategory (3 levels,
-  // no page of its own) — walk up to find the top-level category and the subcategory that owns
-  // the actual /catalog/[slug]/[subSlug] page.
+  // no page of its own) — walk up to find the top-level category and the subcategory whose
+  // section it belongs to on the /catalog/[slug] page (jumped to via the `sub` query param).
   const productCategory = allCategories?.find((c) => c.id === product.category_id);
   const productParent = productCategory?.parent_id
     ? allCategories?.find((c) => c.id === productCategory.parent_id)
@@ -85,7 +85,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const subcategory = productGrandparent ? productParent : productCategory;
 
   const catalogHref =
-    topCategory && subcategory ? `/catalog/${topCategory.slug}/${subcategory.slug}` : `/catalog/${product.category_id}`;
+    topCategory && subcategory
+      ? `/catalog/${topCategory.slug}?sub=${subcategory.slug}`
+      : `/catalog/${product.category_id}`;
 
   const breadcrumbs =
     topCategory && subcategory

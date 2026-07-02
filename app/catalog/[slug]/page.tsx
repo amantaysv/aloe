@@ -22,7 +22,7 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ sort?: string }>;
+  searchParams: Promise<{ sort?: string; sub?: string }>;
 }) {
   const [{ slug }, sp] = await Promise.all([params, searchParams]);
   const validSort = parseSortParam(sp.sort);
@@ -34,7 +34,7 @@ export default async function CategoryPage({
 
   if (category.parent_id) {
     const parent = allCategories?.find((c) => c.id === category.parent_id);
-    redirect(`/catalog/${parent?.slug ?? slug}/${slug}`);
+    redirect(`/catalog/${parent?.slug ?? slug}?sub=${slug}`);
   }
 
   const subcategories = allCategories.filter((c) => c.parent_id === category.id);
@@ -55,13 +55,15 @@ export default async function CategoryPage({
     buildCategorySection(sub, subSubcategories, products),
   );
 
+  const initialSectionId = subcategories.find((s) => s.slug === sp.sub)?.id;
+
   return (
     <>
       <MobileHeader title={category.name} withBackButton />
 
-      <SubcategoryFilter subcategories={subcategories} scrollMode />
+      <SubcategoryFilter subcategories={subcategories} />
       <MainContainer>
-        <VirtualCategoryContent sections={allSections} />
+        <VirtualCategoryContent sections={allSections} initialSectionId={initialSectionId} />
       </MainContainer>
     </>
   );

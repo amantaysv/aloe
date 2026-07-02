@@ -3,15 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { subscribeActiveSection } from "@/lib/active-section";
 
-export function useActiveSectionSync(
-  scrollMode: boolean | undefined,
-  containerRef: React.RefObject<HTMLElement | null>,
-) {
+export function useActiveSectionSync(containerRef: React.RefObject<HTMLElement | null>) {
   const [activeSectionId, setActiveSectionId] = useState<number | null>(null);
   const pillRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
 
   useEffect(() => {
-    if (!scrollMode) return;
     return subscribeActiveSection((id) => {
       setActiveSectionId(id);
       if (id === null) return;
@@ -26,7 +22,7 @@ export function useActiveSectionSync(
         container.scrollTo({ left: pillLeft - container.offsetWidth / 2 + pill.offsetWidth / 2, behavior: "smooth" });
       }
     });
-  }, [scrollMode, containerRef]);
+  }, [containerRef]);
 
   return { activeSectionId, pillRefs };
 }

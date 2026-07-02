@@ -50,7 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const categoryUrls: MetadataRoute.Sitemap = (categories ?? [])
     .filter((c) => !c.parent_id || !categoryById.get(c.parent_id)?.parent_id)
     .map((c) => {
-      const path = c.parent_id ? `/catalog/${categoryById.get(c.parent_id)?.slug}/${c.slug}` : `/catalog/${c.slug}`;
+      const path = c.parent_id ? `/catalog/${categoryById.get(c.parent_id)?.slug}?sub=${c.slug}` : `/catalog/${c.slug}`;
       return {
         url: `${SITE_URL}${path}`,
         changeFrequency: "daily",
