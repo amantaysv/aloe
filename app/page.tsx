@@ -7,11 +7,12 @@ import {
 } from "@/lib/cached-queries";
 
 export default async function HomePage() {
-  const [popular, newest, onSale, banners, allCategories] = await Promise.all([
+  const [popular, newest, onSale, desktopBanners, mobileBanners, allCategories] = await Promise.all([
     getCachedProductsByLabel("popular"),
     getCachedProductsByLabel("new"),
     getCachedProductsByLabel("sale"),
-    getCachedActiveBanners(),
+    getCachedActiveBanners("desktop"),
+    getCachedActiveBanners("mobile"),
     getCachedCategoriesWithSlug(),
   ]);
 
@@ -40,7 +41,12 @@ export default async function HomePage() {
     <>
       <Header className="block md:hidden" />
       <MainContainer className="flex flex-col gap-4 md:gap-8">
-        <BannerCarousel banners={banners} />
+        <div className="block md:hidden">
+          <BannerCarousel banners={mobileBanners} />
+        </div>
+        <div className="hidden md:block">
+          <BannerCarousel banners={desktopBanners} />
+        </div>
         {popular.total > 0 && (
           <ProductCarousel
             title="Популярные товары"

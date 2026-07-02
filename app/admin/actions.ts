@@ -25,12 +25,10 @@ export async function updateOrderStatus(orderId: string, status: string) {
 
 export type ProductInput = {
   id?: number;
-  external_id?: string;
   name: string;
   price: number;
   old_price?: number | null;
   image_url: string;
-  product_url?: string;
   category: string;
   category_id: number;
   label?: "popular" | "new" | "sale" | null;
@@ -87,7 +85,13 @@ export async function upsertCategory(
   if (data.id) {
     const { error } = await db.from("categories").update(fields).eq("id", data.id);
     if (error) return { ok: false, error: error.message };
+    const { error: productsError } = await db
+      .from("products")
+      .update({ category: data.name })
+      .eq("category_id", data.id);
+    if (productsError) return { ok: false, error: productsError.message };
     updateTag("categories");
+    updateTag("products");
     return { ok: true, id: data.id };
   }
   let sort_order = 0;

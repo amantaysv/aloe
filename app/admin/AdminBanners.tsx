@@ -125,8 +125,8 @@ export default function AdminBanners({ banners: initial, type }: { banners: Bann
             <span className="text-sm font-medium">Нажмите или перетащите изображение</span>
             <span className="text-xs">
               {type === "mobile"
-                ? "Рекомендуемое соотношение 3:4 (например 600×800)"
-                : "Рекомендуемое соотношение 7:3 (например 1400×600)"}
+                ? "Рекомендуемое соотношение 5:2 (например 1000×400)"
+                : "Рекомендуемое соотношение 6:1 (например 1200×200)"}
             </span>
           </>
         )}

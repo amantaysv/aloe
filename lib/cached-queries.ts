@@ -25,10 +25,11 @@ export const getCachedCategoriesWithSlug = unstable_cache(
   { revalidate: 3600, tags: ["categories"] },
 );
 
-export const getCachedActiveBanners = unstable_cache(() => getActiveBanners(supabase), ["banners"], {
-  revalidate: 3600,
-  tags: ["banners"],
-});
+export const getCachedActiveBanners = unstable_cache(
+  (type: "desktop" | "mobile") => getActiveBanners(supabase, type),
+  ["banners"],
+  { revalidate: 3600, tags: ["banners"] },
+);
 
 export const getCachedProductsByLabel = unstable_cache(
   (label: "popular" | "new" | "sale", limit?: number) => getProductsByLabel(supabase, label, limit),
