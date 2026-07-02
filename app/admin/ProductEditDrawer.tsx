@@ -153,25 +153,6 @@ export default function ProductEditDrawer({
         />
       </Field>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Field label="Ссылка на товар">
-          <input
-            value={editing.product_url ?? ""}
-            onChange={(e) => onChange("product_url", e.target.value)}
-            className={inp}
-            placeholder="https://..."
-          />
-        </Field>
-        <Field label="External ID">
-          <input
-            value={editing.external_id ?? ""}
-            onChange={(e) => onChange("external_id", e.target.value)}
-            className={inp}
-            placeholder="опционально"
-          />
-        </Field>
-      </div>
-
       <label className="flex items-center gap-2 cursor-pointer select-none">
         <input
           type="checkbox"

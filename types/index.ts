@@ -6,11 +6,9 @@ export type Brand = {
 
 export type Product = {
   id: number;
-  external_id: string;
   name: string;
   price: number;
   image_url: string;
-  product_url: string;
   category: string;
   category_id: number;
   label?: "popular" | "new" | "sale" | null;
