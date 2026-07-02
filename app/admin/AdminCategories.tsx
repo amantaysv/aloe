@@ -52,8 +52,14 @@ export default function AdminCategories({
   const drag = useDragReorder();
 
   const parents = categories.filter((c) => !c.parent_id);
-  const subs = categories.filter((c) => c.parent_id);
+  const subs = categories.filter((c) => c.parent_id && parents.some((p) => p.id === c.parent_id));
+  const subsubs = categories.filter((c) => c.parent_id && subs.some((s) => s.id === c.parent_id));
   const usedCategoryIds = new Set(usedIds);
+
+  function isLocked(id: number): boolean {
+    if (usedCategoryIds.has(id)) return true;
+    return categories.some((c) => c.parent_id === id && isLocked(c.id));
+  }
 
   function openNew(parentId: number | null = null) {
     setEditing({ ...empty, parent_id: parentId, isNew: true });
@@ -181,7 +187,6 @@ export default function AdminCategories({
       <div className="space-y-1">
         {parents.map((parent) => {
           const children = subs.filter((s) => s.parent_id === parent.id).sort((a, b) => a.sort_order - b.sort_order);
-          const parentLocked = usedCategoryIds.has(parent.id) || children.some((s) => usedCategoryIds.has(s.id));
           return (
             <div key={parent.id}>
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 group">
@@ -210,7 +215,7 @@ export default function AdminCategories({
                   <Button variant="icon" size="sm" onClick={() => openEdit(parent)}>
                     <PencilIcon className="size-4" />
                   </Button>
-                  {!parentLocked && (
+                  {!isLocked(parent.id) && (
                     <Button variant="icon" iconColor="danger" size="sm" onClick={() => handleDelete(parent.id)}>
                       <Trash2Icon className="size-4" />
                     </Button>
@@ -219,35 +224,78 @@ export default function AdminCategories({
               </div>
 
               {children.map((sub, i) => {
-                const subLocked = usedCategoryIds.has(sub.id);
+                const grandchildren = subsubs
+                  .filter((ss) => ss.parent_id === sub.id)
+                  .sort((a, b) => a.sort_order - b.sort_order);
                 return (
-                  <div
-                    key={sub.id}
-                    draggable
-                    onDragStart={() => drag.onDragStart(parent.id, i)}
-                    onDragOver={(e) => drag.onDragOver(e, parent.id, i)}
-                    onDragLeave={drag.onDragLeave}
-                    onDrop={() => onDrop(parent.id, i)}
-                    onDragEnd={drag.onDragEnd}
-                    className={`flex items-center gap-2 pl-6 pr-3 py-1.5 rounded-lg group transition-colors ${
-                      drag.isOver(parent.id, i) ? "bg-green-50 border border-green-300" : "hover:bg-gray-50"
-                    }`}
-                  >
-                    <GripVerticalIcon className="size-4 text-gray-300 shrink-0 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm text-gray-700">{sub.name}</span>
-                      <span className="text-xs text-gray-400 ml-2">{sub.slug}</span>
-                    </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="icon" size="sm" onClick={() => openEdit(sub)}>
-                        <PencilIcon className="size-4" />
-                      </Button>
-                      {!subLocked && (
-                        <Button variant="icon" iconColor="danger" size="sm" onClick={() => handleDelete(sub.id)}>
-                          <Trash2Icon className="size-4" />
+                  <div key={sub.id}>
+                    <div
+                      draggable
+                      onDragStart={() => drag.onDragStart(parent.id, i)}
+                      onDragOver={(e) => drag.onDragOver(e, parent.id, i)}
+                      onDragLeave={drag.onDragLeave}
+                      onDrop={() => onDrop(parent.id, i)}
+                      onDragEnd={drag.onDragEnd}
+                      className={`flex items-center gap-2 pl-6 pr-3 py-1.5 rounded-lg group transition-colors ${
+                        drag.isOver(parent.id, i) ? "bg-green-50 border border-green-300" : "hover:bg-gray-50"
+                      }`}
+                    >
+                      <GripVerticalIcon className="size-4 text-gray-300 shrink-0 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm text-gray-700">{sub.name}</span>
+                        <span className="text-xs text-gray-400 ml-2">{sub.slug}</span>
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="icon"
+                          iconColor="green"
+                          size="sm"
+                          onClick={() => openNew(sub.id)}
+                          title="Добавить под-подкатегорию"
+                        >
+                          <PlusIcon className="size-4" />
                         </Button>
-                      )}
+                        <Button variant="icon" size="sm" onClick={() => openEdit(sub)}>
+                          <PencilIcon className="size-4" />
+                        </Button>
+                        {!isLocked(sub.id) && (
+                          <Button variant="icon" iconColor="danger" size="sm" onClick={() => handleDelete(sub.id)}>
+                            <Trash2Icon className="size-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
+
+                    {grandchildren.map((subsub, j) => (
+                      <div
+                        key={subsub.id}
+                        draggable
+                        onDragStart={() => drag.onDragStart(sub.id, j)}
+                        onDragOver={(e) => drag.onDragOver(e, sub.id, j)}
+                        onDragLeave={drag.onDragLeave}
+                        onDrop={() => onDrop(sub.id, j)}
+                        onDragEnd={drag.onDragEnd}
+                        className={`flex items-center gap-2 pl-12 pr-3 py-1.5 rounded-lg group transition-colors ${
+                          drag.isOver(sub.id, j) ? "bg-green-50 border border-green-300" : "hover:bg-gray-50"
+                        }`}
+                      >
+                        <GripVerticalIcon className="size-4 text-gray-300 shrink-0 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm text-gray-600">{subsub.name}</span>
+                          <span className="text-xs text-gray-400 ml-2">{subsub.slug}</span>
+                        </div>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button variant="icon" size="sm" onClick={() => openEdit(subsub)}>
+                            <PencilIcon className="size-4" />
+                          </Button>
+                          {!isLocked(subsub.id) && (
+                            <Button variant="icon" iconColor="danger" size="sm" onClick={() => handleDelete(subsub.id)}>
+                              <Trash2Icon className="size-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 );
               })}
@@ -297,7 +345,21 @@ export default function AdminCategories({
                     {p.name}
                   </option>
                 ))}
+              {subs
+                .filter((s) => s.id !== editing.id && s.parent_id !== editing.id)
+                .map((s) => {
+                  const parentName = parents.find((p) => p.id === s.parent_id)?.name;
+                  return (
+                    <option key={s.id} value={s.id}>
+                      {parentName ? `${parentName} — ${s.name}` : s.name}
+                    </option>
+                  );
+                })}
             </select>
+            <p className="text-xs text-gray-400 mt-1">
+              Выберите подкатегорию, чтобы создать под-подкатегорию (используется только для группировки товаров на
+              странице подкатегории, отдельной страницы у неё не будет)
+            </p>
           </Field>
 
           {!editing.parent_id && (

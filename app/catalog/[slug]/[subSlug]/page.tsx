@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { MainContainer, MobileHeader, SubcategoryFilter, VirtualCategoryContent } from "@/components";
 import { getCachedCategoriesWithSlug, getCachedSubcategorySection } from "@/lib/cached-queries";
 import { parseBrandIds, parseSortParam } from "@/lib/page-params";
+import { buildCategorySection } from "@/lib/subcategory-sections";
 
 export async function generateMetadata({
   params,
@@ -41,9 +42,14 @@ export default async function SubcategoryPage({
   const subcategory = allCategories?.find((c) => c.slug === subSlug && c.parent_id === parentCategory.id);
   if (!subcategory) notFound();
 
-  const { products, total } = await getCachedSubcategorySection(String(subcategory.id), validSort, selectedBrandIds);
+  const subSubcategories = allCategories.filter((c) => c.parent_id === subcategory.id);
+  const categoryIds = [String(subcategory.id), ...subSubcategories.map((c) => String(c.id))];
+
+  const { products, total } = await getCachedSubcategorySection(categoryIds, validSort, selectedBrandIds);
 
   if (!total && selectedBrandIds.length === 0) notFound();
+
+  const section = buildCategorySection(subcategory, subSubcategories, products);
 
   return (
     <>
@@ -59,7 +65,7 @@ export default async function SubcategoryPage({
         {products.length === 0 ? (
           <p className="text-gray-500 py-8 text-center">По выбранным фильтрам ничего не найдено</p>
         ) : (
-          <VirtualCategoryContent sections={[{ id: subcategory.id, name: subcategory.name, products }]} />
+          <VirtualCategoryContent sections={[section]} />
         )}
       </MainContainer>
     </>

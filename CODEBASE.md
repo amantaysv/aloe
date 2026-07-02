@@ -35,7 +35,7 @@
 /product/[id]               # Product detail page
 /catalog                    # All categories index
 /catalog/[slug]             # Category listing with filters
-/catalog/[slug]/[subSlug]   # Subcategory listing with filters
+/catalog/[slug]/[subSlug]   # Subcategory listing with filters (also groups by sub-subcategory, no route of its own — see note below)
 /brands                     # All brands index (alphabetical)
 /brands/[brand]             # Brand product listing (infinite scroll)
 /search                     # Search results with filters
@@ -63,6 +63,8 @@ Note: the `discount` label/route from earlier iterations has been removed — `P
 Note: "popular" is no longer a manually-set admin label. `products.purchase_count` is incremented atomically (via the `increment_product_purchase_counts` Postgres RPC) in `app/checkout/actions.ts` when an order is placed, and `/popular` + the homepage carousel rank published products by `purchase_count` (`getPopularProducts` / `getPopularProductsPaginated` in `product.service.ts`, `getCachedPopularProducts` in `cached-queries.ts`). Products with `purchase_count = 0` are excluded, so the section stays hidden until at least one order has been placed.
 
 **Quick-view modal:** `/product/[id]` also renders as a modal overlay via a parallel route — `app/@modal/(.)product/[id]/page.tsx` intercepts client-side navigation from `ProductCard`'s `<Link>` and renders `components/ProductModal.tsx` (closes on `Esc`/backdrop click via `router.back()`). A direct/hard navigation still renders the full `/product/[id]` page. `app/@modal/default.tsx` renders `null` when no intercept matches.
+
+**Sub-subcategories (3rd level):** `categories.parent_id` is self-referential, so a category can be nested one level deeper than a normal subcategory (category → subcategory → sub-subcategory). Sub-subcategories have **no page of their own** — `products.category_id` may point directly at one (instead of at the subcategory), and `/catalog/[slug]/[subSlug]` groups that subcategory's products into per-sub-subcategory sections (via `SubcategoryFilter` in `scrollMode`, same jump-to-section pattern `/catalog/[slug]` uses for subcategories) rather than routing to a new URL. `getSubcategorySection`/`getCachedSubcategorySection` take an array of category ids (subcategory id + its sub-subcategory ids) so products assigned at either level still show up together. `sitemap.ts`, the homepage carousel grouping (`app/page.tsx`), and the product-detail breadcrumbs (`app/product/[id]/page.tsx`) all walk up to 2 `parent_id` hops to resolve the real top-level/subcategory pair. Admin: `AdminCategories.tsx` renders 3 tiers and only allows a subcategory (not a sub-subcategory) as a parent, capping the tree at 3 levels; the product editor's category `<select>` only lists leaf categories (those with no children), labeled with their full breadcrumb path.
 
 ## Database Schema (Supabase / PostgreSQL)
 
@@ -94,7 +96,7 @@ Note: "popular" is no longer a manually-set admin label. `products.purchase_coun
 | id         | int  | PK                                               |
 | name       | text |                                                  |
 | slug       | text |                                                  |
-| parent_id  | int  | self-referential FK (null = top-level)           |
+| parent_id  | int  | self-referential FK (null = top-level); up to 3 levels deep (category → subcategory → sub-subcategory) — see "Sub-subcategories" note above |
 | image_url  | text | nullable                                         |
 | sort_order | int  | manual ordering, editable via admin drag-reorder |
 

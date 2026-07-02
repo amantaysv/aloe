@@ -14,7 +14,7 @@ const LABELS = [
 type Props = {
   editing: ProductInput;
   brands: { id: number; name: string }[];
-  categories: { id: number; name: string }[];
+  categories: { id: number; name: string; path: string }[];
   saving: boolean;
   uploading: boolean;
   error: string;
@@ -80,7 +80,7 @@ export default function ProductEditDrawer({
               const cat = categories.find((c) => String(c.id) === e.target.value);
               if (cat) {
                 onChange("category_id", cat.id);
-                onChange("category", cat.name);
+                onChange("category", cat.name); // leaf category name, not the breadcrumb path
               }
             }}
             className={inp}
@@ -90,7 +90,7 @@ export default function ProductEditDrawer({
             </option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.name}
+                {c.path}
               </option>
             ))}
           </select>

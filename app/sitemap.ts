@@ -4,7 +4,11 @@ import { supabase } from "@/lib/supabase";
 
 export const revalidate = 3600;
 
-const STATIC_PAGES: Array<{ path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }> = [
+const STATIC_PAGES: Array<{
+  path: string;
+  priority: number;
+  changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"];
+}> = [
   { path: "", priority: 1, changeFrequency: "daily" },
   { path: "/catalog", priority: 0.9, changeFrequency: "daily" },
   { path: "/brands", priority: 0.7, changeFrequency: "weekly" },
@@ -42,14 +46,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const categoryById = new Map((categories ?? []).map((c) => [c.id, c]));
 
-  const categoryUrls: MetadataRoute.Sitemap = (categories ?? []).map((c) => {
-    const path = c.parent_id ? `/catalog/${categoryById.get(c.parent_id)?.slug}/${c.slug}` : `/catalog/${c.slug}`;
-    return {
-      url: `${SITE_URL}${path}`,
-      changeFrequency: "daily",
-      priority: c.parent_id ? 0.7 : 0.8,
-    };
-  });
+  // Sub-subcategories (parent itself has a parent) have no page of their own — skip them.
+  const categoryUrls: MetadataRoute.Sitemap = (categories ?? [])
+    .filter((c) => !c.parent_id || !categoryById.get(c.parent_id)?.parent_id)
+    .map((c) => {
+      const path = c.parent_id ? `/catalog/${categoryById.get(c.parent_id)?.slug}/${c.slug}` : `/catalog/${c.slug}`;
+      return {
+        url: `${SITE_URL}${path}`,
+        changeFrequency: "daily",
+        priority: c.parent_id ? 0.7 : 0.8,
+      };
+    });
 
   const brandUrls: MetadataRoute.Sitemap = (brands ?? []).map((b) => ({
     url: `${SITE_URL}/brands/${b.slug}`,

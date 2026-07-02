@@ -37,7 +37,7 @@ type Props = {
   label: string;
   published: string;
   sort: SortBy;
-  categories: { id: number; name: string }[];
+  categories: { id: number; name: string; path: string }[];
 };
 
 export default function AdminProducts({

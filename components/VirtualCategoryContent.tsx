@@ -9,34 +9,51 @@ import type { Product } from "@/types";
 import ProductCard from "./ProductCard";
 import ProductGrid from "./ProductGrid";
 
+type Group = { id: number; name: string; products: Product[] };
+
 type Section = {
   id: number;
   name: string;
   products: Product[];
+  groups?: Group[];
 };
 
 type VirtualRow =
   | { type: "header"; name: string; first: boolean }
-  | { type: "products"; items: Product[]; sectionIndex: number; rowIndex: number };
+  | { type: "subheader"; name: string; first: boolean }
+  | { type: "products"; items: Product[]; first: boolean };
 
 // 160px min item + 16px gap
 const ITEM_WIDTH = 176;
 const PRODUCT_ROW_HEIGHT = 300;
 const HEADER_HEIGHT = 52;
 const SECTION_GAP = 40;
+const SUBHEADER_HEIGHT = 36;
+const GROUP_GAP = 24;
+
+function sectionRowCount(section: Section, cols: number): number {
+  if (!section.groups?.length) return 1 + Math.ceil(section.products.length / cols);
+  const restRows = section.products.length > 0 ? Math.ceil(section.products.length / cols) : 0;
+  const groupRows = section.groups.reduce((sum, g) => sum + 1 + Math.ceil(g.products.length / cols), 0);
+  return 1 + restRows + groupRows;
+}
 
 function buildRows(sections: Section[], cols: number): VirtualRow[] {
   const rows: VirtualRow[] = [];
-  sections.forEach(({ name, products }, si) => {
-    rows.push({ type: "header", name, first: si === 0 });
+  let sawFirstProductsRow = false;
+  const pushProductsRows = (products: Product[]) => {
     for (let i = 0; i < products.length; i += cols) {
-      rows.push({
-        type: "products",
-        items: products.slice(i, i + cols),
-        sectionIndex: si,
-        rowIndex: Math.floor(i / cols),
-      });
+      rows.push({ type: "products", items: products.slice(i, i + cols), first: !sawFirstProductsRow });
+      sawFirstProductsRow = true;
     }
+  };
+  sections.forEach(({ name, products, groups }, si) => {
+    rows.push({ type: "header", name, first: si === 0 });
+    pushProductsRows(products);
+    groups?.forEach((g, gi) => {
+      rows.push({ type: "subheader", name: g.name, first: gi === 0 && products.length === 0 });
+      pushProductsRows(g.products);
+    });
   });
   return rows;
 }
@@ -64,6 +81,7 @@ function VirtualizedProducts({ sections }: { sections: Section[] }) {
     estimateSize: (i) => {
       const row = rows[i];
       if (row.type === "header") return (row.first ? 0 : SECTION_GAP) + HEADER_HEIGHT;
+      if (row.type === "subheader") return (row.first ? 0 : GROUP_GAP) + SUBHEADER_HEIGHT;
       return PRODUCT_ROW_HEIGHT;
     },
     overscan: 3,
@@ -74,7 +92,7 @@ function VirtualizedProducts({ sections }: { sections: Section[] }) {
     let rowIdx = 0;
     sections.forEach((s) => {
       result.push(rowIdx);
-      rowIdx += 1 + Math.ceil(s.products.length / cols);
+      rowIdx += sectionRowCount(s, cols);
     });
     return result;
   }, [sections, cols]);
@@ -112,7 +130,7 @@ function VirtualizedProducts({ sections }: { sections: Section[] }) {
 
       let rowIdx = 0;
       for (let i = 0; i < sectionIndex; i++) {
-        rowIdx += 1 + Math.ceil(sections[i].products.length / cols);
+        rowIdx += sectionRowCount(sections[i], cols);
       }
 
       // Use actual measured positions from the virtualizer cache (falls back to
@@ -156,14 +174,17 @@ function VirtualizedProducts({ sections }: { sections: Section[] }) {
               >
                 {row.name}
               </h2>
+            ) : row.type === "subheader" ? (
+              <h3
+                className="text-sm font-medium text-gray-500 mb-3 text-center md:text-left"
+                style={{ paddingTop: row.first ? 0 : GROUP_GAP }}
+              >
+                {row.name}
+              </h3>
             ) : (
               <div className="grid gap-4 pb-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
                 {row.items.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    priority={row.sectionIndex === 0 && row.rowIndex === 0}
-                  />
+                  <ProductCard key={product.id} product={product} priority={row.first} />
                 ))}
               </div>
             )}
@@ -178,14 +199,26 @@ export default function VirtualCategoryContent({ sections }: { sections: Section
   const isClient = useIsClient();
 
   if (!isClient) {
-    return sections.map(({ id, name, products }) => (
+    const firstProductId = sections
+      .flatMap((s) => [...s.products, ...(s.groups?.flatMap((g) => g.products) ?? [])])
+      .at(0)?.id;
+    const renderGrid = (products: Product[]) => (
+      <ProductGrid>
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} priority={product.id === firstProductId} />
+        ))}
+      </ProductGrid>
+    );
+    return sections.map(({ id, name, products, groups }) => (
       <React.Fragment key={id}>
         <h2 className="text-lg font-semibold mb-4 text-center md:text-left">{name}</h2>
-        <ProductGrid>
-          {products.map((product, i) => (
-            <ProductCard key={product.id} product={product} priority={i === 0} />
-          ))}
-        </ProductGrid>
+        {products.length > 0 && renderGrid(products)}
+        {groups?.map((g) => (
+          <React.Fragment key={g.id}>
+            <h3 className="text-sm font-medium text-gray-500 mb-3 text-center md:text-left">{g.name}</h3>
+            {renderGrid(g.products)}
+          </React.Fragment>
+        ))}
       </React.Fragment>
     ));
   }

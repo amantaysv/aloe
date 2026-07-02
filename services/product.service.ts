@@ -93,7 +93,7 @@ export async function getRelatedProducts(supabase: SupabaseClient, categoryId: s
 
 export async function getSubcategorySection(
   supabase: SupabaseClient,
-  subcategoryId: string,
+  categoryIds: string[],
   sort: SortValue,
   brandIds: number[] = [],
 ) {
@@ -103,7 +103,7 @@ export async function getSubcategorySection(
     .from("products")
     .select("*, brands(name)", { count: "exact" })
     .eq("published", true)
-    .eq("category_id", subcategoryId);
+    .in("category_id", categoryIds);
 
   if (brandIds.length > 0) query = query.in("brand_id", brandIds);
 

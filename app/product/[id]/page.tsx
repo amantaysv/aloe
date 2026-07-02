@@ -70,27 +70,39 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     getCachedCategoriesWithSlug(),
   ]);
 
+  // product.category_id may point at a subcategory (2 levels) or a sub-subcategory (3 levels,
+  // no page of its own) — walk up to find the top-level category and the subcategory that owns
+  // the actual /catalog/[slug]/[subSlug] page.
   const productCategory = allCategories?.find((c) => c.id === product.category_id);
-  const parentCategory = productCategory?.parent_id
+  const productParent = productCategory?.parent_id
     ? allCategories?.find((c) => c.id === productCategory.parent_id)
     : null;
+  const productGrandparent = productParent?.parent_id
+    ? allCategories?.find((c) => c.id === productParent.parent_id)
+    : null;
 
-  const catalogHref = parentCategory
-    ? `/catalog/${parentCategory.slug}/${productCategory?.slug}`
-    : `/catalog/${product.category_id}`;
+  const topCategory = productGrandparent ?? productParent;
+  const subcategory = productGrandparent ? productParent : productCategory;
 
-  const breadcrumbs = parentCategory
-    ? [
-        { label: "Главная", href: "/" },
-        { label: parentCategory.name, href: `/catalog/${parentCategory.slug}` },
-        { label: productCategory?.name, href: catalogHref },
-        { label: product.name },
-      ]
-    : [
-        { label: "Главная", href: "/" },
-        { label: productCategory?.name ?? product.category, href: catalogHref },
-        { label: product.name },
-      ];
+  const catalogHref =
+    topCategory && subcategory ? `/catalog/${topCategory.slug}/${subcategory.slug}` : `/catalog/${product.category_id}`;
+
+  const breadcrumbs =
+    topCategory && subcategory
+      ? [
+          { label: "Главная", href: "/" },
+          { label: topCategory.name, href: `/catalog/${topCategory.slug}` },
+          { label: subcategory.name, href: catalogHref },
+          ...(productCategory && productCategory.id !== subcategory.id
+            ? [{ label: productCategory.name, href: catalogHref }]
+            : []),
+          { label: product.name },
+        ]
+      : [
+          { label: "Главная", href: "/" },
+          { label: productCategory?.name ?? product.category, href: catalogHref },
+          { label: product.name },
+        ];
 
   const label = product.label ? LABEL_MAP[product.label as keyof typeof LABEL_MAP] : null;
   const discount =

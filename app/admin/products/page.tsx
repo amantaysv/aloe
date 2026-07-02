@@ -19,12 +19,29 @@ export default async function ProductsPage({
   const published = sp.published ?? "";
   const sort = (sp.sort ?? "id-desc") as AdminProductsSort;
 
-  const [{ products, total }, categories] = await Promise.all([
+  const [{ products, total }, allCategories] = await Promise.all([
     getAdminProducts(supabase, { q, label, published, sort, page: currentPage, pageSize: PAGE_SIZE }),
     getAdminCategories(supabase),
   ]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  // Products may only be assigned to "leaf" categories (a subcategory or sub-subcategory with
+  // no children of its own) — top-level categories and categories that have sub-subcategories
+  // are just organizational nodes, not something a product should link to directly.
+  const byId = new Map(allCategories.map((c) => [c.id, c]));
+  const hasChildren = new Set(allCategories.filter((c) => c.parent_id).map((c) => c.parent_id));
+  const categories = allCategories
+    .filter((c) => c.parent_id && !hasChildren.has(c.id))
+    .map((c) => {
+      const path: string[] = [];
+      let node: typeof c | undefined = c;
+      while (node) {
+        path.unshift(node.name);
+        node = node.parent_id ? byId.get(node.parent_id) : undefined;
+      }
+      return { id: c.id, name: c.name, path: path.join(" / ") };
+    });
 
   return (
     <AdminProducts

@@ -27,10 +27,11 @@ export default async function HomePage() {
     }
   }
 
-  const groups = topCategories.map((cat) => ({
-    topId: cat.id,
-    allIds: [cat.id, ...(subsByParent.get(cat.id) ?? [])],
-  }));
+  const groups = topCategories.map((cat) => {
+    const subIds = subsByParent.get(cat.id) ?? [];
+    const subSubIds = subIds.flatMap((id) => subsByParent.get(id) ?? []);
+    return { topId: cat.id, allIds: [cat.id, ...subIds, ...subSubIds] };
+  });
   const categoryResults = await getCachedHomePageCategoryProducts(groups);
   const categoryProducts = topCategories.map((cat, i) => ({
     cat,

@@ -73,8 +73,8 @@ export const getCachedProductsByBrand = unstable_cache(
 );
 
 export const getCachedSubcategorySection = unstable_cache(
-  (subcategoryId: string, sort: SortValue, brandIds?: number[]) =>
-    getSubcategorySection(supabase, subcategoryId, sort, brandIds),
+  (categoryIds: string[], sort: SortValue, brandIds?: number[]) =>
+    getSubcategorySection(supabase, categoryIds, sort, brandIds),
   ["subcategory-section"],
   { revalidate: 60, tags: ["products"] },
 );
