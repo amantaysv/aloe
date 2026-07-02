@@ -3,12 +3,13 @@ import {
   getCachedActiveBanners,
   getCachedCategoriesWithSlug,
   getCachedHomePageCategoryProducts,
+  getCachedPopularProducts,
   getCachedProductsByLabel,
 } from "@/lib/cached-queries";
 
 export default async function HomePage() {
   const [popular, newest, onSale, desktopBanners, mobileBanners, allCategories] = await Promise.all([
-    getCachedProductsByLabel("popular"),
+    getCachedPopularProducts(),
     getCachedProductsByLabel("new"),
     getCachedProductsByLabel("sale"),
     getCachedActiveBanners("desktop"),

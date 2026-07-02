@@ -6,6 +6,7 @@ import { getCategories, getCategoriesWithSlug } from "@/services/category.servic
 import {
   getBrandsForSubcategory,
   getHomePageCategoryProducts,
+  getPopularProducts,
   getProductsByBrand,
   getProductsByCategories,
   getProductsByLabel,
@@ -32,8 +33,14 @@ export const getCachedActiveBanners = unstable_cache(
 );
 
 export const getCachedProductsByLabel = unstable_cache(
-  (label: "popular" | "new" | "sale", limit?: number) => getProductsByLabel(supabase, label, limit),
+  (label: "new" | "sale", limit?: number) => getProductsByLabel(supabase, label, limit),
   ["products-by-label"],
+  { revalidate: 60, tags: ["products"] },
+);
+
+export const getCachedPopularProducts = unstable_cache(
+  (limit?: number) => getPopularProducts(supabase, limit),
+  ["popular-products"],
   { revalidate: 60, tags: ["products"] },
 );
 

@@ -11,12 +11,13 @@ export type Product = {
   image_url: string;
   category: string;
   category_id: number;
-  label?: "popular" | "new" | "sale" | null;
+  label?: "new" | "sale" | null;
   old_price?: number | null;
   description?: string | null;
   brand_id?: number | null;
   brand_name?: string | null;
   seo_text?: string | null;
+  purchase_count: number;
   published: boolean;
 };
 

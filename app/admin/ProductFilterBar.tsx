@@ -5,7 +5,6 @@ import type { SortBy } from "./AdminProducts";
 
 const LABEL_FILTERS = [
   { value: "", label: "Все" },
-  { value: "popular", label: "Хит" },
   { value: "new", label: "Новинка" },
   { value: "sale", label: "Акция" },
   { value: "none", label: "Без метки" },
@@ -78,6 +77,7 @@ export default function ProductFilterBar({
         <option value="name-asc">По алфавиту</option>
         <option value="price-asc">Цена ↑</option>
         <option value="price-desc">Цена ↓</option>
+        <option value="purchase-count-desc">Сначала продаваемые</option>
       </select>
     </div>
   );

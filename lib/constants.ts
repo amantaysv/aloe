@@ -1,5 +1,4 @@
 export const LABEL_MAP = {
-  popular: { text: "Хит", cls: "bg-green-600" },
   new: { text: "Новинка", cls: "bg-blue-500" },
   sale: { text: "Акция", cls: "bg-orange-500" },
 } as const;

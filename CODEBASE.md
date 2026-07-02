@@ -22,7 +22,7 @@
 ├── store/                  # Zustand stores (cart, favorites, toast, mobile-menu)
 ├── types/                  # TypeScript type definitions (index.ts)
 ├── proxy.ts                # Middleware — Supabase auth cookie management
-├── next.config.ts          # Image optimization, remote patterns
+├── next.config.ts          # Image optimization disabled (unoptimized: true), devIndicators off
 └── .env.local              # Supabase keys (see below)
 ```
 
@@ -48,7 +48,8 @@
 /about                      # About page (static)
 /contacts                   # Contacts page (static)
 /legal-entities             # Info for corporate/legal clients (static)
-/popular /new /sale         # Label-based product pages
+/popular                    # Auto-derived from purchase_count (see note below), not a label
+/new /sale                  # Label-based product pages
 /admin                      # Admin dashboard (role: admin)
 /admin/orders               # Order management
 /admin/products             # Product CRUD
@@ -57,29 +58,34 @@
 /admin/banners              # Banner carousel management (desktop/mobile tabs)
 ```
 
-Note: the `discount` label/route from earlier iterations has been removed — `Product["label"]` is now only `"popular" | "new" | "sale" | null`.
+Note: the `discount` label/route from earlier iterations has been removed — `Product["label"]` is now only `"new" | "sale" | null`.
+
+Note: "popular" is no longer a manually-set admin label. `products.purchase_count` is incremented atomically (via the `increment_product_purchase_counts` Postgres RPC) in `app/checkout/actions.ts` when an order is placed, and `/popular` + the homepage carousel rank published products by `purchase_count` (`getPopularProducts` / `getPopularProductsPaginated` in `product.service.ts`, `getCachedPopularProducts` in `cached-queries.ts`). Products with `purchase_count = 0` are excluded, so the section stays hidden until at least one order has been placed.
+
+**Quick-view modal:** `/product/[id]` also renders as a modal overlay via a parallel route — `app/@modal/(.)product/[id]/page.tsx` intercepts client-side navigation from `ProductCard`'s `<Link>` and renders `components/ProductModal.tsx` (closes on `Esc`/backdrop click via `router.back()`). A direct/hard navigation still renders the full `/product/[id]` page. `app/@modal/default.tsx` renders `null` when no intercept matches.
 
 ## Database Schema (Supabase / PostgreSQL)
 
 ### products
 
-| column      | type        | notes                                |
-| ----------- | ----------- | ------------------------------------ |
-| id          | int         | PK                                   |
-| external_id | text        |                                      |
-| name        | text        |                                      |
-| price       | numeric     |                                      |
-| old_price   | numeric     | nullable                             |
-| image_url   | text        |                                      |
-| product_url | text        |                                      |
-| category    | text        | string label                         |
-| category_id | int         | FK → categories.id                   |
-| label       | text        | `popular` \| `new` \| `sale` \| null |
-| description | text        | nullable                             |
-| brand_id    | int         | FK → brands.id                       |
-| seo_text    | text        | nullable                             |
-| published   | boolean     |                                      |
-| created_at  | timestamptz |                                      |
+| column      | type        | notes                                           |
+| ----------- | ----------- | ----------------------------------------------- |
+| id          | int         | PK                                              |
+| external_id | text        | unused — dropped from `Product` type & admin UI |
+| name        | text        |                                                 |
+| price       | numeric     |                                                 |
+| old_price   | numeric     | nullable                                        |
+| image_url   | text        |                                                 |
+| product_url | text        | unused — dropped from `Product` type & admin UI |
+| category    | text        | string label                                    |
+| category_id | int         | FK → categories.id                              |
+| label       | text        | `new` \| `sale` \| null                         |
+| description | text        | nullable                                        |
+| brand_id    | int         | FK → brands.id                                  |
+| seo_text    | text        | nullable                                        |
+| purchase_count | int      | incremented on checkout; drives "popular" ranking |
+| published   | boolean     |                                                 |
+| created_at  | timestamptz |                                                 |
 
 ### categories
 
@@ -161,19 +167,18 @@ type Brand = { id: number; name: string; slug: string };
 
 type Product = {
   id: number;
-  external_id: string;
   name: string;
   price: number;
   image_url: string;
-  product_url: string;
   category: string;
   category_id: number;
-  label?: "popular" | "new" | "sale" | null;
+  label?: "new" | "sale" | null;
   old_price?: number | null;
   description?: string | null;
   brand_id?: number | null;
   brand_name?: string | null;
   seo_text?: string | null;
+  purchase_count: number;
   published: boolean;
 };
 
@@ -205,7 +210,7 @@ function withBrandName(rows: ProductRow[]): Product[]; // maps brands.name → b
 | `cn.ts`               | `cn(...classes)` — clsx + tailwind-merge                                                                                                                                                       |
 | `cached-queries.ts`   | ISR-cached wrappers via `unstable_cache()`                                                                                                                                                     |
 | `auth.ts`             | `requireAuth()` — server-side auth guard, redirects to `/auth`                                                                                                                                 |
-| `constants.ts`        | `LABEL_MAP` (badge text/color for `popular`/`new`/`sale`), `ORDER_STATUS` (label/color)                                                                                                        |
+| `constants.ts`        | `LABEL_MAP` (badge text/color for `new`/`sale`), `ORDER_STATUS` (label/color)                                                                                                        |
 | `page-params.ts`      | `parsePage()`, `parseSortParam()`, `parseBrandIds()` — URL helpers                                                                                                                             |
 | `section-scroll.ts`   | Module-level singleton: `registerSectionScroller` / `scrollToSection` — lets `SubcategoryFilter` imperatively scroll `VirtualCategoryContent` without prop drilling                            |
 | `active-section.ts`   | Pub/sub for the currently-visible section ID: `setActiveSection` / `subscribeActiveSection` — `VirtualCategoryContent` fires updates on scroll, `SubcategoryFilter` highlights the active pill |
@@ -220,9 +225,13 @@ function withBrandName(rows: ProductRow[]): Product[]; // maps brands.name → b
 | `getCachedBrandBySlug(slug)`                        | 1 hour | `brands`     |
 | `getCachedActiveBanners()`                          | 1 hour | `banners`    |
 | `getCachedProductsByLabel(label, limit?)`           | 60 s   | `products`   |
+| `getCachedPopularProducts(limit?)`                  | 60 s   | `products`   |
 | `getCachedProductsByCategories(ids, limit?)`        | 60 s   | `products`   |
 | `getCachedProductsByBrand(id, page, pageSize)`      | 60 s   | `products`   |
 | `getCachedHomePageCategoryProducts(groups, limit?)` | 60 s   | `products`   |
+| `getCachedSubcategorySection(subcategoryId, sort)`  | 60 s   | `products`   |
+| `getCachedSubcategoryProducts(subcategoryId, opts)` | 60 s   | `products`   |
+| `getCachedBrandsForSubcategory(subcategoryId)`      | 60 s   | `products`   |
 
 ## Zustand Stores (`/store/`)
 
@@ -281,7 +290,9 @@ SUPABASE_SERVICE_ROLE_KEY       # server-only, used in admin actions + guest che
 
 **Drag-to-reorder** for admin categories and banners shares one hook, `useDragReorder()` — tracks drag/drop indices per group and hands back a reordered array; the caller persists the new `sort_order` via a server action (`reorderSubcategories()` / `reorderBanners()`).
 
-**Image optimization:** Next.js `<Image>` with AVIF/WebP, remote domains whitelisted in `next.config.ts`.
+**Product quick-view modal:** `ProductCard` links to `/product/[id]` normally; the `@modal` parallel route (`app/@modal/(.)product/[id]/page.tsx`) intercepts that soft navigation and renders it inside `ProductModal` instead, so browsing stays on the originating grid/carousel while the URL still updates. See "Quick-view modal" note under App Routes.
+
+**Image optimization is intentionally disabled** — `next.config.ts` sets `images.unoptimized: true` (Vercel Hobby plan quota on Image Optimization source images; product images are pre-compressed offline before upload). Do not re-enable without checking the plan/hosting situation first.
 
 **Primary color:** `#16a34a` (green-600)
 

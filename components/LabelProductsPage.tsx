@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { getProductsByLabelPaginated } from "@/services/product.service";
+import { getPopularProductsPaginated, getProductsByLabelPaginated } from "@/services/product.service";
 import MainContainer from "./MainContainer";
 import Pagination from "./Pagination";
 import ProductCard from "./ProductCard";
@@ -22,7 +22,10 @@ export default async function LabelProductsPage({
   emptyText = "Товары не добавлены",
   page,
 }: Props) {
-  const { products, total } = await getProductsByLabelPaginated(supabase, label, { page, pageSize: PAGE_SIZE });
+  const { products, total } =
+    label === "popular"
+      ? await getPopularProductsPaginated(supabase, { page, pageSize: PAGE_SIZE })
+      : await getProductsByLabelPaginated(supabase, label, { page, pageSize: PAGE_SIZE });
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (

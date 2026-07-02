@@ -36,7 +36,7 @@ export default function ProductList({ products, onEdit, onDelete }: Props) {
             </div>
             <p className="text-xs text-gray-400">
               {p.category} · {p.price} <Currency />
-              {p.old_price ? ` (было ${p.old_price})` : ""}
+              {p.old_price ? ` (было ${p.old_price})` : ""} · продано {p.purchase_count}
             </p>
           </div>
           <div className="flex gap-1 shrink-0">

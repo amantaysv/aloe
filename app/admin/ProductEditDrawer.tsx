@@ -7,7 +7,6 @@ import ImageDropzone from "./ImageDropzone";
 
 const LABELS = [
   { value: "", label: "Нет" },
-  { value: "popular", label: "Хит" },
   { value: "new", label: "Новинка" },
   { value: "sale", label: "Акция" },
 ];

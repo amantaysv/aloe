@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient as createSupabase } from "@supabase/supabase-js";
+import { updateTag } from "next/cache";
 import { createClient } from "@/lib/supabase-server";
 import { insertOrder } from "@/services/order.service";
 
@@ -42,6 +43,11 @@ export async function createOrder({
   if (user?.id) {
     await admin.from("cart_items").delete().eq("user_id", user.id);
   }
+
+  await admin.rpc("increment_product_purchase_counts", {
+    items: items.map((i) => ({ id: i.id, qty: i.quantity })),
+  });
+  updateTag("products");
 
   return { ok: true as const, orderId: String(data!.id) };
 }

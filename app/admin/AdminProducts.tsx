@@ -26,7 +26,7 @@ const empty: ProductInput = {
   published: true,
 };
 
-export type SortBy = "id-desc" | "name-asc" | "price-asc" | "price-desc";
+export type SortBy = "id-desc" | "name-asc" | "price-asc" | "price-desc" | "purchase-count-desc";
 
 type Props = {
   products: Product[];

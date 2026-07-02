@@ -31,7 +31,7 @@ export type ProductInput = {
   image_url: string;
   category: string;
   category_id: number;
-  label?: "popular" | "new" | "sale" | null;
+  label?: "new" | "sale" | null;
   description?: string | null;
   brand_id?: number | null;
   seo_text?: string | null;

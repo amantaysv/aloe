@@ -3,15 +3,42 @@ import type { ProductRow } from "@/types";
 import { withBrandName } from "@/types";
 
 export type SortValue = "name" | "price_asc" | "price_desc";
-export type AdminProductsSort = "id-desc" | "name-asc" | "price-asc" | "price-desc";
+export type AdminProductsSort = "id-desc" | "name-asc" | "price-asc" | "price-desc" | "purchase-count-desc";
 
-export async function getProductsByLabel(supabase: SupabaseClient, label: "popular" | "new" | "sale", limit = 10) {
+export async function getProductsByLabel(supabase: SupabaseClient, label: "new" | "sale", limit = 10) {
   const { data, count } = await supabase
     .from("products")
     .select("*, brands(name)", { count: "exact" })
     .eq("published", true)
     .eq("label", label)
     .limit(limit);
+  return { products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
+}
+
+export async function getPopularProducts(supabase: SupabaseClient, limit = 10) {
+  const { data, count } = await supabase
+    .from("products")
+    .select("*, brands(name)", { count: "exact" })
+    .eq("published", true)
+    .gt("purchase_count", 0)
+    .order("purchase_count", { ascending: false })
+    .limit(limit);
+  return { products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
+}
+
+export async function getPopularProductsPaginated(
+  supabase: SupabaseClient,
+  options: { page: number; pageSize?: number },
+) {
+  const { page, pageSize = 20 } = options;
+  const from = (page - 1) * pageSize;
+  const { data, count } = await supabase
+    .from("products")
+    .select("*, brands(name)", { count: "exact" })
+    .eq("published", true)
+    .gt("purchase_count", 0)
+    .order("purchase_count", { ascending: false })
+    .range(from, from + pageSize - 1);
   return { products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
 }
 
@@ -209,6 +236,7 @@ export async function getAdminProducts(
   if (sort === "name-asc") query = query.order("name");
   else if (sort === "price-asc") query = query.order("price", { ascending: true });
   else if (sort === "price-desc") query = query.order("price", { ascending: false });
+  else if (sort === "purchase-count-desc") query = query.order("purchase_count", { ascending: false });
   else query = query.order("created_at", { ascending: false }).order("id", { ascending: false });
 
   const { data, count } = await query.range(from, from + pageSize - 1);
