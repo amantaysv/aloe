@@ -18,12 +18,14 @@ import {
   ShowerHead,
   Star,
   Tag,
+  WashingMachine,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import Container from "./Container";
 
 const ICONS = {
+  stirka: WashingMachine,
   bytovaya: FlaskConical,
   deti: Baby,
   dom: HouseHeart,
