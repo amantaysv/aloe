@@ -68,6 +68,28 @@ export async function deleteProduct(id: number): Promise<{ ok: true } | { ok: fa
   return { ok: true };
 }
 
+export type BulkProductUpdate = {
+  brand_id?: number | null;
+  price?: number;
+  old_price?: number | null;
+  label?: "new" | "sale" | null;
+  published?: boolean;
+  category_id?: number;
+  category?: string;
+};
+
+export async function bulkUpdateProducts(
+  ids: number[],
+  fields: BulkProductUpdate,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  await assertAdmin();
+  if (ids.length === 0 || Object.keys(fields).length === 0) return { ok: true };
+  const { error } = await adminDb().from("products").update(fields).in("id", ids);
+  if (error) return { ok: false, error: error.message };
+  updateTag("products");
+  return { ok: true };
+}
+
 export type CategoryInput = {
   id?: number;
   name: string;
@@ -94,14 +116,10 @@ export async function upsertCategory(
     updateTag("products");
     return { ok: true, id: data.id };
   }
-  let sort_order = 0;
-  if (data.parent_id !== null) {
-    const { count } = await db
-      .from("categories")
-      .select("id", { count: "exact", head: true })
-      .eq("parent_id", data.parent_id);
-    sort_order = count ?? 0;
-  }
+  let countQuery = db.from("categories").select("id", { count: "exact", head: true });
+  countQuery = data.parent_id !== null ? countQuery.eq("parent_id", data.parent_id) : countQuery.is("parent_id", null);
+  const { count } = await countQuery;
+  const sort_order = count ?? 0;
   const { data: row, error } = await db
     .from("categories")
     .insert({ ...fields, sort_order })

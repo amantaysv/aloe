@@ -5,8 +5,6 @@ import { GiToothbrush } from "react-icons/gi";
 import { PiHairDryer } from "react-icons/pi";
 import { TbDiaper } from "react-icons/tb";
 import {
-  Axe,
-  Baby,
   FlaskConical,
   HandHeart,
   HouseHeart,
@@ -14,7 +12,6 @@ import {
   Percent,
   Plus,
   Printer,
-  Rose,
   ShowerHead,
   Star,
   Tag,
@@ -27,10 +24,7 @@ import Container from "./Container";
 const ICONS = {
   stirka: WashingMachine,
   bytovaya: FlaskConical,
-  deti: Baby,
   dom: HouseHeart,
-  zhenshiny: Rose,
-  muzhchiny: Axe,
   ofis: Printer,
   kosmetika: MirrorRound,
   podguzniki: TbDiaper,

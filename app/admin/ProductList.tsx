@@ -7,19 +7,34 @@ import type { Product } from "@/types";
 
 type Props = {
   products: Product[];
+  selectedIds: Set<number>;
+  onToggle: (id: number) => void;
+  onToggleAll: () => void;
   onEdit: (product: Product) => void;
   onDelete: (id: number) => void;
 };
 
-export default function ProductList({ products, onEdit, onDelete }: Props) {
+export default function ProductList({ products, selectedIds, onToggle, onToggleAll, onEdit, onDelete }: Props) {
   if (products.length === 0) {
     return <p className="text-sm text-gray-400 py-6 text-center">Ничего не найдено</p>;
   }
 
+  const allSelected = products.every((p) => selectedIds.has(p.id));
+
   return (
     <div className="space-y-2">
+      <label className="flex items-center gap-2 px-3 py-1 text-xs text-gray-500 cursor-pointer select-none">
+        <input type="checkbox" checked={allSelected} onChange={onToggleAll} className="w-4 h-4 accent-green-600" />
+        Выбрать все
+      </label>
       {products.map((p) => (
         <div key={p.id} className="flex items-center gap-3 border border-gray-200 rounded-lg p-3 hover:bg-gray-50">
+          <input
+            type="checkbox"
+            checked={selectedIds.has(p.id)}
+            onChange={() => onToggle(p.id)}
+            className="w-4 h-4 shrink-0 accent-green-600"
+          />
           <div className="relative w-12 h-12 shrink-0 bg-gray-100 rounded overflow-hidden">
             {p.image_url && (
               <Image src={p.image_url} alt={p.name} fill sizes="48px" className="object-contain p-1" unoptimized />

@@ -3,7 +3,7 @@ import { getAdminCategories } from "@/services/category.service";
 import { getAdminProducts, type AdminProductsSort } from "@/services/product.service";
 import AdminProducts from "../AdminProducts";
 
-const PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = "20";
 
 export default async function ProductsPage({
   searchParams,
@@ -20,13 +20,15 @@ export default async function ProductsPage({
   const category = sp.category ?? "";
   const categoryId = category ? parseInt(category) || undefined : undefined;
   const sort = (sp.sort ?? "id-desc") as AdminProductsSort;
+  const pageSizeParam = sp.pageSize ?? DEFAULT_PAGE_SIZE;
+  const pageSize = pageSizeParam === "all" ? "all" : Math.max(1, parseInt(pageSizeParam) || 20);
 
   const [{ products, total }, allCategories] = await Promise.all([
-    getAdminProducts(supabase, { q, label, published, categoryId, sort, page: currentPage, pageSize: PAGE_SIZE }),
+    getAdminProducts(supabase, { q, label, published, categoryId, sort, page: currentPage, pageSize }),
     getAdminCategories(supabase),
   ]);
 
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const totalPages = pageSize === "all" ? 1 : Math.ceil(total / pageSize);
 
   // Products may only be assigned to "leaf" categories (a subcategory or sub-subcategory with
   // no children of its own) — top-level categories and categories that have sub-subcategories
@@ -56,6 +58,7 @@ export default async function ProductsPage({
       published={published}
       category={category}
       sort={sort}
+      pageSize={pageSizeParam}
       categories={categories as Parameters<typeof AdminProducts>[0]["categories"]}
     />
   );

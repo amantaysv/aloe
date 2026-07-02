@@ -196,11 +196,10 @@ export async function getAdminProducts(
     categoryId?: number;
     sort?: AdminProductsSort;
     page?: number;
-    pageSize?: number;
+    pageSize?: number | "all";
   },
 ) {
   const { q = "", label = "", published = "", categoryId, sort = "id-desc", page = 1, pageSize = 20 } = options;
-  const from = (page - 1) * pageSize;
 
   let query = supabase.from("products").select("*", { count: "exact" });
   if (q) query = query.ilike("name", `%${q}%`);
@@ -215,7 +214,12 @@ export async function getAdminProducts(
   else if (sort === "purchase-count-desc") query = query.order("purchase_count", { ascending: false });
   else query = query.order("created_at", { ascending: false }).order("id", { ascending: false });
 
-  const { data, count } = await query.range(from, from + pageSize - 1);
+  if (pageSize !== "all") {
+    const from = (page - 1) * pageSize;
+    query = query.range(from, from + pageSize - 1);
+  }
+
+  const { data, count } = await query;
   return { products: data ?? [], total: count ?? 0 };
 }
 
