@@ -22,6 +22,18 @@ import { withBrandName } from "@/types";
 
 const getCachedProduct = cache((id: string) => getProduct(supabase, id));
 
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  const { data } = await supabase
+    .from("products")
+    .select("id")
+    .eq("published", true)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  return (data ?? []).map((p) => ({ id: String(p.id) }));
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const { data: product } = await getCachedProduct(id);

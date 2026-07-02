@@ -10,10 +10,12 @@ import {
   SubcategoryFilter,
   TitleWithCount,
 } from "@/components";
-import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
+import {
+  getCachedBrandsForSubcategory,
+  getCachedCategoriesWithSlug,
+  getCachedSubcategoryProducts,
+} from "@/lib/cached-queries";
 import { parseBrandIds, parsePage, parseSortParam } from "@/lib/page-params";
-import { supabase } from "@/lib/supabase";
-import { getBrandsForSubcategory, getSubcategoryProducts } from "@/services/product.service";
 
 const PAGE_SIZE = 20;
 
@@ -38,8 +40,8 @@ export default async function SubcategoryPage({
   if (!subcategory) notFound();
 
   const [brands, { products, total }] = await Promise.all([
-    getBrandsForSubcategory(supabase, subcategory.id),
-    getSubcategoryProducts(supabase, subcategory.id, {
+    getCachedBrandsForSubcategory(String(subcategory.id)),
+    getCachedSubcategoryProducts(String(subcategory.id), {
       page: currentPage,
       sort: validSort,
       brandIds: selectedBrandIds,

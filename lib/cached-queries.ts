@@ -4,10 +4,14 @@ import { getActiveBanners } from "@/services/banner.service";
 import { getBrandBySlug, getBrands } from "@/services/brand.service";
 import { getCategories, getCategoriesWithSlug } from "@/services/category.service";
 import {
+  getBrandsForSubcategory,
   getHomePageCategoryProducts,
   getProductsByBrand,
   getProductsByCategories,
   getProductsByLabel,
+  getSubcategoryProducts,
+  getSubcategorySection,
+  type SortValue,
 } from "@/services/product.service";
 
 export const getCachedCategories = unstable_cache(() => getCategories(supabase), ["categories"], {
@@ -59,5 +63,24 @@ export const getCachedBrandBySlug = unstable_cache(
 export const getCachedProductsByBrand = unstable_cache(
   (brandId: number, page: number, pageSize: number) => getProductsByBrand(supabase, brandId, { page, pageSize }),
   ["products-by-brand"],
+  { revalidate: 60, tags: ["products"] },
+);
+
+export const getCachedSubcategorySection = unstable_cache(
+  (subcategoryId: string, sort: SortValue) => getSubcategorySection(supabase, subcategoryId, sort),
+  ["subcategory-section"],
+  { revalidate: 60, tags: ["products"] },
+);
+
+export const getCachedSubcategoryProducts = unstable_cache(
+  (subcategoryId: string, options: { page: number; sort: SortValue; brandIds?: number[]; pageSize?: number }) =>
+    getSubcategoryProducts(supabase, subcategoryId, options),
+  ["subcategory-products"],
+  { revalidate: 60, tags: ["products"] },
+);
+
+export const getCachedBrandsForSubcategory = unstable_cache(
+  (subcategoryId: string) => getBrandsForSubcategory(supabase, subcategoryId),
+  ["brands-for-subcategory"],
   { revalidate: 60, tags: ["products"] },
 );

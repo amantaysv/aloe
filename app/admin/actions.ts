@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient as createSupabase } from "@supabase/supabase-js";
+import { revalidatePath, updateTag } from "next/cache";
 import { createClient } from "@/lib/supabase-server";
 import { getAdminBrands } from "@/services/brand.service";
 
@@ -49,11 +50,15 @@ export async function upsertProduct(
     const { id, ...fields } = data;
     const { error } = await db.from("products").update(fields).eq("id", id);
     if (error) return { ok: false, error: error.message };
+    updateTag("products");
+    revalidatePath(`/product/${id}`);
     return { ok: true, id };
   }
 
   const { data: row, error } = await db.from("products").insert(data).select("id").single();
   if (error) return { ok: false, error: error.message };
+  updateTag("products");
+  revalidatePath(`/product/${row.id}`);
   return { ok: true, id: row.id };
 }
 
@@ -61,6 +66,7 @@ export async function deleteProduct(id: number): Promise<{ ok: true } | { ok: fa
   await assertAdmin();
   const { error } = await adminDb().from("products").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
+  updateTag("products");
   return { ok: true };
 }
 
@@ -81,6 +87,7 @@ export async function upsertCategory(
   if (data.id) {
     const { error } = await db.from("categories").update(fields).eq("id", data.id);
     if (error) return { ok: false, error: error.message };
+    updateTag("categories");
     return { ok: true, id: data.id };
   }
   let sort_order = 0;
@@ -97,6 +104,7 @@ export async function upsertCategory(
     .select("id")
     .single();
   if (error) return { ok: false, error: error.message };
+  updateTag("categories");
   return { ok: true, id: row.id };
 }
 
@@ -120,6 +128,7 @@ export async function deleteCategory(id: number): Promise<{ ok: true } | { ok: f
   await assertAdmin();
   const { error } = await adminDb().from("categories").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
+  updateTag("categories");
   return { ok: true };
 }
 
@@ -133,6 +142,7 @@ export async function reorderSubcategories(
   );
   const failed = results.find((r) => r.error);
   if (failed?.error) return { ok: false, error: failed.error.message };
+  updateTag("categories");
   return { ok: true };
 }
 

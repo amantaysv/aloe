@@ -1,9 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { MainContainer, MobileHeader, SubcategoryFilter, VirtualCategoryContent } from "@/components";
-import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
+import { getCachedCategoriesWithSlug, getCachedSubcategorySection } from "@/lib/cached-queries";
 import { parseSortParam } from "@/lib/page-params";
-import { supabase } from "@/lib/supabase";
-import { getSubcategorySection } from "@/services/product.service";
 
 export default async function CategoryPage({
   params,
@@ -29,7 +27,7 @@ export default async function CategoryPage({
 
   const sections = await Promise.all(
     subcategories.map(async (s) => {
-      const { products, total } = await getSubcategorySection(supabase, s.id, validSort);
+      const { products, total } = await getCachedSubcategorySection(String(s.id), validSort);
       return { sub: s, products, total };
     }),
   );
