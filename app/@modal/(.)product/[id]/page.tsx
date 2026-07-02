@@ -30,13 +30,13 @@ export default async function ProductModalPage({ params }: { params: Promise<{ i
 
   return (
     <ProductModal>
-      <div className="grid sm:grid-cols-2 gap-6 p-4 sm:p-6">
-        <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden">
+      <div className="grid sm:grid-cols-2 gap-6 px-4 pb-4 md:px-6 md:pb-6">
+        <div className="sticky top-0  aspect-square bg-gray-50 rounded-xl overflow-hidden">
           <Image
             src={product.image_url}
             alt={product.name}
             fill
-            className="object-contain p-6"
+            className="object-contain"
             sizes="(max-width: 640px) 100vw, 50vw"
           />
           {label && (
@@ -59,7 +59,7 @@ export default async function ProductModalPage({ params }: { params: Promise<{ i
 
           {brandInfo && <p className="text-sm text-gray-500 mb-4">Производитель: {brandInfo.name}</p>}
 
-          <div className="flex items-baseline gap-3 mb-6">
+          <div className="hidden md:flex items-baseline gap-3 mb-6">
             <span className="text-2xl font-bold">
               {product.price} <Currency />
             </span>
@@ -70,7 +70,7 @@ export default async function ProductModalPage({ params }: { params: Promise<{ i
             )}
           </div>
 
-          <div className="mb-6">
+          <div className="mb-6 hidden sm:block">
             <AddToCart
               product={{
                 id: product.id,
@@ -87,6 +87,32 @@ export default async function ProductModalPage({ params }: { params: Promise<{ i
           <a href={productHref} className="text-sm text-green-600 hover:underline mt-auto pt-4 w-fit">
             Открыть страницу товара →
           </a>
+        </div>
+      </div>
+
+      <div className="sm:hidden sticky bottom-0 z-10 bg-white border-t border-gray-200 px-4 py-3 rounded-b-2xl shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
+        <div className="flex items-center justify-between gap-3">
+          <div className="grow flex flex-col leading-tight shrink-0">
+            <span className="text-lg font-bold whitespace-nowrap">
+              {product.price} <Currency />
+            </span>
+            {product.old_price && (
+              <span className="text-xs text-gray-400 line-through whitespace-nowrap">
+                {product.old_price} <Currency />
+              </span>
+            )}
+          </div>
+          <div className="grow">
+            <AddToCart
+              product={{
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                image_url: product.image_url,
+              }}
+              size="lg"
+            />
+          </div>
         </div>
       </div>
     </ProductModal>

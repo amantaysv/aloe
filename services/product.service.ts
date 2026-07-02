@@ -91,26 +91,14 @@ export async function getRelatedProducts(supabase: SupabaseClient, categoryId: s
   return withBrandName((data ?? []) as unknown as ProductRow[]);
 }
 
-export async function getSubcategorySection(supabase: SupabaseClient, subcategoryId: string, sort: SortValue) {
-  const orderCol = sort === "price_asc" || sort === "price_desc" ? "price" : "name";
-  const ascending = sort !== "price_desc";
-  const { data, count } = await supabase
-    .from("products")
-    .select("*, brands(name)", { count: "exact" })
-    .eq("published", true)
-    .eq("category_id", subcategoryId)
-    .order(orderCol, { ascending });
-  return { products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
-}
-
-export async function getSubcategoryProducts(
+export async function getSubcategorySection(
   supabase: SupabaseClient,
   subcategoryId: string,
-  options: { page: number; sort: SortValue; brandIds?: number[]; pageSize?: number },
+  sort: SortValue,
+  brandIds: number[] = [],
 ) {
-  const { page, sort, brandIds = [], pageSize = 20 } = options;
-  const from = (page - 1) * pageSize;
-
+  const orderCol = sort === "price_asc" || sort === "price_desc" ? "price" : "name";
+  const ascending = sort !== "price_desc";
   let query = supabase
     .from("products")
     .select("*, brands(name)", { count: "exact" })
@@ -119,22 +107,8 @@ export async function getSubcategoryProducts(
 
   if (brandIds.length > 0) query = query.in("brand_id", brandIds);
 
-  if (sort === "price_asc") query = query.order("price", { ascending: true });
-  else if (sort === "price_desc") query = query.order("price", { ascending: false });
-  else query = query.order("name");
-
-  const { data, count } = await query.range(from, from + pageSize - 1);
+  const { data, count } = await query.order(orderCol, { ascending });
   return { products: withBrandName((data ?? []) as unknown as ProductRow[]), total: count ?? 0 };
-}
-
-export async function getBrandsForSubcategory(supabase: SupabaseClient, subcategoryId: string) {
-  const { data } = await supabase
-    .from("products")
-    .select("brands(id, name)")
-    .eq("published", true)
-    .eq("category_id", subcategoryId)
-    .not("brand_id", "is", null);
-  return extractUniqueBrands(data);
 }
 
 export async function searchProducts(

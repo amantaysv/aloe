@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function ProductModal({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -23,19 +23,21 @@ export default function ProductModal({ children }: { children: React.ReactNode }
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={close}>
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40" onClick={close}>
       <div
-        className="relative bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+        className="relative flex flex-col bg-white rounded-t-2xl md:rounded-b-2xl shadow-xl w-full max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={close}
-          className="absolute top-3 right-3 z-10 p-1.5 bg-white/80 rounded-full text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-          title="Закрыть"
-        >
-          <X className="size-5" />
-        </button>
-        {children}
+        <div className="w-full absolute top-0 left-0 z-10 flex bg-white p-2">
+          <button
+            onClick={close}
+            className="ml-auto p-1.5 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+            title="Закрыть"
+          >
+            <X className="size-5" />
+          </button>
+        </div>
+        <div className="flex-1 h-full w-full overflow-y-auto scrollbar-none pt-12">{children}</div>
       </div>
     </div>
   );

@@ -91,11 +91,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       : null;
 
   return (
-    <MainContainer className="pt-4">
+    <MainContainer>
       <Breadcrumb crumbs={breadcrumbs} />
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
-        <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden">
+        <div className="sticky top-41.5 aspect-square bg-gray-50 rounded-xl overflow-hidden">
           <Image
             src={product.image_url}
             alt={product.name}
@@ -144,7 +144,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             )}
           </div>
 
-          <div className="mb-6">
+          <div className="mb-6 hidden md:block">
             <AddToCart
               product={{
                 id: product.id,
@@ -157,6 +157,32 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           </div>
 
           {product.description && <ProductDescription text={product.description} />}
+        </div>
+      </div>
+
+      <div className="md:hidden fixed inset-x-0 bottom-16 z-30 bg-white border-t border-gray-200 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col leading-tight shrink-0">
+            <span className="text-lg font-bold whitespace-nowrap">
+              {product.price} <Currency />
+            </span>
+            {product.old_price && (
+              <span className="text-xs text-gray-400 line-through whitespace-nowrap">
+                {product.old_price} <Currency />
+              </span>
+            )}
+          </div>
+          <div className="flex-1">
+            <AddToCart
+              product={{
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                image_url: product.image_url,
+              }}
+              size="lg"
+            />
+          </div>
         </div>
       </div>
 
