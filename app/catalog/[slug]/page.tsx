@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { MainContainer, MobileHeader, SubcategoryFilter, VirtualCategoryContent } from "@/components";
+import { MainContainer, MobileHeader, NextCategoryLink, SubcategoryFilter, VirtualCategoryContent } from "@/components";
 import { getCachedCategoriesWithSlug, getCachedSubcategorySection } from "@/lib/cached-queries";
 import { parseSortParam } from "@/lib/page-params";
 import { buildCategorySection } from "@/lib/subcategory-sections";
@@ -57,6 +57,10 @@ export default async function CategoryPage({
 
   const initialSectionId = subcategories.find((s) => s.slug === sp.sub)?.id;
 
+  const topLevelCategories = allCategories.filter((c) => !c.parent_id);
+  const currentIndex = topLevelCategories.findIndex((c) => c.id === category.id);
+  const nextCategory = topLevelCategories[(currentIndex + 1) % topLevelCategories.length];
+
   return (
     <>
       <MobileHeader title={category.name} withBackButton />
@@ -64,6 +68,9 @@ export default async function CategoryPage({
       <SubcategoryFilter subcategories={subcategories} />
       <MainContainer>
         <VirtualCategoryContent sections={allSections} initialSectionId={initialSectionId} />
+        {nextCategory && nextCategory.id !== category.id && (
+          <NextCategoryLink name={nextCategory.name} slug={nextCategory.slug} />
+        )}
       </MainContainer>
     </>
   );

@@ -17,6 +17,7 @@ export { default as ManufacturerFilter } from "./ManufacturerFilter";
 export { default as MobileBottomNav } from "./MobileBottomNav";
 export { default as MobileHeader } from "./MobileHeader";
 export { default as MobileSearchInput } from "./MobileSearchInput";
+export { default as NextCategoryLink } from "./NextCategoryLink";
 export { default as Pagination } from "./Pagination";
 export { default as ProductCard } from "./ProductCard";
 export { default as ProductCarousel } from "./ProductCarousel";
