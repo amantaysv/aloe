@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Search, X } from "lucide-react";
+import { Download, Pencil, Search, X } from "lucide-react";
 import { Button, Currency, Pagination } from "@/components";
-import { ORDER_STATUS } from "@/lib/constants";
+import { DELIVERY_OPTIONS, ORDER_STATUS } from "@/lib/constants";
+import { downloadInvoice, type OrderItemInput } from "./actions";
+import OrderItemsEditor from "./OrderItemsEditor";
 import OrderStatusSelect from "./OrderStatusSelect";
 import { useAdminListNav, useDebouncedSearch } from "./useAdminListNav";
 
@@ -16,11 +18,9 @@ type Order = {
   customer_phone: string | null;
   customer_address: string | null;
   comment: string | null;
-  items: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
+  delivery_type: string | null;
+  delivery_cost: number | null;
+  items: OrderItemInput[];
 };
 
 type Props = {
@@ -45,8 +45,15 @@ export default function AdminOrders({
   const navigate = useAdminListNav();
   const search = useDebouncedSearch(q, (value) => navigate({ q: value }));
   const [localStatus, setLocalStatus] = useState<Record<number, string>>({});
+  const [localItems, setLocalItems] = useState<Record<number, { items: OrderItemInput[]; total: number }>>({});
+  const [editingOrderId, setEditingOrderId] = useState<number | null>(null);
 
-  const orders = initial.map((o) => ({ ...o, status: localStatus[o.id] ?? o.status }));
+  const orders = initial.map((o) => ({
+    ...o,
+    status: localStatus[o.id] ?? o.status,
+    items: localItems[o.id]?.items ?? o.items,
+    total: localItems[o.id]?.total ?? o.total,
+  }));
 
   const activeStatuses = new Set(statusFilter ? statusFilter.split(",") : []);
 
@@ -59,6 +66,19 @@ export default function AdminOrders({
 
   function handleStatusChange(orderId: number, status: string) {
     setLocalStatus((prev) => ({ ...prev, [orderId]: status }));
+  }
+
+  async function handleDownloadInvoice(orderId: number) {
+    const result = await downloadInvoice(orderId);
+    if (!result.ok) return;
+    const bytes = Uint8Array.from(atob(result.base64), (c) => c.charCodeAt(0));
+    const blob = new Blob([bytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `nakladnaya-${orderId}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   return (
@@ -136,6 +156,19 @@ export default function AdminOrders({
                   <p className="font-semibold mt-1">{order.customer_name ?? "—"}</p>
                   <p className="text-sm text-gray-600">{order.customer_phone ?? "—"}</p>
                   <p className="text-sm text-gray-600">{order.customer_address ?? "—"}</p>
+                  {order.delivery_type && (
+                    <p className="text-sm text-gray-500">
+                      🚚 {DELIVERY_OPTIONS.find((o) => o.id === order.delivery_type)?.label ?? order.delivery_type}
+                      {" — "}
+                      {order.delivery_cost ? (
+                        <>
+                          {order.delivery_cost} <Currency />
+                        </>
+                      ) : (
+                        "бесплатно"
+                      )}
+                    </p>
+                  )}
                   {order.comment && <p className="text-sm text-gray-400 italic">💬 {order.comment}</p>}
                 </div>
                 <div className="text-right shrink-0">
@@ -147,21 +180,47 @@ export default function AdminOrders({
                     currentStatus={order.status}
                     onStatusChange={handleStatusChange}
                   />
+                  <Button
+                    type="button"
+                    onClick={() => handleDownloadInvoice(order.id)}
+                    className="mt-2 inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
+                  >
+                    <Download className="w-3.5 h-3.5" /> Накладная
+                  </Button>
                 </div>
               </div>
 
-              <div className="mt-3 border-t border-gray-300 pt-3">
-                <div className="space-y-1">
-                  {(order.items || []).map((item, i) => (
-                    <div key={i} className="flex justify-between text-sm">
-                      <span className="text-gray-700 flex-1 line-clamp-1">{item.name}</span>
-                      <span className="text-gray-500 shrink-0 ml-4">
-                        {item.quantity} × {item.price} <Currency />
-                      </span>
-                    </div>
-                  ))}
+              {editingOrderId === order.id ? (
+                <OrderItemsEditor
+                  orderId={order.id}
+                  items={order.items}
+                  onCancel={() => setEditingOrderId(null)}
+                  onSaved={(items, orderTotal) => {
+                    setLocalItems((prev) => ({ ...prev, [order.id]: { items, total: orderTotal } }));
+                    setEditingOrderId(null);
+                  }}
+                />
+              ) : (
+                <div className="mt-3 border-t border-gray-300 pt-3">
+                  <div className="space-y-1">
+                    {(order.items || []).map((item, i) => (
+                      <div key={i} className="flex justify-between text-sm">
+                        <span className="text-gray-700 flex-1 line-clamp-1">{item.name}</span>
+                        <span className="text-gray-500 shrink-0 ml-4">
+                          {item.quantity} × {item.price} <Currency />
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => setEditingOrderId(order.id)}
+                    className="mt-2 inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
+                  >
+                    <Pencil className="w-3.5 h-3.5" /> Изменить состав
+                  </Button>
                 </div>
-              </div>
+              )}
             </div>
           );
         })}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Currency } from "@/components";
+import { DELIVERY_OPTIONS, FREE_DELIVERY_THRESHOLD, getDeliveryCost } from "@/lib/constants";
 import { useCart } from "@/store/cart";
 import { createOrder } from "./actions";
 
@@ -23,6 +24,7 @@ export default function CheckoutForm({ initial }: Props) {
   const [phone, setPhone] = useState(initial?.phone ?? "");
   const [address, setAddress] = useState(initial?.address ?? "");
   const [comment, setComment] = useState("");
+  const [deliveryType, setDeliveryType] = useState<string>(DELIVERY_OPTIONS[0].id);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -58,6 +60,7 @@ export default function CheckoutForm({ initial }: Props) {
         image_url: i.image_url,
       })),
       total: total(),
+      deliveryType,
     });
     if (!result.ok) {
       setError(result.error);
@@ -69,7 +72,7 @@ export default function CheckoutForm({ initial }: Props) {
   }
 
   const orderTotal = total();
-  const freeDelivery = orderTotal >= 5000;
+  const deliveryCost = getDeliveryCost(deliveryType, orderTotal);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -96,21 +99,66 @@ export default function CheckoutForm({ initial }: Props) {
             </div>
           ))}
         </div>
+        <div className="mt-2 text-sm text-gray-500 flex justify-between">
+          <span>Доставка:</span>
+          <span>
+            {deliveryCost > 0 ? (
+              <>
+                {deliveryCost} <Currency />
+              </>
+            ) : (
+              <span className="text-green-600 font-medium">бесплатно</span>
+            )}
+          </span>
+        </div>
         <div className="border-t border-gray-300 mt-3 pt-3 flex justify-between font-bold">
           <span>Итого:</span>
           <span className="text-green-600">
-            {orderTotal} <Currency />
+            {orderTotal + deliveryCost} <Currency />
           </span>
         </div>
-        <div className="mt-2 text-sm text-gray-500">
-          Доставка:{" "}
-          {freeDelivery ? (
-            <span className="text-green-600 font-medium">бесплатно 🎉</span>
-          ) : (
-            <span>
-              150 <Currency />
-            </span>
-          )}
+      </div>
+
+      {/* Delivery type */}
+      <div className="space-y-3">
+        <h2 className="font-semibold">Способ доставки</h2>
+        <div className="space-y-2">
+          {DELIVERY_OPTIONS.map((option) => {
+            const free = option.freeOverThreshold && orderTotal >= FREE_DELIVERY_THRESHOLD;
+            return (
+              <label
+                key={option.id}
+                className={`flex items-start gap-3 border rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${
+                  deliveryType === option.id ? "border-green-500 bg-green-50" : "border-gray-300"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="deliveryType"
+                  value={option.id}
+                  checked={deliveryType === option.id}
+                  onChange={() => setDeliveryType(option.id)}
+                  className="mt-1 accent-green-600 shrink-0"
+                />
+                <span className="text-sm">
+                  {option.label}{" "}
+                  {free ? (
+                    <span className="whitespace-nowrap">
+                      (<span className="line-through text-gray-400">{option.cost} сом</span>{" "}
+                      <span className="text-green-600 font-medium">
+                        бесплатно, заказ свыше {FREE_DELIVERY_THRESHOLD} сом
+                      </span>
+                      )
+                    </span>
+                  ) : (
+                    <span className="text-gray-500 whitespace-nowrap">
+                      ({option.cost} <Currency />)
+                    </span>
+                  )}
+                </span>
+              </label>
+            );
+          })}
         </div>
       </div>
 

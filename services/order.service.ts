@@ -51,6 +51,8 @@ export async function insertOrder(
     comment: string;
     items: CartItem[];
     total: number;
+    deliveryType: string;
+    deliveryCost: number;
   },
 ) {
   return supabase
@@ -64,6 +66,8 @@ export async function insertOrder(
       customer_address: data.address,
       comment: data.comment || null,
       status: "new",
+      delivery_type: data.deliveryType,
+      delivery_cost: data.deliveryCost,
     })
     .select("id")
     .single();

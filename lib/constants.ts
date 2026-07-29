@@ -5,6 +5,44 @@ export const LABEL_MAP = {
   sale: { text: "Акция", cls: "bg-orange-500" },
 } as const;
 
+export const FREE_DELIVERY_THRESHOLD = 10000;
+
+export const DELIVERY_OPTIONS = [
+  {
+    id: "center",
+    label: "По центру города Бишкек, микрорайоны, Восток 5, Джал, мкр Кок-жар",
+    cost: 200,
+    freeOverThreshold: true,
+  },
+  {
+    id: "residential",
+    label: "Жилмассивы (Чон-Арык, Арча Бешик, Ак орго, Ак ордо, Новопавловка, Тунгуч, Аламедин-1)",
+    cost: 300,
+    freeOverThreshold: false,
+  },
+  {
+    id: "regions",
+    label: "Доставка в регионы (сумма доставки обговаривается по телефону)",
+    cost: 0,
+    freeOverThreshold: false,
+  },
+  {
+    id: "urgent",
+    label: "Мне срочно, отправьте Яндексом, оплачу за доставку курьеру сам",
+    cost: 0,
+    freeOverThreshold: false,
+  },
+] as const;
+
+export type DeliveryOptionId = (typeof DELIVERY_OPTIONS)[number]["id"];
+
+export function getDeliveryCost(id: string, orderTotal: number): number {
+  const option = DELIVERY_OPTIONS.find((o) => o.id === id);
+  if (!option) return 0;
+  if (option.freeOverThreshold && orderTotal >= FREE_DELIVERY_THRESHOLD) return 0;
+  return option.cost;
+}
+
 export const ORDER_STATUS: Record<string, { label: string; cls: string }> = {
   new: { label: "Новый", cls: "bg-blue-100 text-blue-700" },
   confirmed: { label: "Подтверждён", cls: "bg-yellow-100 text-yellow-700" },

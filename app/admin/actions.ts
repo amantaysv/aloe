@@ -2,6 +2,8 @@
 
 import { createClient as createSupabase } from "@supabase/supabase-js";
 import { revalidatePath, updateTag } from "next/cache";
+import { DELIVERY_OPTIONS } from "@/lib/constants";
+import { generateInvoicePdf } from "@/lib/invoice";
 import { createClient } from "@/lib/supabase-server";
 import { getAdminBrands } from "@/services/brand.service";
 
@@ -21,6 +23,65 @@ export async function updateOrderStatus(orderId: string, status: string) {
   await assertAdmin();
   const { error } = await adminDb().from("orders").update({ status }).eq("id", orderId);
   if (error) throw new Error(error.message);
+}
+
+export type OrderItemInput = {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image_url: string;
+};
+
+export async function updateOrderItems(
+  orderId: number,
+  items: OrderItemInput[],
+): Promise<{ ok: true; total: number } | { ok: false; error: string }> {
+  await assertAdmin();
+  const db = adminDb();
+
+  const { data: order, error: fetchError } = await db
+    .from("orders")
+    .select("delivery_cost")
+    .eq("id", orderId)
+    .single();
+  if (fetchError || !order) return { ok: false, error: "Заказ не найден" };
+
+  const itemsTotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const total = itemsTotal + (order.delivery_cost ?? 0);
+
+  const { error } = await db.from("orders").update({ items, total }).eq("id", orderId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/admin/orders");
+  return { ok: true, total };
+}
+
+export async function downloadInvoice(orderId: number): Promise<{ ok: true; base64: string } | { ok: false }> {
+  await assertAdmin();
+  const { data: order, error } = await adminDb().from("orders").select("*").eq("id", orderId).single();
+  if (error || !order) return { ok: false };
+
+  const itemsTotal = (order.items as { price: number; quantity: number }[]).reduce(
+    (sum, i) => sum + i.price * i.quantity,
+    0,
+  );
+
+  const pdf = await generateInvoicePdf({
+    orderId: String(order.id),
+    createdAt: new Date(order.created_at),
+    name: order.customer_name ?? "",
+    phone: order.customer_phone ?? "",
+    address: order.customer_address ?? "",
+    comment: order.comment ?? "",
+    deliveryLabel: DELIVERY_OPTIONS.find((o) => o.id === order.delivery_type)?.label ?? (order.delivery_type ?? "—"),
+    deliveryCost: order.delivery_cost ?? 0,
+    items: order.items,
+    itemsTotal,
+    total: order.total,
+  });
+
+  return { ok: true, base64: pdf.toString("base64") };
 }
 
 export type ProductInput = {
