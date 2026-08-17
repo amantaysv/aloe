@@ -220,7 +220,11 @@ export async function createOrder({
   });
   if (rpcError) console.error("[checkout] purchase count RPC failed:", rpcError.message);
 
-  updateTag("products");
+  // Only purchase_count changed, and that is a sort key for exactly two cached queries. Expiring
+  // the shared "products" tag invalidated all nine — homepage, categories, brands, /new, /sale,
+  // /popular, every product page — and updateTag has no stale-while-revalidate, so the next
+  // visitor waited for a full re-fetch. Those entries carry revalidate: 60 anyway.
+  updateTag("products-popular");
 
   const orderId = String(data.id);
   const deliveryLabel = DELIVERY_OPTIONS.find((o) => o.id === deliveryType)!.label;

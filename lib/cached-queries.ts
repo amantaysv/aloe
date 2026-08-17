@@ -43,7 +43,7 @@ export const getCachedProductsByLabel = unstable_cache(
 export const getCachedPopularProducts = unstable_cache(
   (limit?: number) => getPopularProducts(supabase, limit),
   ["popular-products"],
-  { revalidate: 60, tags: ["products"] },
+  { revalidate: 60, tags: ["products", "products-popular"] },
 );
 
 export const getCachedHomePageCategoryProducts = unstable_cache(
@@ -113,5 +113,5 @@ export const getCachedProductsByLabelPaginated = unstable_cache(
 export const getCachedPopularProductsPaginated = unstable_cache(
   (page: number, pageSize: number) => getPopularProductsPaginated(supabase, { page, pageSize }),
   ["popular-products-paginated"],
-  { revalidate: 60, tags: ["products"] },
+  { revalidate: 60, tags: ["products", "products-popular"] },
 );

@@ -17,7 +17,8 @@
   body {
     background: var(--background);
     color: var(--foreground);
-    font-family: Arial, Helvetica, sans-serif;
+    /* No font-family here: the next/font class on <body> already supplies Geist, and hardcoding
+       Arial overrode it — the font was downloaded and preloaded on every page, then unused. */
     scrollbar-gutter: stable;
   }
 

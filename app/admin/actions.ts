@@ -220,11 +220,64 @@ export type CategoryInput = {
   image_url?: string | null;
 };
 
+const MAX_CATEGORY_DEPTH = 3;
+
+/**
+ * The admin UI renders exactly three levels and the storefront collects only levels 2-3, so a
+ * category pushed to level 4 disappears from both — not editable, not deletable, and its products
+ * vanish from the catalogue, with no way back through the UI.
+ *
+ * The dropdown filters candidate parents, but it ignores the *height* of the subtree being moved,
+ * and the action itself checked nothing. `categories.parent_id` has no FK or trigger either, so
+ * this is the only guard.
+ */
+async function validateCategoryDepth(
+  db: ReturnType<typeof adminDb>,
+  categoryId: number | undefined,
+  parentId: number | null,
+): Promise<string | null> {
+  const { data, error } = await db.from("categories").select("id, parent_id");
+  if (error) return "Не удалось проверить структуру категорий";
+
+  const rows = data ?? [];
+  const parentOf = new Map(rows.map((c) => [c.id, c.parent_id]));
+  const childrenOf = new Map<number, number[]>();
+  for (const c of rows) {
+    if (c.parent_id == null) continue;
+    if (!childrenOf.has(c.parent_id)) childrenOf.set(c.parent_id, []);
+    childrenOf.get(c.parent_id)!.push(c.id);
+  }
+
+  // Depth of the new parent, 0 when moving to the top level.
+  let depth = 0;
+  for (let at = parentId; at != null; at = parentOf.get(at) ?? null) {
+    depth++;
+    if (depth > MAX_CATEGORY_DEPTH) return "Слишком глубокая вложенность категорий";
+    if (categoryId != null && at === categoryId) return "Категорию нельзя перенести внутрь себя";
+  }
+
+  // Height of the subtree being moved, 1 for a leaf.
+  const height = (id: number): number => 1 + Math.max(0, ...(childrenOf.get(id) ?? []).map(height));
+  const moving = categoryId != null ? height(categoryId) : 1;
+
+  if (depth + moving > MAX_CATEGORY_DEPTH) {
+    return `Так категория и её подкатегории уйдут глубже ${MAX_CATEGORY_DEPTH} уровней — они пропадут из админки и с витрины`;
+  }
+  return null;
+}
+
 export async function upsertCategory(
   data: CategoryInput,
 ): Promise<{ ok: true; id: number } | { ok: false; error: string }> {
   await assertAdmin();
   const db = adminDb();
+
+  if (!data.name?.trim()) return { ok: false, error: "Укажите название категории" };
+  if (!data.slug?.trim()) return { ok: false, error: "Укажите slug" };
+
+  const depthError = await validateCategoryDepth(db, data.id, data.parent_id);
+  if (depthError) return { ok: false, error: depthError };
+
   const fields = { name: data.name, parent_id: data.parent_id, slug: data.slug, image_url: data.image_url ?? null };
   if (data.id) {
     const { error } = await db.from("categories").update(fields).eq("id", data.id);
@@ -238,10 +291,13 @@ export async function upsertCategory(
     updateTag("products");
     return { ok: true, id: data.id };
   }
-  let countQuery = db.from("categories").select("id", { count: "exact", head: true });
-  countQuery = data.parent_id !== null ? countQuery.eq("parent_id", data.parent_id) : countQuery.is("parent_id", null);
-  const { count } = await countQuery;
-  const sort_order = count ?? 0;
+  // max+1, not count: after any delete the sibling count stops equalling the highest sort_order,
+  // so new categories collided with an existing one and admin/storefront ordering diverged.
+  let siblingQuery = db.from("categories").select("sort_order").order("sort_order", { ascending: false }).limit(1);
+  siblingQuery =
+    data.parent_id !== null ? siblingQuery.eq("parent_id", data.parent_id) : siblingQuery.is("parent_id", null);
+  const { data: last } = await siblingQuery;
+  const sort_order = (last?.[0]?.sort_order ?? -1) + 1;
   const { data: row, error } = await db
     .from("categories")
     .insert({ ...fields, sort_order })
@@ -261,7 +317,23 @@ export async function uploadCategoryImage(
 
 export async function deleteCategory(id: number): Promise<{ ok: true } | { ok: false; error: string }> {
   await assertAdmin();
-  const { error } = await adminDb().from("categories").delete().eq("id", id);
+  const db = adminDb();
+
+  // The only guard used to be client-side, and it worked off a snapshot taken at render time —
+  // assigning products in another tab left the delete button enabled. The products FK is
+  // ON DELETE SET NULL, so deleting an in-use category silently stripped category_id: the products
+  // dropped out of every catalogue query while staying published, searchable and in the sitemap.
+  const [{ count: productCount }, { count: childCount }] = await Promise.all([
+    db.from("products").select("id", { count: "exact", head: true }).eq("category_id", id),
+    db.from("categories").select("id", { count: "exact", head: true }).eq("parent_id", id),
+  ]);
+
+  if (childCount) return { ok: false, error: "Сначала удалите вложенные категории" };
+  if (productCount) {
+    return { ok: false, error: `В категории ${productCount} товаров — перенесите их перед удалением` };
+  }
+
+  const { error } = await db.from("categories").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
   updateTag("categories");
   return { ok: true };
