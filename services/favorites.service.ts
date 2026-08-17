@@ -1,6 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ProductRow } from "@/types";
+import type { ProductListRow } from "@/types";
 import { withBrandName } from "@/types";
+
+/** Mirrors LIST_COLUMNS in product.service.ts — the favorites grid renders the same card. */
+const FAVORITE_PRODUCT_COLUMNS = "id, name, price, old_price, image_url, category_id, label, brand_id, brands(name)";
 
 export async function loadFavoriteIds(supabase: SupabaseClient, userId: string) {
   const { data, error } = await supabase.from("favorites").select("product_id").eq("user_id", userId);
@@ -22,12 +25,16 @@ export async function removeFavorite(supabase: SupabaseClient, userId: string, p
 }
 
 export async function getFavoriteProducts(supabase: SupabaseClient, userId: string) {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("favorites")
-    .select("product_id, products(*, brands(name))")
+    .select(`product_id, products(${FAVORITE_PRODUCT_COLUMNS})`)
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
+  if (error) {
+    console.error("[favorites] products load error:", error.message);
+    return [];
+  }
   return withBrandName(
-    (data || []).map((f) => f.products as unknown as ProductRow | null).filter(Boolean) as ProductRow[],
+    (data ?? []).map((f) => f.products as unknown as ProductListRow | null).filter(Boolean) as ProductListRow[],
   );
 }

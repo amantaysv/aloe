@@ -7,7 +7,6 @@ import {
   getHomePageCategoryProducts,
   getPopularProducts,
   getProductsByBrand,
-  getProductsByCategories,
   getProductsByLabel,
   getSubcategorySection,
   type SortValue,
@@ -39,12 +38,6 @@ export const getCachedProductsByLabel = unstable_cache(
 export const getCachedPopularProducts = unstable_cache(
   (limit?: number) => getPopularProducts(supabase, limit),
   ["popular-products"],
-  { revalidate: 60, tags: ["products"] },
-);
-
-export const getCachedProductsByCategories = unstable_cache(
-  (categoryIds: string[], limit?: number) => getProductsByCategories(supabase, categoryIds, limit),
-  ["products-by-categories"],
   { revalidate: 60, tags: ["products"] },
 );
 

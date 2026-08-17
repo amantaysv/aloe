@@ -26,11 +26,9 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
 
   if (!brandData) notFound();
 
-  const { products: rawProducts, total } = await getCachedProductsByBrand(brandData.id, 1, PAGE_SIZE);
+  const { products, total } = await getCachedProductsByBrand(brandData.id, 1, PAGE_SIZE);
 
   if (!total) notFound();
-
-  const data = rawProducts.map((p) => ({ ...p, brand_name: brandData.name }));
 
   return (
     <MainContainer>
@@ -44,7 +42,7 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
         brandId={brandData.id}
         brandName={brandData.name}
         pageSize={PAGE_SIZE}
-        initialProducts={data}
+        initialProducts={products}
         total={total}
       />
     </MainContainer>

@@ -2,6 +2,13 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
+  // Anonymous visitors — the bulk of storefront traffic — have no Supabase cookie, so there is
+  // no session to refresh. Bailing out here skips a network round trip to GoTrue on every
+  // prerendered page and every RSC prefetch.
+  if (!request.cookies.getAll().some((c) => c.name.startsWith("sb-"))) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -27,5 +34,9 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: [
+    // Also excludes _next/data, the metadata routes and font/icon assets — none of them need
+    // a refreshed session, and sitemap.xml/robots.txt were previously matched.
+    "/((?!_next/static|_next/image|_next/data|favicon.ico|robots.txt|sitemap.xml|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|txt|xml|woff|woff2|ttf)$).*)",
+  ],
 };

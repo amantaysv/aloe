@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components";
-import type { Product } from "@/types";
+import type { ProductListItem } from "@/types";
 import ProductCard from "./ProductCard";
 import SeeAllProducts from "./SeeAllProducts";
 
@@ -17,7 +17,7 @@ export default function ProductCarousel({
 }: {
   title: string;
   href?: string;
-  products: Product[];
+  products: ProductListItem[];
   totalCount?: number;
   visibleCount?: number;
 }) {

@@ -4,19 +4,22 @@ import { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { LABEL_MAP } from "@/lib/constants";
-import type { Product } from "@/types";
+import type { ProductListItem } from "@/types";
 import AddToCart from "./AddToCart";
 import Currency from "./Currency";
 import FavoriteButton from "./FavoriteButton";
 
 type Props = {
-  product: Product;
+  // Deliberately narrower than `Product`: the card renders seven fields, and typing it this way
+  // keeps `description`/`seo_text` from being pulled into list queries again. A full `Product`
+  // still satisfies it.
+  product: ProductListItem;
   className?: string;
   href?: string;
   priority?: boolean;
 };
 
-function ProductBadge({ label }: { label: Product["label"] }) {
+function ProductBadge({ label }: { label: ProductListItem["label"] }) {
   if (!label) return null;
   const { text, cls } = LABEL_MAP[label];
   return (

@@ -1,4 +1,4 @@
-import type { Product } from "@/types";
+import type { ProductListItem } from "@/types";
 
 /**
  * Builds one `VirtualCategoryContent` section per subcategory: products assigned to a
@@ -10,14 +10,21 @@ import type { Product } from "@/types";
 export function buildCategorySection(
   subcategory: { id: number; name: string },
   subSubcategories: { id: number; name: string }[],
-  products: Product[],
-): { id: number; name: string; products: Product[]; groups: { id: number; name: string; products: Product[] }[] } {
+  products: ProductListItem[],
+): {
+  id: number;
+  name: string;
+  products: ProductListItem[];
+  groups: { id: number; name: string; products: ProductListItem[] }[];
+} {
   if (subSubcategories.length === 0) {
     return { id: subcategory.id, name: subcategory.name, products, groups: [] };
   }
 
-  const byId = new Map(subSubcategories.map((c) => [c.id, { id: c.id, name: c.name, products: [] as Product[] }]));
-  const rest: Product[] = [];
+  const byId = new Map(
+    subSubcategories.map((c) => [c.id, { id: c.id, name: c.name, products: [] as ProductListItem[] }]),
+  );
+  const rest: ProductListItem[] = [];
   for (const p of products) {
     const bucket = byId.get(p.category_id);
     if (bucket) bucket.products.push(p);
