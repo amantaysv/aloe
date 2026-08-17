@@ -1,5 +1,6 @@
 import { MainContainer, MobileHeader, Title } from "@/components";
 import { requireAuth } from "@/lib/auth";
+import { parsePage } from "@/lib/page-params";
 import { getUserOrders } from "@/services/order.service";
 import { getProfile } from "@/services/profile.service";
 import LogoutButton from "./LogoutButton";
@@ -7,10 +8,16 @@ import ProfileTabs from "./ProfileTabs";
 
 export const metadata = { title: "Профиль", robots: { index: false, follow: true } };
 
-export default async function ProfilePage() {
-  const { supabase, user } = await requireAuth();
+const ORDERS_PAGE_SIZE = 10;
 
-  const [orders, profile] = await Promise.all([getUserOrders(supabase, user.id), getProfile(supabase, user.id)]);
+export default async function ProfilePage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const { supabase, user } = await requireAuth();
+  const page = parsePage((await searchParams).page);
+
+  const [{ orders, total }, profile] = await Promise.all([
+    getUserOrders(supabase, user.id, { page, pageSize: ORDERS_PAGE_SIZE }),
+    getProfile(supabase, user.id),
+  ]);
 
   return (
     <>
@@ -47,7 +54,13 @@ export default async function ProfilePage() {
           <LogoutButton />
         </div>
 
-        <ProfileTabs initial={profile} orders={orders} />
+        <ProfileTabs
+          initial={profile}
+          orders={orders}
+          page={page}
+          totalPages={Math.ceil(total / ORDERS_PAGE_SIZE)}
+          totalOrders={total}
+        />
       </MainContainer>
     </>
   );

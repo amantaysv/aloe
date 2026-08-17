@@ -4,6 +4,7 @@ import { getActiveBanners } from "@/services/banner.service";
 import { getBrandBySlug, getBrands } from "@/services/brand.service";
 import { getCategories, getCategoriesWithSlug } from "@/services/category.service";
 import {
+  getCategoryProducts,
   getHomePageCategoryProducts,
   getPopularProducts,
   getPopularProductsPaginated,
@@ -12,7 +13,6 @@ import {
   getProductsByLabel,
   getProductsByLabelPaginated,
   getRelatedProducts,
-  getSubcategorySection,
   type SortValue,
 } from "@/services/product.service";
 
@@ -69,10 +69,15 @@ export const getCachedProductsByBrand = unstable_cache(
   { revalidate: 60, tags: ["products"] },
 );
 
-export const getCachedSubcategorySection = unstable_cache(
-  (categoryIds: number[], sort: SortValue, brandIds?: number[]) =>
-    getSubcategorySection(supabase, categoryIds, sort, brandIds),
-  ["subcategory-section"],
+/**
+ * A Map cannot cross the unstable_cache boundary, so entries are cached as tuples and rebuilt.
+ */
+export const getCachedCategoryProducts = unstable_cache(
+  async (categoryIds: number[], sort: SortValue, brandIds?: number[]) => {
+    const byCategory = await getCategoryProducts(supabase, categoryIds, sort, brandIds);
+    return [...byCategory.entries()];
+  },
+  ["category-products"],
   { revalidate: 60, tags: ["products"] },
 );
 

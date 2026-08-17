@@ -127,23 +127,43 @@ export async function getRelatedProducts(
   return withBrandName((data ?? []) as unknown as ProductListRow[]);
 }
 
-export async function getSubcategorySection(
+/**
+ * Products for a whole top-level category in one query, keyed by category id.
+ *
+ * The category page used to call a per-subcategory variant of this inside a Promise.all — one
+ * round trip per subcategory, fifteen for a large category. Since every section is rendered on
+ * the same page anyway, a single `in` over the union costs one query and lets the caller bucket
+ * the rows. Still deliberately unbounded: the page renders all sections in one virtualized
+ * scroll, so a cap would silently hide products. With the narrow column list the payload for the
+ * largest category measures ~90 KB, well inside the 2 MB data-cache entry limit.
+ */
+export async function getCategoryProducts(
   supabase: SupabaseClient<Database>,
   categoryIds: number[],
   sort: SortValue,
   brandIds: number[] = [],
-) {
+): Promise<Map<number, ProductListItem[]>> {
+  const byCategory = new Map<number, ProductListItem[]>();
+  if (categoryIds.length === 0) return byCategory;
+
   const orderCol = sort === "price_asc" || sort === "price_desc" ? "price" : "name";
   const ascending = sort !== "price_desc";
-  let query = supabase.from("products").select(LIST_COLUMNS).eq("published", true).in("category_id", categoryIds);
 
+  let query = supabase.from("products").select(LIST_COLUMNS).eq("published", true).in("category_id", categoryIds);
   if (brandIds.length > 0) query = query.in("brand_id", brandIds);
 
-  // No .range(): the category page renders every section in one virtualized scroll. Since the
-  // query is unbounded, the row count *is* the total — no separate exact COUNT pass needed.
-  const { data } = await query.order(orderCol, { ascending }).order("id");
-  const products = withBrandName((data ?? []) as unknown as ProductListRow[]);
-  return { products, total: products.length };
+  const { data, error } = await query.order(orderCol, { ascending }).order("id");
+  if (error) {
+    console.error("[products] category products failed:", error.message);
+    return byCategory;
+  }
+
+  for (const row of withBrandName((data ?? []) as unknown as ProductListRow[])) {
+    const bucket = byCategory.get(row.category_id);
+    if (bucket) bucket.push(row);
+    else byCategory.set(row.category_id, [row]);
+  }
+  return byCategory;
 }
 
 export async function searchProducts(

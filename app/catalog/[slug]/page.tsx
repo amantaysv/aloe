@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { MainContainer, MobileHeader, NextCategoryLink, SubcategoryFilter, VirtualCategoryContent } from "@/components";
-import { getCachedCategoriesWithSlug, getCachedSubcategorySection } from "@/lib/cached-queries";
+import { getCachedCategoriesWithSlug, getCachedCategoryProducts } from "@/lib/cached-queries";
 import { parseSortParam } from "@/lib/page-params";
 import { buildCategorySection } from "@/lib/subcategory-sections";
 
@@ -39,14 +39,17 @@ export default async function CategoryPage({
 
   const subcategories = allCategories.filter((c) => c.parent_id === category.id);
 
-  const sections = await Promise.all(
-    subcategories.map(async (s) => {
-      const subSubcategories = allCategories.filter((c) => c.parent_id === s.id);
-      const categoryIds = [s.id, ...subSubcategories.map((c) => c.id)];
-      const { products, total } = await getCachedSubcategorySection(categoryIds, validSort);
-      return { sub: s, subSubcategories, products, total };
-    }),
-  );
+  // One query for the whole category rather than one per subcategory — every section renders on
+  // this page anyway, so fifteen round trips bought nothing.
+  const subSubsBySub = new Map(subcategories.map((s) => [s.id, allCategories.filter((c) => c.parent_id === s.id)]));
+  const allCategoryIds = subcategories.flatMap((s) => [s.id, ...(subSubsBySub.get(s.id) ?? []).map((c) => c.id)]);
+  const byCategory = new Map(await getCachedCategoryProducts(allCategoryIds, validSort));
+
+  const sections = subcategories.map((s) => {
+    const subSubcategories = subSubsBySub.get(s.id) ?? [];
+    const products = [s.id, ...subSubcategories.map((c) => c.id)].flatMap((id) => byCategory.get(id) ?? []);
+    return { sub: s, subSubcategories, products, total: products.length };
+  });
 
   const nonEmpty = sections.filter((s) => s.total > 0);
   if (!nonEmpty.length) notFound();

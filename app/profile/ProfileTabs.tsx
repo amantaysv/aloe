@@ -11,11 +11,20 @@ import { useToast } from "@/store/toast";
 import type { Order, ProfileFields } from "@/types";
 import ProfileForm from "./ProfileForm";
 
-const PAGE_SIZE = 10;
-
-export default function ProfileTabs({ initial, orders }: { initial: ProfileFields | null; orders: Order[] }) {
+export default function ProfileTabs({
+  initial,
+  orders,
+  page,
+  totalPages,
+  totalOrders,
+}: {
+  initial: ProfileFields | null;
+  orders: Order[];
+  page: number;
+  totalPages: number;
+  totalOrders: number;
+}) {
   const [tab, setTab] = useState<"profile" | "orders">("orders");
-  const [page, setPage] = useState(1);
   const addMany = useCart((s) => s.addMany);
   const show = useToast((s) => s.show);
   const router = useRouter();
@@ -34,9 +43,6 @@ export default function ProfileTabs({ initial, orders }: { initial: ProfileField
     router.push("/cart");
   }
 
-  const totalPages = Math.ceil(orders.length / PAGE_SIZE);
-  const paginated = orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
   return (
     <>
       {/* Tabs */}
@@ -49,7 +55,7 @@ export default function ProfileTabs({ initial, orders }: { initial: ProfileField
               tab === t ? "border-green-600 text-green-600" : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
-            {t === "profile" ? "Личные данные" : `История заказов${orders.length > 0 ? ` (${orders.length})` : ""}`}
+            {t === "profile" ? "Личные данные" : `История заказов${totalOrders > 0 ? ` (${totalOrders})` : ""}`}
           </Button>
         ))}
       </div>
@@ -67,7 +73,7 @@ export default function ProfileTabs({ initial, orders }: { initial: ProfileField
           ) : (
             <>
               <div className="flex flex-col gap-4">
-                {paginated.map((order) => {
+                {orders.map((order) => {
                   const s = (order.status && ORDER_STATUS[order.status]) || ORDER_STATUS.new;
                   return (
                     <div key={order.id} className="border border-gray-300 rounded-xl p-4">
@@ -111,7 +117,7 @@ export default function ProfileTabs({ initial, orders }: { initial: ProfileField
                 })}
               </div>
 
-              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+              <Pagination page={page} totalPages={totalPages} basePath="/profile" />
             </>
           )}
         </>

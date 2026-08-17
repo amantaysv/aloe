@@ -129,6 +129,11 @@ export const useCart = create<CartStore>()(
           return;
         }
 
+        // onAuthStateChange fires on INITIAL_SESSION, SIGNED_IN, hourly TOKEN_REFRESHED and on
+        // tab focus. Re-running the merge each time cost 3-4 round trips, and two overlapping
+        // calls both read get().items before either wrote, so the merge could double-apply.
+        if (get().userId === userId) return;
+
         set({ userId });
 
         const supabase = await getSupabase();

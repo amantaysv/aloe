@@ -18,10 +18,16 @@ export default function AuthSync() {
       if (session?.user) {
         setCartUser(session.user.id);
         setFavoritesUser(session.user.id);
-      } else if (event === "SIGNED_OUT") {
-        setCartUser(null);
-        setFavoritesUser(null);
+        return;
       }
+
+      // No session. Favourites hold nothing worth preserving, so settle them either way —
+      // otherwise `initialized` never flips for a guest and FavoriteButton stays disabled.
+      setFavoritesUser(null);
+
+      // The cart persists to localStorage for guests, so only a real sign-out may clear it.
+      // INITIAL_SESSION also arrives with a null session and must not wipe it.
+      if (event === "SIGNED_OUT") setCartUser(null);
     });
 
     return () => subscription.unsubscribe();

@@ -9,6 +9,7 @@ import Button from "./Button";
 export default function FavoriteButton({ productId }: { productId: number }) {
   const isFav = useFavorites((s) => s.ids.includes(productId));
   const userId = useFavorites((s) => s.userId);
+  const initialized = useFavorites((s) => s.initialized);
   const add = useFavorites((s) => s.add);
   const remove = useFavorites((s) => s.remove);
   const show = useToast((s) => s.show);
@@ -17,6 +18,10 @@ export default function FavoriteButton({ productId }: { productId: number }) {
   function toggle(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+
+    // Until the first auth event lands, `userId` is null for signed-in users too — sending them
+    // to /auth here was a false negative that happened on every fast click after page load.
+    if (!initialized) return;
 
     if (!userId) {
       show("Войдите, чтобы добавить в избранное", "info");
@@ -37,6 +42,9 @@ export default function FavoriteButton({ productId }: { productId: number }) {
     <Button
       onClick={toggle}
       title={isFav ? "Убрать из избранного" : "В избранное"}
+      aria-label={isFav ? "Убрать из избранного" : "Добавить в избранное"}
+      aria-pressed={isFav}
+      disabled={!initialized}
       className={`absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full transition-colors z-9
         ${isFav ? "md:bg-red-50 text-red-500 md:hover:bg-red-100" : "md:bg-white/80 text-gray-400 hover:text-red-400 md:hover:bg-white"}`}
     >

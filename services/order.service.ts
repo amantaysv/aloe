@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { ORDER_STATUS } from "@/lib/constants";
 import type { Order, OrderItem } from "@/types";
 import type { Database } from "@/types/database";
 
@@ -10,15 +11,28 @@ function escapeOrFilterValue(value: string): string {
   return value.replace(/[,().:*"\\]/g, " ").trim();
 }
 
-export async function getUserOrders(supabase: SupabaseClient<Database>, userId: string): Promise<Order[]> {
-  const { data, error } = await supabase
+/**
+ * Paginated server-side. This used to select every order a customer had ever placed — including
+ * the `items` jsonb blob for each — and ProfileTabs then sliced the array in the browser.
+ */
+export async function getUserOrders(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  options: { page?: number; pageSize?: number } = {},
+): Promise<{ orders: Order[]; total: number }> {
+  const { page = 1, pageSize = 10 } = options;
+  const from = (page - 1) * pageSize;
+
+  const { data, count, error } = await supabase
     .from("orders")
-    .select("*")
+    .select("*", { count: "exact" })
     .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(from, from + pageSize - 1);
+
   if (error) console.error("[orders] user orders load error:", error.message);
   // `items` is jsonb; checkout is the only writer and always stores OrderItem[].
-  return (data ?? []) as Order[];
+  return { orders: (data ?? []) as Order[], total: count ?? 0 };
 }
 
 export async function getAdminOrders(
@@ -37,15 +51,23 @@ export async function getAdminOrders(
   return { orders: (data ?? []) as Order[], total: count ?? 0 };
 }
 
+/**
+ * One head-count per status instead of reading every row and tallying in JS. The old version was
+ * silently truncated by PostgREST's max-rows, so past 1000 orders the admin badges were wrong.
+ */
 export async function getOrderStatusCounts(supabase: SupabaseClient<Database>) {
-  const { data } = await supabase.from("orders").select("status");
-  const counts: Record<string, number> = {};
-  for (const row of data ?? []) {
-    // status is nullable in the schema; an untyped client let it be used as an index key.
-    if (row.status == null) continue;
-    counts[row.status] = (counts[row.status] ?? 0) + 1;
-  }
-  return counts;
+  const statuses = Object.keys(ORDER_STATUS);
+  const results = await Promise.all(
+    statuses.map(async (status) => {
+      const { count, error } = await supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("status", status);
+      if (error) console.error(`[orders] count for status ${status} failed:`, error.message);
+      return [status, count ?? 0] as const;
+    }),
+  );
+  return Object.fromEntries(results) as Record<string, number>;
 }
 
 export async function insertOrder(
