@@ -59,20 +59,25 @@ export default function Pagination({ page, totalPages, ...rest }: Props) {
   const nextDisabled = page === totalPages;
 
   return (
-    <div className="flex items-center gap-1 flex-wrap justify-center mt-6">
+    <nav aria-label="Пагинация" className="flex items-center gap-1 flex-wrap justify-center mt-6">
       {/* Prev */}
       {toHref ? (
         prevDisabled ? (
-          <span className={btnCls(false, true)}>
+          <span aria-disabled="true" className={btnCls(false, true)}>
             <ChevronLeft />
           </span>
         ) : (
-          <Link href={toHref(page - 1)} className={btnCls(false)}>
+          <Link href={toHref(page - 1)} aria-label="Предыдущая страница" className={btnCls(false)}>
             <ChevronLeft />
           </Link>
         )
       ) : (
-        <Button onClick={() => onPageChange!(page - 1)} disabled={prevDisabled} className={btnCls(false, prevDisabled)}>
+        <Button
+          onClick={() => onPageChange!(page - 1)}
+          disabled={prevDisabled}
+          aria-label="Предыдущая страница"
+          className={btnCls(false, prevDisabled)}
+        >
           <ChevronLeft />
         </Button>
       )}
@@ -83,11 +88,16 @@ export default function Pagination({ page, totalPages, ...rest }: Props) {
             …
           </span>
         ) : toHref ? (
-          <Link key={p} href={toHref(p)} className={btnCls(p === page)}>
+          <Link key={p} href={toHref(p)} aria-current={p === page ? "page" : undefined} className={btnCls(p === page)}>
             {p}
           </Link>
         ) : (
-          <Button key={p} onClick={() => onPageChange!(p)} className={btnCls(p === page)}>
+          <Button
+            key={p}
+            onClick={() => onPageChange!(p)}
+            aria-current={p === page ? "page" : undefined}
+            className={btnCls(p === page)}
+          >
             {p}
           </Button>
         ),
@@ -96,19 +106,24 @@ export default function Pagination({ page, totalPages, ...rest }: Props) {
       {/* Next */}
       {toHref ? (
         nextDisabled ? (
-          <span className={btnCls(false, true)}>
+          <span aria-disabled="true" className={btnCls(false, true)}>
             <ChevronRight />
           </span>
         ) : (
-          <Link href={toHref(page + 1)} className={btnCls(false)}>
+          <Link href={toHref(page + 1)} aria-label="Следующая страница" className={btnCls(false)}>
             <ChevronRight />
           </Link>
         )
       ) : (
-        <Button onClick={() => onPageChange!(page + 1)} disabled={nextDisabled} className={btnCls(false, nextDisabled)}>
+        <Button
+          onClick={() => onPageChange!(page + 1)}
+          disabled={nextDisabled}
+          aria-label="Следующая страница"
+          className={btnCls(false, nextDisabled)}
+        >
           <ChevronRight />
         </Button>
       )}
-    </div>
+    </nav>
   );
 }

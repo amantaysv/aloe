@@ -3,7 +3,6 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Title from "./Title";
 
 export default function MobileHeader({
   children,
@@ -23,17 +22,18 @@ export default function MobileHeader({
       {withBackButton ? (
         <button
           onClick={() => router.back()}
+          aria-label="Назад"
           className={"md:hidden absolute flex items-center bg-white rounded-full text-green-600 transition-colors p-2"}
         >
           <ArrowLeft className="size-5" />
         </button>
       ) : null}
       {withGoToMainButton ? (
-        <Link href="/" className="absolute">
+        <Link href="/" aria-label="На главную" className="absolute">
           <ArrowLeft className="size-5" />
         </Link>
       ) : null}
-      {title ? <Title className="flex-1 text-center">{title}</Title> : null}
+      {title ? <p className="flex-1 text-center text-xl font-medium">{title}</p> : null}
       {children}
     </div>
   );

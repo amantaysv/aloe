@@ -45,6 +45,7 @@ export default function SubcategoryFilter({ subcategories }: { subcategories: Su
               else pillRefs.current.delete(s.id);
             }}
             onClick={() => scrollToSection(s.id)}
+            aria-pressed={s.id === activeSectionId}
             className={`px-4 py-2 text-xs rounded-full border transition-colors whitespace-nowrap cursor-pointer ${
               s.id === activeSectionId
                 ? "bg-gray-700 text-white border-gray-700"

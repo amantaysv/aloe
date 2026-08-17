@@ -58,6 +58,7 @@ export default function ManufacturerFilter({
             <button
               key={b.id}
               onClick={() => toggle(b.id)}
+              aria-pressed={active}
               className={`px-3 py-1 text-xs rounded-full border transition-colors hover:cursor-pointer ${
                 active
                   ? "bg-green-600 border-green-600 text-white"

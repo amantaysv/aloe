@@ -67,8 +67,16 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
         <>
           <div className="md:hidden">
             <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none" />
-            <Button onClick={scrollPrev} className="absolute left-0 top-0 w-1/2 h-full" />
-            <Button onClick={scrollNext} className="absolute right-0 top-0 w-1/2 h-full" />
+            <Button
+              onClick={scrollPrev}
+              aria-label="Предыдущий баннер"
+              className="absolute left-0 top-0 w-1/2 h-full"
+            />
+            <Button
+              onClick={scrollNext}
+              aria-label="Следующий баннер"
+              className="absolute right-0 top-0 w-1/2 h-full"
+            />
             <div className="absolute bottom-0 left-0 right-0 flex gap-1 px-2 pb-2">
               {banners.map((_, i) => (
                 <div key={i} className="flex-1 h-1 rounded-full bg-white/40 overflow-hidden">
@@ -82,12 +90,14 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
           <div className="hidden md:block">
             <Button
               onClick={scrollPrev}
+              aria-label="Предыдущий баннер"
               className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center transition-colors"
             >
               <ChevronLeft className="size-4" />
             </Button>
             <Button
               onClick={scrollNext}
+              aria-label="Следующий баннер"
               className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center transition-colors"
             >
               <ChevronRight className="size-4" />
@@ -97,6 +107,8 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
                 <Button
                   key={i}
                   onClick={() => scrollTo(i)}
+                  aria-label={`Баннер ${i + 1} из ${banners.length}`}
+                  aria-current={i === selected ? "true" : undefined}
                   className={`h-2 rounded-full transition-all ${i === selected ? "bg-white w-4" : "bg-white/50 w-2"}`}
                 />
               ))}

@@ -47,6 +47,7 @@ export default function ProductFilterBar({
             <Button
               key={l.value}
               onClick={() => onLabelChange(l.value)}
+              aria-pressed={label === l.value}
               className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
                 label === l.value
                   ? "bg-green-600 text-white border-green-600"

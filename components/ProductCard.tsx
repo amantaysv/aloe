@@ -33,7 +33,11 @@ function ProductCard({ product: p, className = "", href, priority = false }: Pro
   const productHref = href ?? `/product/${p.id}`;
 
   return (
-    <div className={`flex flex-col rounded-lg overflow-hidden ${className}`}>
+    // `relative` so FavoriteButton can sit over the image from outside the <Link>: a <button>
+    // nested inside an <a> is invalid HTML and behaves unpredictably for keyboard and
+    // screen-reader users.
+    <div className={`relative flex flex-col rounded-lg overflow-hidden ${className}`}>
+      <FavoriteButton productId={p.id} />
       <Link className="flex-1 flex flex-col" href={productHref}>
         <div className="relative p-2 aspect-square shadow-xs rounded-lg">
           <Image
@@ -45,7 +49,6 @@ function ProductCard({ product: p, className = "", href, priority = false }: Pro
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
           />
           <ProductBadge label={p.label} />
-          <FavoriteButton productId={p.id} />
         </div>
         <div className="flex-1 flex flex-col py-3">
           <p className="flex-1 text-sm font-medium line-clamp-3 w-fit" title={p.name}>
