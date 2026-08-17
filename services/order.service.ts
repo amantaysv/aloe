@@ -8,7 +8,15 @@ import type { Database } from "@/types/database";
  * rewrite the filter tree. Strip the characters that carry meaning there.
  */
 function escapeOrFilterValue(value: string): string {
-  return value.replace(/[,().:*"\\]/g, " ").trim();
+  return (
+    value
+      // Characters that carry meaning in a PostgREST filter expression.
+      .replace(/[,().:*"\\]/g, " ")
+      // ...and the LIKE wildcards, which `escapeLike` handles for products but were left here:
+      // a search of "%" matched every order.
+      .replace(/[%_]/g, " ")
+      .trim()
+  );
 }
 
 /**
@@ -27,7 +35,10 @@ export async function getUserOrders(
     .from("orders")
     .select("*", { count: "exact" })
     .eq("user_id", userId)
+    // Tiebreak by id: ordering on created_at alone can duplicate or skip rows across pages when
+    // timestamps collide. Every product query gained this in the previous pass; orders missed it.
     .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
     .range(from, from + pageSize - 1);
 
   if (error) console.error("[orders] user orders load error:", error.message);
@@ -42,7 +53,11 @@ export async function getAdminOrders(
   const { q = "", statuses = [], page = 1, pageSize = 15 } = options;
   const from = (page - 1) * pageSize;
 
-  let query = supabase.from("orders").select("*", { count: "exact" }).order("created_at", { ascending: false });
+  let query = supabase
+    .from("orders")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
   const safeQ = escapeOrFilterValue(q);
   if (safeQ) query = query.or(`customer_name.ilike.%${safeQ}%,customer_phone.ilike.%${safeQ}%`);
   if (statuses.length > 0) query = query.in("status", statuses);
