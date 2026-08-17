@@ -4,7 +4,10 @@ import type { Database } from "@/types/database";
 
 export async function getProfile(supabase: SupabaseClient<Database>, userId: string) {
   // `maybe`: a user who has never saved a profile has no row, which is not a failure.
-  return maybe("profile", await supabase.from("profiles").select("name, phone, address").eq("id", userId).single());
+  return maybe(
+    "profile",
+    await supabase.from("profiles").select("name, phone, address").eq("id", userId).maybeSingle(),
+  );
 }
 
 export async function saveProfile(

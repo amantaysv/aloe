@@ -112,7 +112,9 @@ export async function getHomePageCategoryProducts(
 }
 
 export async function getProduct(supabase: SupabaseClient<Database>, id: number) {
-  return supabase.from("products").select("*, brands(name, slug)").eq("id", id).eq("published", true).single();
+  // maybeSingle, not single: "no rows" is an ordinary miss here, and single() reports it with the
+  // same PGRST116 code it uses for "more than one row" — which would hide a duplicate id.
+  return supabase.from("products").select("*, brands(name, slug)").eq("id", id).eq("published", true).maybeSingle();
 }
 
 export async function getRelatedProducts(

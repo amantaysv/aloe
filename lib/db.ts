@@ -8,9 +8,6 @@ import type { PostgrestError } from "@supabase/supabase-js";
 type Res = { data: unknown; error: PostgrestError | null };
 type Data<R extends Res> = NonNullable<R["data"]>;
 
-/** PGRST116 is .single()'s "no rows" / "more than one row" — an absent record, not a fault. */
-const NOT_FOUND = "PGRST116";
-
 /**
  * A failed query used to be indistinguishable from an empty one: services destructured only
  * `{ data }`, so a database outage, an RLS denial or a malformed filter all rendered as "no
@@ -31,8 +28,15 @@ export function strict<R extends Res>(label: string, res: R): Data<R> {
   return res.data as Data<R>;
 }
 
-/** For `.single()` lookups where "not found" is expected and distinct from "failed". */
+/**
+ * For lookups where "not found" is an ordinary outcome. Call sites must use `.maybeSingle()`, which
+ * reports zero rows as `{ data: null, error: null }`.
+ *
+ * Deliberately throws on *every* error. The earlier version excused PGRST116 to let `.single()`
+ * misses through — but `.single()` reports "more than one row" with that same code, so a duplicate
+ * `brands.slug` surfaced as a 404 instead of the data-integrity problem it is.
+ */
 export function maybe<R extends Res>(label: string, res: R): Data<R> | null {
-  if (res.error && res.error.code !== NOT_FOUND) throw new Error(`[${label}] ${res.error.message}`);
+  if (res.error) throw new Error(`[${label}] ${res.error.message}`);
   return (res.data ?? null) as Data<R> | null;
 }

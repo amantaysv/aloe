@@ -54,12 +54,19 @@ describe("strict", () => {
 });
 
 describe("maybe", () => {
-  it("returns null for .single()'s no-rows code rather than throwing", () => {
-    expect(maybe("brand-by-slug", noRows<{ id: number }>())).toBeNull();
+  // Call sites use .maybeSingle(), which reports "no rows" as data: null with no error at all.
+  it("returns null when the row is simply absent", () => {
+    expect(maybe("brand-by-slug", ok<{ id: number } | null>(null))).toBeNull();
   });
 
   it("still throws on a genuine failure", () => {
     expect(() => maybe("brand-by-slug", failed<{ id: number }>())).toThrow(/connection refused/);
+  });
+
+  // .single() reports "more than one row" with the same PGRST116 it uses for zero rows, so
+  // excusing that code hid duplicate slugs behind a 404. Every error surfaces now.
+  it("throws on PGRST116 too, since it also means more than one row", () => {
+    expect(() => maybe("brand-by-slug", noRows<{ id: number }>())).toThrow(/\[brand-by-slug\]/);
   });
 
   it("returns the row when found", () => {
