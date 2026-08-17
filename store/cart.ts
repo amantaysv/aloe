@@ -58,10 +58,13 @@ export const useCart = create<CartStore>()(
        */
       addMany: (incoming) => {
         set((state) => {
+          // Replace, never mutate: AddToCart selects the item *object* and zustand compares
+          // selector results with Object.is, so an in-place bump left the counter showing the old
+          // quantity — and retroactively altered the snapshot `persist` had already written.
           const merged = [...state.items];
           for (const item of incoming) {
-            const existing = merged.find((i) => i.id === item.id);
-            if (existing) existing.quantity += item.quantity;
+            const i = merged.findIndex((x) => x.id === item.id);
+            if (i >= 0) merged[i] = { ...merged[i], quantity: merged[i].quantity + item.quantity };
             else merged.push({ ...item });
           }
           return { items: merged };

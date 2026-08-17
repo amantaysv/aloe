@@ -98,7 +98,7 @@ export default function ProfileTabs({
                               {item.name} × {item.quantity}
                             </span>
                             <span>
-                              {(item.price * item.quantity).toLocaleString("ru-RU")} <Currency />
+                              {((item.price ?? 0) * item.quantity).toLocaleString("ru-RU")} <Currency />
                             </span>
                           </li>
                         ))}

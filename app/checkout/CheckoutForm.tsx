@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useId, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import Currency from "@/components/Currency";
 import { useIsClient } from "@/hooks/useIsClient";
-import { DELIVERY_OPTIONS, FREE_DELIVERY_THRESHOLD, getDeliveryCost } from "@/lib/constants";
+import { DELIVERY_OPTIONS, FREE_DELIVERY_THRESHOLD } from "@/lib/constants";
 import { useCart } from "@/store/cart";
-import { createOrder } from "./actions";
+import { createOrder, quoteOrder, type Quote, type RejectedLine } from "./actions";
 
 type Props = {
   initial?: {
@@ -22,8 +22,8 @@ type Props = {
 export default function CheckoutForm({ initial }: Props) {
   const router = useRouter();
   const items = useCart((s) => s.items);
-  const total = useCart((s) => s.total);
   const clear = useCart((s) => s.clear);
+  const removeItem = useCart((s) => s.remove);
   const isClient = useIsClient();
   const [name, setName] = useState(initial?.name ?? "");
   const [phone, setPhone] = useState(initial?.phone ?? "");
@@ -32,6 +32,48 @@ export default function CheckoutForm({ initial }: Props) {
   const [deliveryType, setDeliveryType] = useState<string>(DELIVERY_OPTIONS[0].id);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  /** Server-computed money. The client never totals the cart itself — its prices can be stale. */
+  const [quote, setQuote] = useState<Quote | null>(null);
+  const [quoting, setQuoting] = useState(true);
+  const [rejected, setRejected] = useState<RejectedLine[]>([]);
+  const nameId = useId();
+  const phoneId = useId();
+  const addressId = useId();
+  const commentId = useId();
+
+  const lines = items.map((i) => ({ id: i.id, quantity: i.quantity }));
+  const linesKey = JSON.stringify(lines);
+
+  // Re-quote whenever the cart or the delivery option changes. Prices, and therefore the
+  // free-delivery threshold, are only ever decided by the server.
+  useEffect(() => {
+    if (items.length === 0) return;
+    let cancelled = false;
+
+    (async () => {
+      setQuoting(true);
+      const result = await quoteOrder({ items: JSON.parse(linesKey), deliveryType });
+      if (cancelled) return;
+      if (result.ok) {
+        setQuote(result.quote);
+        setRejected(result.quote.rejected);
+      } else {
+        setError(result.error);
+      }
+      setQuoting(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // linesKey stands in for the cart contents by value
+  }, [linesKey, deliveryType, items.length]);
+
+  function pruneRejected() {
+    rejected.forEach((r) => removeItem(r.id));
+    setRejected([]);
+    setError("");
+  }
 
   // The cart store rehydrates from localStorage synchronously, so the server's empty-cart
   // markup never matches the first client render. Hold a placeholder until we're on the client.
@@ -59,31 +101,39 @@ export default function CheckoutForm({ initial }: Props) {
     setLoading(true);
     setError("");
     try {
-      // Only ids and quantities go to the server — it resolves prices and the total itself.
+      // Only ids and quantities go to the server. `quotedTotal` is what the customer was shown —
+      // if it no longer matches, the server refuses and returns the new quote instead of
+      // silently charging a different amount.
       const result = await createOrder({
         name: name.trim(),
         phone: phone.trim(),
         address: address.trim(),
         comment: comment.trim(),
-        items: items.map((i) => ({ id: i.id, quantity: i.quantity })),
+        items: lines,
         deliveryType,
+        quotedTotal: quote?.total,
       });
       if (!result.ok) {
         setError(result.error);
+        if (result.rejected?.length) setRejected(result.rejected);
+        if (result.quote) setQuote(result.quote);
         return;
       }
       clear();
       router.push(`/checkout/success?id=${result.orderId}`);
     } catch {
       // The order may well have been created — never invite a blind retry.
-      setError("Не удалось получить подтверждение. Проверьте «Мои заказы» перед повторной попыткой.");
+      // Guests have no order history to check, so don't send them to an auth-gated page.
+      setError("Не удалось получить подтверждение. Заказ мог быть создан — свяжитесь с нами перед повторной попыткой.");
     } finally {
       setLoading(false);
     }
   }
 
-  const orderTotal = total();
-  const deliveryCost = getDeliveryCost(deliveryType, orderTotal);
+  const itemsTotal = quote?.itemsTotal ?? 0;
+  const deliveryCost = quote?.deliveryCost ?? 0;
+  const orderTotal = quote?.total ?? 0;
+  const priceById = new Map((quote?.items ?? []).map((i) => [i.id, i.price]));
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -105,12 +155,18 @@ export default function CheckoutForm({ initial }: Props) {
               </div>
               <p className="flex-1 text-sm line-clamp-1">{item.name}</p>
               <p className="text-sm shrink-0 text-gray-600">
-                {item.quantity} × {item.price} <Currency />
+                {item.quantity} × {priceById.get(item.id) ?? "—"} <Currency />
               </p>
             </div>
           ))}
         </div>
         <div className="mt-2 text-sm text-gray-500 flex justify-between">
+          <span>Товары:</span>
+          <span>
+            {itemsTotal} <Currency />
+          </span>
+        </div>
+        <div className="mt-1 text-sm text-gray-500 flex justify-between">
           <span>Доставка:</span>
           <span>
             {deliveryCost > 0 ? (
@@ -125,7 +181,7 @@ export default function CheckoutForm({ initial }: Props) {
         <div className="border-t border-gray-300 mt-3 pt-3 flex justify-between font-bold">
           <span>Итого:</span>
           <span className="text-green-600">
-            {orderTotal + deliveryCost} <Currency />
+            {orderTotal} <Currency />
           </span>
         </div>
       </div>
@@ -135,7 +191,7 @@ export default function CheckoutForm({ initial }: Props) {
         <h2 className="font-semibold">Способ доставки</h2>
         <div className="space-y-2">
           {DELIVERY_OPTIONS.map((option) => {
-            const free = option.freeOverThreshold && orderTotal >= FREE_DELIVERY_THRESHOLD;
+            const free = option.freeOverThreshold && itemsTotal >= FREE_DELIVERY_THRESHOLD;
             return (
               <label
                 key={option.id}
@@ -178,39 +234,58 @@ export default function CheckoutForm({ initial }: Props) {
         <h2 className="font-semibold">Данные для доставки</h2>
 
         <div>
-          <label className="text-sm text-gray-600 block mb-1">Имя *</label>
+          <label htmlFor={nameId} className="text-sm text-gray-600 block mb-1">
+            Имя *
+          </label>
           <input
+            id={nameId}
             value={name}
             onChange={(e) => setName(e.target.value)}
+            autoComplete="name"
+            required
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="Ваше имя"
           />
         </div>
 
         <div>
-          <label className="text-sm text-gray-600 block mb-1">Телефон *</label>
+          <label htmlFor={phoneId} className="text-sm text-gray-600 block mb-1">
+            Телефон *
+          </label>
           <input
+            id={phoneId}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             type="tel"
-            className="w-full border rounded-lg px-3 py-2 text-bas md:text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            autoComplete="tel"
+            required
+            // text-base, not text-bas: below 16px iOS Safari zooms the viewport on focus.
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="+996 700 000 000"
           />
         </div>
 
         <div>
-          <label className="text-sm text-gray-600 block mb-1">Адрес доставки *</label>
+          <label htmlFor={addressId} className="text-sm text-gray-600 block mb-1">
+            Адрес доставки *
+          </label>
           <input
+            id={addressId}
             value={address}
             onChange={(e) => setAddress(e.target.value)}
+            autoComplete="street-address"
+            required
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="Улица, дом, квартира"
           />
         </div>
 
         <div>
-          <label className="text-sm text-gray-600 block mb-1">Комментарий</label>
+          <label htmlFor={commentId} className="text-sm text-gray-600 block mb-1">
+            Комментарий
+          </label>
           <textarea
+            id={commentId}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
@@ -220,10 +295,37 @@ export default function CheckoutForm({ initial }: Props) {
         </div>
       </div>
 
-      {error && <p className="text-red-500 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
+      {rejected.length > 0 && (
+        <div role="alert" className="text-sm bg-amber-50 border border-amber-300 rounded-lg px-3 py-3">
+          <p className="font-medium text-amber-900 mb-1">Эти товары больше нельзя заказать:</p>
+          <ul className="list-disc list-inside text-amber-800">
+            {rejected.map((r) => (
+              <li key={r.id}>
+                {r.name ?? `Товар #${r.id}`}
+                {r.reason === "no-price" ? " — цена не указана" : " — снят с продажи"}
+              </li>
+            ))}
+          </ul>
+          <Button variant="secondary" size="md" type="button" onClick={pruneRejected} className="mt-2">
+            Убрать из корзины и продолжить
+          </Button>
+        </div>
+      )}
 
-      <Button type="submit" variant="primary" size="md" disabled={loading} className="w-full py-2.5 md:py-3">
-        {loading ? "Оформляем..." : "Подтвердить заказ"}
+      {error && rejected.length === 0 && (
+        <p role="alert" className="text-red-500 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          {error}
+        </p>
+      )}
+
+      <Button
+        type="submit"
+        variant="primary"
+        size="md"
+        disabled={loading || quoting || !quote || rejected.length > 0}
+        className="w-full py-2.5 md:py-3"
+      >
+        {loading ? "Оформляем..." : quoting ? "Считаем..." : "Подтвердить заказ"}
       </Button>
     </form>
   );

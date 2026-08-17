@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { resolveOrigin, safeRedirect } from "@/lib/safe-redirect";
 
 const BASE = "https://aloe.kg";
@@ -37,15 +37,24 @@ describe("resolveOrigin", () => {
     expect(resolveOrigin(null, "https://localhost:3000")).toBe("https://localhost:3000");
   });
 
-  it("honours our own host and preview deployments", () => {
+  it("honours our own host and its subdomains", () => {
     expect(resolveOrigin("aloe.kg", "https://x")).toBe("https://aloe.kg");
     expect(resolveOrigin("www.aloe.kg", "https://x")).toBe("https://www.aloe.kg");
+  });
+
+  it("honours the deployment host only when the platform declares it", () => {
+    expect(resolveOrigin("aloe-next.vercel.app", "https://x")).toBe("https://aloe.kg");
+
+    vi.stubEnv("VERCEL_URL", "aloe-next.vercel.app");
     expect(resolveOrigin("aloe-next.vercel.app", "https://x")).toBe("https://aloe-next.vercel.app");
+    vi.unstubAllEnvs();
   });
 
   it("rejects an attacker-supplied host", () => {
     expect(resolveOrigin("evil.com", "https://x")).toBe("https://aloe.kg");
     expect(resolveOrigin("aloe.kg.evil.com", "https://x")).toBe("https://aloe.kg");
+    // A blanket *.vercel.app allowance used to let any attacker-owned deployment through.
+    expect(resolveOrigin("attacker.vercel.app", "https://x")).toBe("https://aloe.kg");
     // Only the first entry of a comma-joined header is considered.
     expect(resolveOrigin("evil.com, aloe.kg", "https://x")).toBe("https://aloe.kg");
   });

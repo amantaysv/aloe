@@ -20,8 +20,27 @@ const LIMITS = { name: 120, phone: 32, address: 500, comment: 1000 } as const;
 
 type Failure = { ok: false; error: string };
 
+/** Line the client asked for that cannot be ordered, with the reason, so the UI can name it. */
+export type RejectedLine = { id: number; name: string | null; reason: "missing" | "no-price" };
+
+export type Quote = {
+  items: OrderItem[];
+  itemsTotal: number;
+  deliveryCost: number;
+  total: number;
+  /** Empty when everything resolved; otherwise the caller should prune these and re-quote. */
+  rejected: RejectedLine[];
+};
+
+type CreateOrderResult = { ok: true; orderId: string } | (Failure & { rejected?: RejectedLine[]; quote?: Quote });
+
 function fail(error: string): Failure {
   return { ok: false, error };
+}
+
+/** Money is `numeric` in Postgres; keep two decimals so float artefacts never reach a customer. */
+function money(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
 function normalizeText(value: unknown, max: number): string {
@@ -43,6 +62,80 @@ function parseLines(items: unknown): OrderLine[] | null {
   return [...byId].map(([id, quantity]) => ({ id, quantity }));
 }
 
+type AdminClient = ReturnType<typeof createAdminClient>;
+
+/**
+ * The single place order money is computed. Both `quoteOrder` (what the customer is shown) and
+ * `createOrder` (what is persisted) go through it, so the two cannot disagree — which is exactly
+ * what happened while the client totalled the cart from its own localStorage prices.
+ */
+async function buildQuote(admin: AdminClient, lines: OrderLine[], deliveryType: string): Promise<Quote> {
+  const { data, error } = await admin
+    .from("products")
+    .select("id, name, price, image_url")
+    .in(
+      "id",
+      lines.map((l) => l.id),
+    )
+    .eq("published", true);
+
+  if (error) throw new Error(`[checkout] product lookup failed: ${error.message}`);
+
+  const priced = new Map((data ?? []).map((p) => [Number(p.id), p]));
+  const items: OrderItem[] = [];
+  const rejected: RejectedLine[] = [];
+
+  for (const line of lines) {
+    const product = priced.get(line.id);
+    if (!product) {
+      rejected.push({ id: line.id, name: null, reason: "missing" });
+      continue;
+    }
+    // price is nullable in the schema; Number(null) is 0, which used to make such a product
+    // orderable for free.
+    const price = product.price == null ? null : Number(product.price);
+    if (price == null || !Number.isFinite(price) || price <= 0) {
+      rejected.push({ id: line.id, name: product.name, reason: "no-price" });
+      continue;
+    }
+    items.push({
+      id: Number(product.id),
+      name: String(product.name),
+      price,
+      quantity: line.quantity,
+      image_url: product.image_url ?? "",
+    });
+  }
+
+  const itemsTotal = money(items.reduce((sum, i) => sum + i.price! * i.quantity, 0));
+  const deliveryCost = money(getDeliveryCost(deliveryType, itemsTotal));
+  return { items, itemsTotal, deliveryCost, total: money(itemsTotal + deliveryCost), rejected };
+}
+
+/**
+ * What the checkout page renders. Public and unauthenticated like `createOrder`, and validated
+ * the same way — it only reads.
+ */
+export async function quoteOrder({
+  items,
+  deliveryType,
+}: {
+  items: OrderLine[];
+  deliveryType: string;
+}): Promise<{ ok: true; quote: Quote } | Failure> {
+  if (!DELIVERY_OPTIONS.some((o) => o.id === deliveryType)) return fail("Выберите способ доставки.");
+
+  const lines = parseLines(items);
+  if (!lines) return fail("Корзина повреждена. Обновите страницу и попробуйте ещё раз.");
+
+  try {
+    return { ok: true as const, quote: await buildQuote(createAdminClient(), lines, deliveryType) };
+  } catch (err) {
+    console.error("[checkout] quote failed", err);
+    return fail("Не удалось рассчитать заказ. Попробуйте ещё раз.");
+  }
+}
+
 export async function createOrder({
   name,
   phone,
@@ -50,6 +143,7 @@ export async function createOrder({
   comment,
   items,
   deliveryType,
+  quotedTotal,
 }: {
   name: string;
   phone: string;
@@ -57,7 +151,9 @@ export async function createOrder({
   comment: string;
   items: OrderLine[];
   deliveryType: string;
-}): Promise<{ ok: true; orderId: string } | Failure> {
+  /** Total the customer was shown, from `quoteOrder`. Mismatch means prices moved mid-checkout. */
+  quotedTotal?: number;
+}): Promise<CreateOrderResult> {
   if (!DELIVERY_OPTIONS.some((o) => o.id === deliveryType)) {
     return fail("Выберите способ доставки.");
   }
@@ -85,38 +181,21 @@ export async function createOrder({
   // Service role bypasses RLS so guest (unauthenticated) orders are allowed.
   const admin = createAdminClient();
 
-  // Prices are re-read from the database — anything the client sent about money is ignored.
-  const { data: products, error: productsError } = await admin
-    .from("products")
-    .select("id, name, price, image_url")
-    .in(
-      "id",
-      lines.map((l) => l.id),
-    )
-    .eq("published", true);
+  const quote = await buildQuote(admin, lines, deliveryType);
 
-  if (productsError) return fail("Не удалось проверить товары. Попробуйте ещё раз.");
-
-  const priced = new Map((products ?? []).map((p) => [Number(p.id), p]));
-  const missing = lines.filter((l) => !priced.has(l.id));
-  if (missing.length > 0) {
-    return fail("Часть товаров больше не доступна. Обновите корзину и попробуйте ещё раз.");
+  // Naming the offending lines is what lets the client prune them; the previous blanket message
+  // left the customer retrying the same broken cart forever.
+  if (quote.rejected.length > 0) {
+    return { ok: false as const, error: "Часть товаров больше не доступна.", rejected: quote.rejected };
   }
 
-  const orderItems: OrderItem[] = lines.map((line) => {
-    const product = priced.get(line.id)!;
-    return {
-      id: Number(product.id),
-      name: String(product.name),
-      price: Number(product.price),
-      quantity: line.quantity,
-      image_url: String(product.image_url),
-    };
-  });
+  // The client showed a server quote before submitting. If prices moved in between, don't charge
+  // silently — hand back the new quote and let the customer confirm it.
+  if (quotedTotal != null && money(quotedTotal) !== quote.total) {
+    return { ok: false as const, error: "Цены изменились, проверьте заказ.", quote };
+  }
 
-  const itemsTotal = orderItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const deliveryCost = getDeliveryCost(deliveryType, itemsTotal);
-  const total = itemsTotal + deliveryCost;
+  const { items: orderItems, itemsTotal, deliveryCost, total } = quote;
 
   const { data, error } = await insertOrder(admin, {
     userId: user?.id,

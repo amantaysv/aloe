@@ -34,16 +34,30 @@ type NewOrderEmailData = {
 };
 
 function getTransport() {
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) return null;
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_TLS_SERVERNAME } = process.env;
+  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
+    // Loud, because this is the only new-order notification channel: a rotated password or a
+    // dropped env var otherwise lets orders pile up unnoticed with nothing in the logs.
+    console.error(
+      "[mailer] SMTP is not configured — new-order notifications are DISABLED. Missing:",
+      [!SMTP_HOST && "SMTP_HOST", !SMTP_PORT && "SMTP_PORT", !SMTP_USER && "SMTP_USER", !SMTP_PASS && "SMTP_PASS"]
+        .filter(Boolean)
+        .join(", "),
+    );
+    return null;
+  }
 
   return nodemailer.createTransport({
     host: SMTP_HOST,
     port: Number(SMTP_PORT),
     secure: Number(SMTP_PORT) === 465,
     auth: { user: SMTP_USER, pass: SMTP_PASS },
-    // hoster.kg's cert is issued for *.hoster.kg, not mail.aloe.kg — same server, mismatched name
-    tls: { rejectUnauthorized: false },
+    // The certificate is issued for *.hoster.kg rather than mail.aloe.kg — same server, mismatched
+    // name. `rejectUnauthorized: false` used to paper over that by accepting ANY certificate,
+    // which let anyone on the path capture these SMTP credentials and every customer's name,
+    // phone and address. Verifying against the name the cert actually covers fixes the mismatch
+    // without giving up verification.
+    tls: { servername: SMTP_TLS_SERVERNAME || SMTP_HOST },
   });
 }
 

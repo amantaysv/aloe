@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { maybe } from "@/lib/db";
 import { supabase } from "@/lib/supabase";
 import { getActiveBanners } from "@/services/banner.service";
 import { getBrandBySlug, getBrands } from "@/services/brand.service";
@@ -88,10 +89,10 @@ export const getCachedCategoryProducts = unstable_cache(
  * null rather than the PostgrestResponse, which is neither useful nor cheap to cache.
  */
 export const getCachedProduct = unstable_cache(
-  async (id: number) => {
-    const { data } = await getProduct(supabase, id);
-    return data;
-  },
+  // `maybe`, not a bare `{ data }`: .single() reports an RLS denial or a network failure as
+  // `{ data: null, error }`, and returning null here made both consumers call notFound() — which
+  // then got written into the data cache for 60s and into the ISR cache of /product/[id].
+  async (id: number) => maybe("product", await getProduct(supabase, id)),
   ["product"],
   { revalidate: 60, tags: ["products"] },
 );

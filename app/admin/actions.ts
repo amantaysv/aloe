@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath, updateTag } from "next/cache";
-import { DELIVERY_OPTIONS, ORDER_STATUS } from "@/lib/constants";
+import { DELIVERY_OPTIONS, getDeliveryCost, ORDER_STATUS } from "@/lib/constants";
 import { generateInvoicePdf, type InvoiceItem } from "@/lib/invoice";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { createClient } from "@/lib/supabase-server";
@@ -16,6 +16,11 @@ async function assertAdmin() {
 }
 
 const adminDb = createAdminClient;
+
+/** Money is `numeric` in Postgres; keep two decimals so float artefacts never reach a document. */
+function money(value: number): number {
+  return Math.round(value * 100) / 100;
+}
 
 /**
  * The storage buckets are public, so the stored Content-Type decides whether an object is
@@ -71,21 +76,40 @@ export type OrderItemInput = {
 export async function updateOrderItems(
   orderId: number,
   items: OrderItemInput[],
-): Promise<{ ok: true; total: number } | { ok: false; error: string }> {
+  /** Set for "regions", where the fee is agreed by phone and nothing else can supply it. */
+  deliveryCostOverride?: number,
+): Promise<{ ok: true; total: number; deliveryCost: number } | { ok: false; error: string }> {
   await assertAdmin();
   const db = adminDb();
 
-  const { data: order, error: fetchError } = await db.from("orders").select("delivery_cost").eq("id", orderId).single();
+  if (items.some((i) => !Number.isInteger(i.quantity) || i.quantity <= 0)) {
+    return { ok: false, error: "Количество должно быть целым положительным числом" };
+  }
+
+  const { data: order, error: fetchError } = await db
+    .from("orders")
+    .select("delivery_type, delivery_cost")
+    .eq("id", orderId)
+    .single();
   if (fetchError || !order) return { ok: false, error: "Заказ не найден" };
 
-  const itemsTotal = items.reduce((sum, i) => sum + (i.price ?? 0) * i.quantity, 0);
-  const total = itemsTotal + (order.delivery_cost ?? 0);
+  const itemsTotal = money(items.reduce((sum, i) => sum + (i.price ?? 0) * i.quantity, 0));
 
-  const { error } = await db.from("orders").update({ items, total }).eq("id", orderId);
+  // Recompute rather than reuse: the free-delivery threshold has to be re-evaluated, otherwise
+  // removing a line keeps free delivery the order no longer qualifies for, and adding one keeps
+  // charging for delivery the site advertises as free.
+  const deliveryCost = money(
+    deliveryCostOverride != null && Number.isFinite(deliveryCostOverride) && deliveryCostOverride >= 0
+      ? deliveryCostOverride
+      : getDeliveryCost(order.delivery_type ?? "", itemsTotal),
+  );
+  const total = money(itemsTotal + deliveryCost);
+
+  const { error } = await db.from("orders").update({ items, total, delivery_cost: deliveryCost }).eq("id", orderId);
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/admin/orders");
-  return { ok: true, total };
+  return { ok: true, total, deliveryCost };
 }
 
 export async function downloadInvoice(orderId: number): Promise<{ ok: true; base64: string } | { ok: false }> {
@@ -93,9 +117,13 @@ export async function downloadInvoice(orderId: number): Promise<{ ok: true; base
   const { data: order, error } = await adminDb().from("orders").select("*").eq("id", orderId).single();
   if (error || !order) return { ok: false };
 
-  const itemsTotal = (order.items as { price: number; quantity: number }[]).reduce(
-    (sum, i) => sum + i.price * i.quantity,
-    0,
+  // price is nullable in the schema; multiplying it unguarded produced NaN as the invoice's
+  // itemsTotal while `total` on the same document stayed correct — three lines that didn't add up.
+  const itemsTotal = money(
+    (order.items as { price: number | null; quantity: number }[]).reduce(
+      (sum, i) => sum + (i.price ?? 0) * i.quantity,
+      0,
+    ),
   );
 
   const pdf = await generateInvoicePdf({

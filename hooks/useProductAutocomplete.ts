@@ -6,7 +6,10 @@ import { searchProductsAutocomplete } from "@/services/product.service";
 
 type Suggestion = Awaited<ReturnType<typeof searchProductsAutocomplete>>[number];
 
-const MIN_QUERY = 2;
+// pg_trgm needs three characters to extract a trigram, so a two-character ILIKE cannot use
+// products_name_trgm_idx and degrades to a sequential scan over the whole catalogue — issued from
+// the browser, unauthenticated, once per debounce window.
+const MIN_QUERY = 3;
 const DEBOUNCE_MS = 300;
 
 /**
@@ -43,10 +46,17 @@ export function useProductAutocomplete(query: string, limit?: number) {
     };
   }, [query, limit]);
 
+  const active = query.length >= MIN_QUERY;
+
   return {
-    results: query.length < MIN_QUERY ? [] : state.items,
-    /** True only while a request for the current input is in flight. */
-    loading,
+    results: active ? state.items : [],
+    /**
+     * Derived rather than reset in the effect. The in-flight request's `finally` is skipped once
+     * cancelled, so after clearing the input `loading` stayed true for the rest of the session —
+     * spinner spinning and the clear button hidden, since it renders on `value && !loading`.
+     * Deriving also keeps this out of an effect, which react-hooks/purity rightly objects to.
+     */
+    loading: active && loading,
     /** Whether `results` were fetched for exactly the query passed in. */
     isCurrent: state.query === query,
   };

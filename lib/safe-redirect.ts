@@ -25,6 +25,10 @@ export function resolveOrigin(forwardedHost: string | null | undefined, requestO
 
   const allowed = new URL(SITE_URL).host;
   const host = forwardedHost.split(",")[0].trim();
-  const isAllowed = host === allowed || host.endsWith(`.${allowed}`) || host.endsWith(".vercel.app");
+
+  // Explicit hosts only. A blanket `*.vercel.app` allowance let the redirect be steered to any
+  // attacker-owned Vercel deployment, which undercut the point of validating this header at all.
+  const deployments = [process.env.VERCEL_PROJECT_PRODUCTION_URL, process.env.VERCEL_URL].filter(Boolean);
+  const isAllowed = host === allowed || host.endsWith(`.${allowed}`) || deployments.includes(host);
   return isAllowed ? `https://${host}` : SITE_URL;
 }
