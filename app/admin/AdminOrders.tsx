@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Download, Pencil, Search, X } from "lucide-react";
 import Button from "@/components/Button";
 import Currency from "@/components/Currency";
@@ -37,14 +37,20 @@ export default function AdminOrders({
   const [localItems, setLocalItems] = useState<Record<number, { items: OrderItemInput[]; total: number }>>({});
   const [editingOrderId, setEditingOrderId] = useState<number | null>(null);
 
-  const orders = initial.map((o) => ({
-    ...o,
-    status: localStatus[o.id] ?? o.status,
-    items: localItems[o.id]?.items ?? o.items,
-    total: localItems[o.id]?.total ?? o.total,
-  }));
+  // Every keystroke in the search box used to recreate all order objects and re-render each
+  // OrderItemsEditor and OrderStatusSelect.
+  const orders = useMemo(
+    () =>
+      initial.map((o) => ({
+        ...o,
+        status: localStatus[o.id] ?? o.status,
+        items: localItems[o.id]?.items ?? o.items,
+        total: localItems[o.id]?.total ?? o.total,
+      })),
+    [initial, localStatus, localItems],
+  );
 
-  const activeStatuses = new Set(statusFilter ? statusFilter.split(",") : []);
+  const activeStatuses = useMemo(() => new Set(statusFilter ? statusFilter.split(",") : []), [statusFilter]);
 
   function toggleStatus(key: string) {
     const next = new Set(activeStatuses);

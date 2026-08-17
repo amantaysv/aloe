@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Button from "./Button";
 
@@ -17,7 +17,8 @@ export default function ManufacturerFilter({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const selected = searchParams.getAll("brand").map(Number);
+  // A fresh array each render would make the useCallback below pointless.
+  const selected = useMemo(() => searchParams.getAll("brand").map(Number), [searchParams]);
 
   const toggle = useCallback(
     (id: number) => {

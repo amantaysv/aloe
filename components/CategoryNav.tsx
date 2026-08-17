@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GiToothbrush } from "react-icons/gi";
 import { PiHairDryer } from "react-icons/pi";
 import { TbDiaper } from "react-icons/tb";
@@ -76,24 +76,35 @@ export default function CategoryNav({ categories }: { categories: Category[] }) 
   const params = useParams();
   const activeParentSlug = params?.slug as string | undefined;
 
-  const parents = categories.filter((c) => !c.parent_id);
+  const parents = useMemo(() => categories.filter((c) => !c.parent_id), [categories]);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(false);
 
-  const updateFades = () => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    setShowLeftFade(el.scrollLeft > 0);
-    setShowRightFade(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
-  };
+  // This nav lives in the root layout, so it is on every route. setState fired on every scroll
+  // event and re-rendered all ~14 NavItems; React bails on an unchanged boolean, but the reads
+  // below still force layout, so coalesce them into a frame.
+  const frame = useRef<number | null>(null);
+  const updateFades = useCallback(() => {
+    if (frame.current !== null) return;
+    frame.current = requestAnimationFrame(() => {
+      frame.current = null;
+      const el = scrollerRef.current;
+      if (!el) return;
+      setShowLeftFade(el.scrollLeft > 0);
+      setShowRightFade(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+    });
+  }, []);
 
   useEffect(() => {
     updateFades();
     window.addEventListener("resize", updateFades);
-    return () => window.removeEventListener("resize", updateFades);
-  }, [parents.length]);
+    return () => {
+      window.removeEventListener("resize", updateFades);
+      if (frame.current !== null) cancelAnimationFrame(frame.current);
+    };
+  }, [parents.length, updateFades]);
 
   return (
     <nav className="hidden md:block h-25.5 bg-white sticky top-16 z-40">

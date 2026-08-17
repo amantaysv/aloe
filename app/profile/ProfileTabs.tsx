@@ -16,16 +16,20 @@ const PAGE_SIZE = 10;
 export default function ProfileTabs({ initial, orders }: { initial: ProfileFields | null; orders: Order[] }) {
   const [tab, setTab] = useState<"profile" | "orders">("orders");
   const [page, setPage] = useState(1);
-  const { add } = useCart();
-  const { show } = useToast();
+  const addMany = useCart((s) => s.addMany);
+  const show = useToast((s) => s.show);
   const router = useRouter();
 
   function repeatOrder(order: Order) {
-    order.items.forEach((item) => {
-      for (let i = 0; i < item.quantity; i++) {
-        add({ id: item.id, name: item.name, price: item.price, image_url: item.image_url });
-      }
-    });
+    addMany(
+      order.items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        image_url: item.image_url,
+        quantity: item.quantity,
+      })),
+    );
     show("Товары добавлены в корзину", "success");
     router.push("/cart");
   }

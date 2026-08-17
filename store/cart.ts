@@ -14,6 +14,7 @@ type CartStore = {
   items: CartItem[];
   userId: string | null;
   add: (item: Omit<CartItem, "quantity">) => void;
+  addMany: (items: CartItem[]) => void;
   remove: (id: number) => void;
   increment: (id: number) => void;
   decrement: (id: number) => void;
@@ -48,6 +49,27 @@ export const useCart = create<CartStore>()(
         if (userId) {
           const updated = items.find((i) => i.id === item.id)!;
           getSupabase().then((sb) => upsertCartItem(sb, userId, item.id, updated.quantity));
+        }
+      },
+
+      /**
+       * Bulk add for "repeat order". Calling add() per unit meant N state updates and N
+       * upserts of the same cart row — ten units of one product was ten round trips.
+       */
+      addMany: (incoming) => {
+        set((state) => {
+          const merged = [...state.items];
+          for (const item of incoming) {
+            const existing = merged.find((i) => i.id === item.id);
+            if (existing) existing.quantity += item.quantity;
+            else merged.push({ ...item });
+          }
+          return { items: merged };
+        });
+        const { userId, items } = get();
+        if (userId) {
+          const touched = items.filter((i) => incoming.some((n) => n.id === i.id));
+          getSupabase().then((sb) => reconcileCartItems(sb, userId, touched));
         }
       },
 

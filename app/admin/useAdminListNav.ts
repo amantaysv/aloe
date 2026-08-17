@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type Updates = Record<string, string | number | null | undefined>;
@@ -43,6 +43,15 @@ export function useAdminListNav(defaults: Record<string, string> = {}) {
 export function useDebouncedSearch(initial: string, onSearch: (value: string) => void, delay = 400) {
   const [value, setValue] = useState(initial);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Typing and then switching admin tabs used to fire onSearch after unmount, navigating the
+  // page that had just replaced this one.
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
 
   function onChange(next: string) {
     setValue(next);

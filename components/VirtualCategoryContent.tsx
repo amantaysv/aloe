@@ -64,15 +64,29 @@ function VirtualizedProducts({ sections, initialSectionId }: { sections: Section
   const didInitialScroll = useRef(false);
 
   useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    // Every setCols invalidates the row model, the section offsets and all virtualizer
+    // estimates, so dragging a window edge used to trigger dozens of full rebuilds. Coalesce
+    // into a frame and bail when the column count has not actually changed.
+    let frame: number | null = null;
     const measure = () => {
-      if (containerRef.current) {
-        const w = containerRef.current.offsetWidth;
-        setCols(Math.max(2, Math.floor((w + 16) / ITEM_WIDTH)));
-      }
+      frame = null;
+      const next = Math.max(2, Math.floor((el.offsetWidth + 16) / ITEM_WIDTH));
+      setCols((prev) => (prev === next ? prev : next));
     };
+    const schedule = () => {
+      if (frame === null) frame = requestAnimationFrame(measure);
+    };
+
     measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    const observer = new ResizeObserver(schedule);
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      if (frame !== null) cancelAnimationFrame(frame);
+    };
   }, []);
 
   const rows = useMemo(() => buildRows(sections, cols), [sections, cols]);
@@ -99,29 +113,56 @@ function VirtualizedProducts({ sections, initialSectionId }: { sections: Section
   }, [sections, cols]);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (!containerRef.current) return;
-      const containerDocTop = containerRef.current.getBoundingClientRect().top + window.scrollY;
+    // getBoundingClientRect() forces a synchronous layout, and getMeasurements() walks every
+    // row — doing both on each scroll event was the main jank source on the busiest page of
+    // the site. Cache the container offset and coalesce work into one frame.
+    let containerDocTop = 0;
+    let frame: number | null = null;
+
+    const measureTop = () => {
+      if (containerRef.current) {
+        containerDocTop = containerRef.current.getBoundingClientRect().top + window.scrollY;
+      }
+    };
+
+    const update = () => {
+      frame = null;
       const relPos = window.scrollY + 220 - containerDocTop;
       const measurements = (
         virtualizer as unknown as { getMeasurements: () => Array<{ start: number }> }
       ).getMeasurements();
       let activeIdx = 0;
-      sectionHeaderRows.forEach((rowIdx, si) => {
-        const start = measurements[rowIdx]?.start ?? Infinity;
+      // No early exit: a not-yet-measured row reads as Infinity, and bailing there would pick
+      // the wrong section. The loop is over sections (a dozen), not rows.
+      for (let si = 0; si < sectionHeaderRows.length; si++) {
+        const start = measurements[sectionHeaderRows[si]]?.start ?? Infinity;
         if (start <= relPos) activeIdx = si;
-      });
+      }
       setActiveSection(sections[activeIdx]?.id ?? null);
     };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
+
+    const onScroll = () => {
+      if (frame === null) frame = requestAnimationFrame(update);
+    };
+
+    const onResize = () => {
+      measureTop();
+      onScroll();
+    };
+
+    measureTop();
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      if (frame !== null) cancelAnimationFrame(frame);
       setActiveSection(null);
     };
     // virtualizer is a stable class instance — safe to omit from deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sections, sectionHeaderRows]);
+  }, [sections, sectionHeaderRows, cols]);
 
   useEffect(() => {
     const getScrollTarget = (sectionId: number): number | null => {

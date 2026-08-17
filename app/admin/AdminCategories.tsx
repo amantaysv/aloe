@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   ChevronRightIcon,
   GripVerticalIcon,
@@ -40,18 +40,37 @@ export default function AdminCategories({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
-  const { show } = useToast();
+  const show = useToast((s) => s.show);
   const drag = useDragReorder();
 
-  const parents = categories.filter((c) => !c.parent_id);
-  const subs = categories.filter((c) => c.parent_id && parents.some((p) => p.id === c.parent_id));
-  const subsubs = categories.filter((c) => c.parent_id && subs.some((s) => s.id === c.parent_id));
-  const usedCategoryIds = new Set(usedIds);
+  // One pass over the tree instead of three nested scans plus a recursive full-array walk per
+  // rendered row — all of which re-ran on every keystroke in the edit drawer.
+  const { parents, subs, childrenOf, lockedIds } = useMemo(() => {
+    const childrenOf = new Map<number, Category[]>();
+    const parents: Category[] = [];
+    for (const c of categories) {
+      if (c.parent_id == null) parents.push(c);
+      else {
+        if (!childrenOf.has(c.parent_id)) childrenOf.set(c.parent_id, []);
+        childrenOf.get(c.parent_id)!.push(c);
+      }
+    }
+    const subs = parents.flatMap((p) => childrenOf.get(p.id) ?? []);
 
-  function isLocked(id: number): boolean {
-    if (usedCategoryIds.has(id)) return true;
-    return categories.some((c) => c.parent_id === id && isLocked(c.id));
-  }
+    // A category is locked when it, or anything beneath it, holds a product.
+    const used = new Set(usedIds);
+    const lockedIds = new Set<number>();
+    const walk = (c: Category): boolean => {
+      const locked = used.has(c.id) || (childrenOf.get(c.id) ?? []).map(walk).some(Boolean);
+      if (locked) lockedIds.add(c.id);
+      return locked;
+    };
+    parents.forEach(walk);
+
+    return { parents, subs, childrenOf, lockedIds };
+  }, [categories, usedIds]);
+
+  const isLocked = (id: number) => lockedIds.has(id);
 
   function openNew(parentId: number | null = null) {
     setEditing({ ...empty, parent_id: parentId, isNew: true });
@@ -178,7 +197,7 @@ export default function AdminCategories({
 
       <div className="space-y-1">
         {parents.map((parent) => {
-          const children = subs.filter((s) => s.parent_id === parent.id).sort((a, b) => a.sort_order - b.sort_order);
+          const children = [...(childrenOf.get(parent.id) ?? [])].sort((a, b) => a.sort_order - b.sort_order);
           return (
             <div key={parent.id}>
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 group">
@@ -216,9 +235,7 @@ export default function AdminCategories({
               </div>
 
               {children.map((sub, i) => {
-                const grandchildren = subsubs
-                  .filter((ss) => ss.parent_id === sub.id)
-                  .sort((a, b) => a.sort_order - b.sort_order);
+                const grandchildren = [...(childrenOf.get(sub.id) ?? [])].sort((a, b) => a.sort_order - b.sort_order);
                 return (
                   <div key={sub.id}>
                     <div

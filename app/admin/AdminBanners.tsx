@@ -32,7 +32,7 @@ export default function AdminBanners({ banners: initial, type }: { banners: Bann
   const [savingLink, setSavingLink] = useState<Record<number, boolean>>({});
   const fileRef = useRef<HTMLInputElement>(null);
   const drag = useDragReorder();
-  const { show } = useToast();
+  const show = useToast((s) => s.show);
 
   async function handleFile(file: File) {
     if (!file.type.startsWith("image/")) return;
