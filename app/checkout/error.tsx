@@ -1,0 +1,39 @@
+"use client";
+
+import { useEffect } from "react";
+import Link from "next/link";
+import { Button, MainContainer, Title } from "@/components";
+
+export default function CheckoutError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+
+  return (
+    <MainContainer className="max-w-lg text-center pt-24">
+      <Title className="mb-2">Не удалось открыть оформление</Title>
+      <p className="text-gray-500 text-sm mb-8">
+        Корзина сохранена. Если вы уже нажимали «Подтвердить заказ», сначала проверьте раздел «Мои заказы» — заказ мог
+        быть создан.
+      </p>
+      <div className="flex flex-wrap gap-3 justify-center">
+        <Button variant="primary" size="lg" onClick={reset}>
+          Попробовать снова
+        </Button>
+        <Link
+          href="/profile"
+          className="px-4 py-2.5 border border-gray-300 rounded-lg text-base hover:bg-gray-50 transition-colors"
+        >
+          Мои заказы
+        </Link>
+        <Link
+          href="/cart"
+          className="px-4 py-2.5 border border-gray-300 rounded-lg text-base hover:bg-gray-50 transition-colors"
+        >
+          В корзину
+        </Link>
+      </div>
+      {error.digest && <p className="mt-8 text-xs text-gray-400 font-mono">Код ошибки: {error.digest}</p>}
+    </MainContainer>
+  );
+}
