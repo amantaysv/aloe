@@ -1,12 +1,17 @@
+import type { PostgrestError } from "@supabase/supabase-js";
 import { describe, expect, it, vi } from "vitest";
 import { maybe, soft, strict } from "@/lib/db";
 
 const ok = <T>(data: T) => ({ data, error: null });
-const failed = (message = "connection refused", code = "08006") => ({
-  data: null,
-  error: { message, code, details: "", hint: "", name: "PostgrestError" },
+
+const err = (message: string, code: string): PostgrestError =>
+  ({ message, code, details: "", hint: "", name: "PostgrestError" }) as PostgrestError;
+
+const failed = <T = unknown>(message = "connection refused", code = "08006") => ({
+  data: null as T | null,
+  error: err(message, code),
 });
-const noRows = () => ({ ...failed("no rows", "PGRST116"), data: null });
+const noRows = <T = unknown>() => failed<T>("no rows", "PGRST116");
 
 describe("soft", () => {
   it("returns the data when the query succeeded", () => {
@@ -17,14 +22,14 @@ describe("soft", () => {
   // nothing in the logs to tell them apart.
   it("logs and falls back when the query failed", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(soft("banners", failed(), [])).toEqual([]);
+    expect(soft("banners", failed<number[]>(), [])).toEqual([]);
     expect(spy).toHaveBeenCalledWith(expect.stringContaining("[banners]"));
     expect(spy).toHaveBeenCalledWith(expect.stringContaining("connection refused"));
     spy.mockRestore();
   });
 
   it("falls back on a null payload without an error", () => {
-    expect(soft("x", ok(null), "default")).toBe("default");
+    expect(soft("x", ok<string | null>(null), "default")).toBe("default");
   });
 });
 
@@ -36,11 +41,11 @@ describe("strict", () => {
   // Used where the result decides notFound(): swallowing the error there turns a transient
   // outage into a 404 that then gets cached.
   it("throws on a failed query, naming the source", () => {
-    expect(() => strict("category-products", failed())).toThrow(/\[category-products\].*connection refused/);
+    expect(() => strict("category-products", failed<unknown[]>())).toThrow(/\[category-products\].*connection refused/);
   });
 
   it("throws when the payload is null", () => {
-    expect(() => strict("categories", ok(null))).toThrow(/returned no data/);
+    expect(() => strict("categories", ok<unknown[] | null>(null))).toThrow(/returned no data/);
   });
 
   it("accepts an empty array as a real answer", () => {
@@ -50,11 +55,11 @@ describe("strict", () => {
 
 describe("maybe", () => {
   it("returns null for .single()'s no-rows code rather than throwing", () => {
-    expect(maybe("brand-by-slug", noRows())).toBeNull();
+    expect(maybe("brand-by-slug", noRows<{ id: number }>())).toBeNull();
   });
 
   it("still throws on a genuine failure", () => {
-    expect(() => maybe("brand-by-slug", failed())).toThrow(/connection refused/);
+    expect(() => maybe("brand-by-slug", failed<{ id: number }>())).toThrow(/connection refused/);
   });
 
   it("returns the row when found", () => {
