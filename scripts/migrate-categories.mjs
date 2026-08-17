@@ -9,10 +9,10 @@
 //
 // Always run `node backups/backup-db.mjs` first.
 
-import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "fs";
-import { fileURLToPath } from "url";
 import path from "path";
+import { fileURLToPath } from "url";
+import { createClient } from "@supabase/supabase-js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EXECUTE = process.argv.includes("--execute");
@@ -143,7 +143,11 @@ async function main() {
         unclassified.push(p);
         continue;
       }
-      reassignments.push({ productId: p.id, target: `${kind === "SHAMPOO" ? "SHAMP" : "GEL"}_${suffix}`, name: p.name });
+      reassignments.push({
+        productId: p.id,
+        target: `${kind === "SHAMPOO" ? "SHAMP" : "GEL"}_${suffix}`,
+        name: p.name,
+      });
     }
   }
 

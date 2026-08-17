@@ -71,35 +71,35 @@ Note: "popular" is no longer a manually-set admin label. `products.purchase_coun
 
 ### products
 
-| column      | type        | notes                                           |
-| ----------- | ----------- | ----------------------------------------------- |
-| id          | int         | PK                                              |
-| external_id | text        | unused — dropped from `Product` type & admin UI |
-| name        | text        |                                                 |
-| price       | numeric     |                                                 |
-| old_price   | numeric     | nullable                                        |
-| image_url   | text        |                                                 |
-| product_url | text        | unused — dropped from `Product` type & admin UI |
-| category    | text        | string label                                    |
-| category_id | int         | FK → categories.id                              |
-| label       | text        | `new` \| `sale` \| null                         |
-| description | text        | nullable                                        |
-| brand_id    | int         | FK → brands.id                                  |
-| seo_text    | text        | nullable                                        |
-| purchase_count | int      | incremented on checkout; drives "popular" ranking |
-| published   | boolean     |                                                 |
-| created_at  | timestamptz |                                                 |
+| column         | type        | notes                                             |
+| -------------- | ----------- | ------------------------------------------------- |
+| id             | int         | PK                                                |
+| external_id    | text        | unused — dropped from `Product` type & admin UI   |
+| name           | text        |                                                   |
+| price          | numeric     |                                                   |
+| old_price      | numeric     | nullable                                          |
+| image_url      | text        |                                                   |
+| product_url    | text        | unused — dropped from `Product` type & admin UI   |
+| category       | text        | string label                                      |
+| category_id    | int         | FK → categories.id                                |
+| label          | text        | `new` \| `sale` \| null                           |
+| description    | text        | nullable                                          |
+| brand_id       | int         | FK → brands.id                                    |
+| seo_text       | text        | nullable                                          |
+| purchase_count | int         | incremented on checkout; drives "popular" ranking |
+| published      | boolean     |                                                   |
+| created_at     | timestamptz |                                                   |
 
 ### categories
 
-| column     | type | notes                                            |
-| ---------- | ---- | ------------------------------------------------ |
-| id         | int  | PK                                               |
-| name       | text |                                                  |
-| slug       | text |                                                  |
+| column     | type | notes                                                                                                                                       |
+| ---------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| id         | int  | PK                                                                                                                                          |
+| name       | text |                                                                                                                                             |
+| slug       | text |                                                                                                                                             |
 | parent_id  | int  | self-referential FK (null = top-level); up to 3 levels deep (category → subcategory → sub-subcategory) — see "Sub-subcategories" note above |
-| image_url  | text | nullable                                         |
-| sort_order | int  | manual ordering, editable via admin drag-reorder |
+| image_url  | text | nullable                                                                                                                                    |
+| sort_order | int  | manual ordering, editable via admin drag-reorder                                                                                            |
 
 ### brands
 
@@ -213,7 +213,7 @@ function withBrandName(rows: ProductRow[]): Product[]; // maps brands.name → b
 | `cn.ts`               | `cn(...classes)` — clsx + tailwind-merge                                                                                                                                                       |
 | `cached-queries.ts`   | ISR-cached wrappers via `unstable_cache()`                                                                                                                                                     |
 | `auth.ts`             | `requireAuth()` — server-side auth guard, redirects to `/auth`                                                                                                                                 |
-| `constants.ts`        | `LABEL_MAP` (badge text/color for `new`/`sale`), `ORDER_STATUS` (label/color)                                                                                                        |
+| `constants.ts`        | `LABEL_MAP` (badge text/color for `new`/`sale`), `ORDER_STATUS` (label/color)                                                                                                                  |
 | `page-params.ts`      | `parsePage()`, `parseSortParam()`, `parseBrandIds()` — URL helpers                                                                                                                             |
 | `section-scroll.ts`   | Module-level singleton: `registerSectionScroller` / `scrollToSection` — lets `SubcategoryFilter` imperatively scroll `VirtualCategoryContent` without prop drilling                            |
 | `active-section.ts`   | Pub/sub for the currently-visible section ID: `setActiveSection` / `subscribeActiveSection` — `VirtualCategoryContent` fires updates on scroll, `SubcategoryFilter` highlights the active pill |

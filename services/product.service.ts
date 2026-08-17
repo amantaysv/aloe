@@ -25,7 +25,7 @@ function toList(data: unknown, count: number | null): { products: ProductListIte
  * unescaped search term of `%` or `*` matches the entire catalogue — a full sequential scan
  * plus an exact COUNT over every row.
  */
-function escapeLike(value: string): string {
+export function escapeLike(value: string): string {
   return value.replace(/\*/g, "").replace(/[\\%_]/g, (c) => `\\${c}`);
 }
 
