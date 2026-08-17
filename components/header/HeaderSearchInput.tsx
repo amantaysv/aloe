@@ -18,6 +18,10 @@ export default function HeaderSearchInput({ className }: { className?: string })
   const router = useRouter();
 
   useEffect(() => {
+    // clearTimeout only cancels a not-yet-fired timer; once the request is in flight a slow
+    // response for an earlier query would otherwise overwrite a newer one.
+    let cancelled = false;
+
     const timer = setTimeout(
       async () => {
         if (query.length < 2) {
@@ -26,14 +30,22 @@ export default function HeaderSearchInput({ className }: { className?: string })
           return;
         }
         setLoading(true);
-        const data = await searchProductsAutocomplete(supabase, query);
-        setResults(data as AutocompleteProduct[]);
-        setOpen(true);
-        setLoading(false);
+        try {
+          const data = await searchProductsAutocomplete(supabase, query);
+          if (cancelled) return;
+          setResults(data as AutocompleteProduct[]);
+          setOpen(true);
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
       },
       query.length < 2 ? 0 : 300,
     );
-    return () => clearTimeout(timer);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [query, supabase]);
 
   useEffect(() => {

@@ -55,7 +55,11 @@ export default async function CategoryPage({
     buildCategorySection(sub, subSubcategories, products),
   );
 
-  const initialSectionId = subcategories.find((s) => s.slug === sp.sub)?.id;
+  // Only subcategories that actually rendered a section — a pill for an empty one would
+  // scroll nowhere, since VirtualCategoryContent never received a matching section.
+  const visibleSubcategories = nonEmpty.map((s) => s.sub);
+
+  const initialSectionId = visibleSubcategories.find((s) => s.slug === sp.sub)?.id;
 
   const topLevelCategories = allCategories.filter((c) => !c.parent_id);
   const currentIndex = topLevelCategories.findIndex((c) => c.id === category.id);
@@ -65,7 +69,7 @@ export default async function CategoryPage({
     <>
       <MobileHeader title={category.name} withBackButton />
 
-      <SubcategoryFilter subcategories={subcategories} />
+      <SubcategoryFilter subcategories={visibleSubcategories} />
       <MainContainer>
         <VirtualCategoryContent sections={allSections} initialSectionId={initialSectionId} />
         {nextCategory && nextCategory.id !== category.id && (

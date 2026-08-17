@@ -1,4 +1,5 @@
 import { LabelProductsPage } from "@/components";
+import { parsePage } from "@/lib/page-params";
 
 export const metadata = {
   title: "Новинки — Aloe.kg",
@@ -6,6 +7,6 @@ export const metadata = {
 };
 
 export default async function NewPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
-  const { page = "1" } = await searchParams;
-  return <LabelProductsPage label="new" title="Новинки" basePath="/new" page={Math.max(1, parseInt(page))} />;
+  const { page } = await searchParams;
+  return <LabelProductsPage label="new" title="Новинки" basePath="/new" page={parsePage(page)} />;
 }

@@ -1,4 +1,5 @@
 import { LabelProductsPage } from "@/components";
+import { parsePage } from "@/lib/page-params";
 
 export const metadata = {
   title: "Акции — Aloe.kg",
@@ -6,14 +7,6 @@ export const metadata = {
 };
 
 export default async function SalePage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
-  const { page = "1" } = await searchParams;
-  return (
-    <LabelProductsPage
-      label="sale"
-      title="Акции"
-      basePath="/sale"
-      emptyText="Акций нет"
-      page={Math.max(1, parseInt(page))}
-    />
-  );
+  const { page } = await searchParams;
+  return <LabelProductsPage label="sale" title="Акции" basePath="/sale" emptyText="Акций нет" page={parsePage(page)} />;
 }

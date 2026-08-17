@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ProductCard, ProductGrid } from "@/components";
-import type { Product } from "@/types";
+import type { ProductListItem } from "@/types";
 import { loadMoreBrandProducts } from "./actions";
 
 type Props = {
   brandId: number;
   brandName: string;
   pageSize: number;
-  initialProducts: Product[];
+  initialProducts: ProductListItem[];
   total: number;
 };
 
@@ -30,11 +30,19 @@ export default function BrandProductsInfinite({ brandId, brandName, pageSize, in
 
         loadingRef.current = true;
         const nextPage = pageRef.current + 1;
-        loadMoreBrandProducts(brandId, nextPage, pageSize).then(({ products: more }) => {
-          pageRef.current = nextPage;
-          setProducts((prev) => [...prev, ...more.map((p) => ({ ...p, brand_name: brandName }))]);
-          loadingRef.current = false;
-        });
+        loadMoreBrandProducts(brandId, nextPage, pageSize)
+          .then(({ products: more }) => {
+            pageRef.current = nextPage;
+            setProducts((prev) => [...prev, ...more]);
+          })
+          .catch((err) => {
+            // Without this the loading flag stays set and infinite scroll dies silently
+            // for the rest of the session.
+            console.error("[brand] failed to load more products", err);
+          })
+          .finally(() => {
+            loadingRef.current = false;
+          });
       },
       { rootMargin: "600px" },
     );

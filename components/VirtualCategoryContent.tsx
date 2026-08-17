@@ -5,23 +5,23 @@ import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useIsClient } from "@/hooks/useIsClient";
 import { setActiveSection } from "@/lib/active-section";
 import { registerSectionScroller } from "@/lib/section-scroll";
-import type { Product } from "@/types";
+import type { ProductListItem } from "@/types";
 import ProductCard from "./ProductCard";
 import ProductGrid from "./ProductGrid";
 
-type Group = { id: number; name: string; products: Product[] };
+type Group = { id: number; name: string; products: ProductListItem[] };
 
 type Section = {
   id: number;
   name: string;
-  products: Product[];
+  products: ProductListItem[];
   groups?: Group[];
 };
 
 type VirtualRow =
   | { type: "header"; name: string; first: boolean }
   | { type: "subheader"; name: string; first: boolean }
-  | { type: "products"; items: Product[]; first: boolean };
+  | { type: "products"; items: ProductListItem[]; first: boolean };
 
 // 160px min item + 16px gap
 const ITEM_WIDTH = 176;
@@ -41,7 +41,7 @@ function sectionRowCount(section: Section, cols: number): number {
 function buildRows(sections: Section[], cols: number): VirtualRow[] {
   const rows: VirtualRow[] = [];
   let sawFirstProductsRow = false;
-  const pushProductsRows = (products: Product[]) => {
+  const pushProductsRows = (products: ProductListItem[]) => {
     for (let i = 0; i < products.length; i += cols) {
       rows.push({ type: "products", items: products.slice(i, i + cols), first: !sawFirstProductsRow });
       sawFirstProductsRow = true;
@@ -148,6 +148,8 @@ function VirtualizedProducts({ sections, initialSectionId }: { sections: Section
       return Math.max(0, containerDocTop + itemStart - 214);
     };
 
+    let rafId: number | null = null;
+
     const unregister = registerSectionScroller((sectionId) => {
       const target = getScrollTarget(sectionId);
       if (target != null) window.scrollTo({ top: target, behavior: "auto" });
@@ -172,14 +174,19 @@ function VirtualizedProducts({ sections, initialSectionId }: { sections: Section
             window.scrollTo({ top: target, behavior: "auto" });
           }
           frame++;
-          if (frame < 20) requestAnimationFrame(holdPosition);
+          rafId = frame < 20 ? requestAnimationFrame(holdPosition) : null;
         };
         window.scrollTo({ top: target, behavior: "auto" });
-        requestAnimationFrame(holdPosition);
+        rafId = requestAnimationFrame(holdPosition);
       }
     }
 
-    return unregister;
+    return () => {
+      unregister();
+      // Without this the loop keeps calling window.scrollTo after a navigation away,
+      // yanking the next page to an unrelated offset.
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
     // virtualizer is a stable class instance — safe to omit from deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sections, cols, initialSectionId]);
@@ -242,7 +249,7 @@ export default function VirtualCategoryContent({
     const firstProductId = sections
       .flatMap((s) => [...s.products, ...(s.groups?.flatMap((g) => g.products) ?? [])])
       .at(0)?.id;
-    const renderGrid = (products: Product[]) => (
+    const renderGrid = (products: ProductListItem[]) => (
       <ProductGrid>
         {products.map((product) => (
           <ProductCard key={product.id} product={product} priority={product.id === firstProductId} />

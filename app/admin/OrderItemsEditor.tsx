@@ -25,18 +25,25 @@ export default function OrderItemsEditor({ orderId, items: initial, onCancel, on
   const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
+    // clearTimeout only cancels a not-yet-fired timer — guard the in-flight response too,
+    // otherwise a slow reply for an earlier query overwrites a newer one.
+    let cancelled = false;
+
     const timer = setTimeout(async () => {
       if (query.length < 2) {
         setResults([]);
         return;
       }
       const data = await searchProductsAutocomplete(supabase, query);
-      setResults(
-        data.map((p) => ({ id: p.id, name: p.name, price: p.price, quantity: 1, image_url: p.image_url })),
-      );
+      if (cancelled) return;
+      setResults(data.map((p) => ({ id: p.id, name: p.name, price: p.price, quantity: 1, image_url: p.image_url })));
       setOpen(true);
     }, 300);
-    return () => clearTimeout(timer);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [query, supabase]);
 
   useEffect(() => {

@@ -5,11 +5,30 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Currency, MainContainer, MobileHeader, Title } from "@/components";
+import { useIsClient } from "@/hooks/useIsClient";
 import { useCart } from "@/store/cart";
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, increment, decrement, total, clear } = useCart();
+  const items = useCart((s) => s.items);
+  const increment = useCart((s) => s.increment);
+  const decrement = useCart((s) => s.decrement);
+  const total = useCart((s) => s.total);
+  const clear = useCart((s) => s.clear);
+  const isClient = useIsClient();
+
+  // The cart store rehydrates from localStorage synchronously, so the server's empty-cart
+  // markup never matches the first client render. Hold a placeholder until we're on the client.
+  if (!isClient) {
+    return (
+      <>
+        <MobileHeader title="Корзина" />
+        <MainContainer>
+          <div className="py-16 h-96" aria-busy="true" />
+        </MainContainer>
+      </>
+    );
+  }
 
   if (items.length === 0) {
     return (

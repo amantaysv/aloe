@@ -84,10 +84,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const topCategory = productGrandparent ?? productParent;
   const subcategory = productGrandparent ? productParent : productCategory;
 
-  const catalogHref =
-    topCategory && subcategory
-      ? `/catalog/${topCategory.slug}?sub=${subcategory.slug}`
-      : `/catalog/${product.category_id}`;
+  // Falls back to the catalog index — `/catalog/[slug]` resolves by slug, so a raw
+  // category_id there would 404.
+  const catalogHref = topCategory && subcategory ? `/catalog/${topCategory.slug}?sub=${subcategory.slug}` : "/catalog";
 
   const breadcrumbs =
     topCategory && subcategory
