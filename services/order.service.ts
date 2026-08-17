@@ -99,6 +99,20 @@ export async function insertOrder(
       delivery_type: data.deliveryType,
       delivery_cost: data.deliveryCost,
     })
-    .select("id")
+    .select("id, created_at")
     .single();
+}
+
+/**
+ * Records that the admin notification actually went out. NULL means it never did — which is what
+ * made the 2026-08-17 SMTP breakage invisible until someone checked their inbox by hand.
+ */
+export async function markOrderNotified(supabase: SupabaseClient<Database>, orderId: number) {
+  const { error } = await supabase.from("orders").update({ notified_at: new Date().toISOString() }).eq("id", orderId);
+  if (error) console.error(`[orders] could not mark ${orderId} notified: ${error.message}`);
+}
+
+/** Everything needed to re-send a notification for an existing order. */
+export async function getOrderForNotification(supabase: SupabaseClient<Database>, orderId: number) {
+  return supabase.from("orders").select("*").eq("id", orderId).single();
 }

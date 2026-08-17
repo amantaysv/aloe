@@ -11,7 +11,7 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "lint:fix": "eslint --fix",
-    "db:types": "supabase gen types typescript --linked > types/database.ts",
+    "db:types": "npx supabase gen types typescript --linked > types/database.ts.tmp && mv types/database.ts.tmp types/database.ts || (rm -f types/database.ts.tmp && echo 'db:types failed; types/database.ts left untouched' && exit 1)",
     "test": "vitest run",
     "test:watch": "vitest"
   },

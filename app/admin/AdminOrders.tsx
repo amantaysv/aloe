@@ -6,8 +6,9 @@ import Button from "@/components/Button";
 import Currency from "@/components/Currency";
 import Pagination from "@/components/Pagination";
 import { DELIVERY_OPTIONS, ORDER_STATUS } from "@/lib/constants";
+import { useToast } from "@/store/toast";
 import type { Order } from "@/types";
-import { downloadInvoice, type OrderItemInput } from "./actions";
+import { downloadInvoice, resendOrderNotification, type OrderItemInput } from "./actions";
 import OrderItemsEditor from "./OrderItemsEditor";
 import OrderStatusSelect from "./OrderStatusSelect";
 import { useAdminListNav, useDebouncedSearch } from "./useAdminListNav";
@@ -49,6 +50,22 @@ export default function AdminOrders({
       })),
     [initial, localStatus, localItems],
   );
+
+  const show = useToast((s) => s.show);
+  const [resending, setResending] = useState<number | null>(null);
+  const [notified, setNotified] = useState<Record<number, boolean>>({});
+
+  async function handleResend(orderId: number) {
+    setResending(orderId);
+    const result = await resendOrderNotification(orderId);
+    setResending(null);
+    if (result.ok) {
+      setNotified((prev) => ({ ...prev, [orderId]: true }));
+      show("Письмо отправлено", "success");
+    } else {
+      show(result.error, "error");
+    }
+  }
 
   const activeStatuses = useMemo(() => new Set(statusFilter ? statusFilter.split(",") : []), [statusFilter]);
 
@@ -150,6 +167,21 @@ export default function AdminOrders({
                 <div className="space-y-0.5">
                   <p className="font-mono text-xs text-gray-400">#{order.id}</p>
                   <p className="text-xs text-gray-400">{date}</p>
+                  {!(order.notified_at || notified[order.id]) && (
+                    <p className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-1">
+                      {/* "not confirmed", not "not sent": rows predating this tracking are NULL
+                          too, and some of those were in fact emailed. */}
+                      <span>Отправка письма не подтверждена</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleResend(order.id)}
+                        disabled={resending === order.id}
+                      >
+                        {resending === order.id ? "Отправляем..." : "Отправить"}
+                      </Button>
+                    </p>
+                  )}
                   <p className="font-semibold mt-1">{order.customer_name ?? "—"}</p>
                   <p className="text-sm text-gray-600">{order.customer_phone ?? "—"}</p>
                   <p className="text-sm text-gray-600">{order.customer_address ?? "—"}</p>

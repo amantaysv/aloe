@@ -7,7 +7,7 @@ import { generateInvoicePdf } from "@/lib/invoice";
 import { sendNewOrderEmail } from "@/lib/mailer";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { createClient } from "@/lib/supabase-server";
-import { insertOrder } from "@/services/order.service";
+import { insertOrder, markOrderNotified } from "@/services/order.service";
 import type { OrderItem } from "@/types";
 
 /** What the browser is allowed to send: ids and quantities only — never prices. */
@@ -227,6 +227,9 @@ export async function createOrder({
   updateTag("products-popular");
 
   const orderId = String(data.id);
+  // The invoice used `new Date()`, evaluated inside after(), so the emailed document carried a
+  // different timestamp than the one a re-download from the admin prints.
+  const createdAt = data.created_at ? new Date(data.created_at) : new Date();
   const deliveryLabel = DELIVERY_OPTIONS.find((o) => o.id === deliveryType)!.label;
 
   // The invoice and the admin email must never block the confirmation — or fail it. The order
@@ -236,7 +239,7 @@ export async function createOrder({
     try {
       const invoicePdf = await generateInvoicePdf({
         orderId,
-        createdAt: new Date(),
+        createdAt,
         name: customerName,
         phone: customerPhone,
         address: customerAddress,
@@ -247,7 +250,7 @@ export async function createOrder({
         itemsTotal,
         total,
       });
-      await sendNewOrderEmail(
+      const result = await sendNewOrderEmail(
         {
           orderId,
           name: customerName,
@@ -262,6 +265,11 @@ export async function createOrder({
         },
         invoicePdf,
       );
+
+      // Recorded so "which orders were never emailed?" is answerable, and visible in the admin
+      // list. A failure here leaves notified_at NULL rather than pretending success.
+      if (result.sent) await markOrderNotified(admin, Number(data.id));
+      else console.error(`[checkout] order ${orderId} was NOT notified: ${result.reason}`);
     } catch (err) {
       console.error(`[checkout] post-order notification failed for order ${orderId}`, err);
     }

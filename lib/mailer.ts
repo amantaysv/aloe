@@ -106,10 +106,21 @@ function renderOrderEmailHtml(data: NewOrderEmailData) {
   `;
 }
 
-export async function sendNewOrderEmail(data: NewOrderEmailData, invoicePdf?: Buffer) {
+/**
+ * Reports the outcome instead of swallowing it, so the caller can record that the notification
+ * actually went out. This is the only channel the shop learns about orders through.
+ */
+export async function sendNewOrderEmail(
+  data: NewOrderEmailData,
+  invoicePdf?: Buffer,
+): Promise<{ sent: boolean; reason?: string }> {
   const transport = getTransport();
   const to = process.env.ADMIN_NOTIFICATION_EMAIL;
-  if (!transport || !to) return;
+  if (!transport) return { sent: false, reason: "SMTP не настроен" };
+  if (!to) {
+    console.error("[mailer] ADMIN_NOTIFICATION_EMAIL is not set — nobody is notified about orders");
+    return { sent: false, reason: "ADMIN_NOTIFICATION_EMAIL не задан" };
+  }
 
   try {
     await transport.sendMail({
@@ -121,7 +132,11 @@ export async function sendNewOrderEmail(data: NewOrderEmailData, invoicePdf?: Bu
         ? [{ filename: `nakladnaya-${data.orderId}.pdf`, content: invoicePdf, contentType: "application/pdf" }]
         : undefined,
     });
+    return { sent: true };
   } catch (err) {
-    console.error("Failed to send new order email", err);
+    console.error(`[mailer] failed to send notification for order ${data.orderId}`, err);
+    return { sent: false, reason: err instanceof Error ? err.message : String(err) };
+  } finally {
+    transport.close();
   }
 }

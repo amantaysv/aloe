@@ -3,9 +3,11 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { DELIVERY_OPTIONS, getDeliveryCost, ORDER_STATUS } from "@/lib/constants";
 import { generateInvoicePdf, type InvoiceItem } from "@/lib/invoice";
+import { sendNewOrderEmail } from "@/lib/mailer";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { createClient } from "@/lib/supabase-server";
 import { getAdminBrands } from "@/services/brand.service";
+import { getOrderForNotification, markOrderNotified } from "@/services/order.service";
 
 async function assertAdmin() {
   const supabase = await createClient();
@@ -141,6 +143,51 @@ export async function downloadInvoice(orderId: number): Promise<{ ok: true; base
   });
 
   return { ok: true, base64: pdf.toString("base64") };
+}
+
+/**
+ * Re-sends the admin notification for an existing order and records the result. The SMTP breakage
+ * on 2026-08-17 left no way to recover a lost notification except reading the order by hand.
+ */
+export async function resendOrderNotification(orderId: number): Promise<{ ok: true } | { ok: false; error: string }> {
+  await assertAdmin();
+  const db = adminDb();
+
+  const { data: order, error } = await getOrderForNotification(db, orderId);
+  if (error || !order) return { ok: false, error: "Заказ не найден" };
+
+  const items = (order.items ?? []) as OrderItemInput[];
+  const itemsTotal = money(items.reduce((sum, i) => sum + (i.price ?? 0) * i.quantity, 0));
+  const deliveryCost = order.delivery_cost ?? 0;
+  const deliveryLabel = DELIVERY_OPTIONS.find((o) => o.id === order.delivery_type)?.label ?? order.delivery_type ?? "—";
+
+  const payload = {
+    orderId: String(order.id),
+    name: order.customer_name ?? "",
+    phone: order.customer_phone ?? "",
+    address: order.customer_address ?? "",
+    comment: order.comment ?? "",
+    items: items.map((i) => ({ ...i, price: i.price ?? 0, image_url: i.image_url ?? "" })),
+    itemsTotal,
+    deliveryLabel,
+    deliveryCost,
+    total: order.total ?? money(itemsTotal + deliveryCost),
+  };
+
+  try {
+    const pdf = await generateInvoicePdf({
+      ...payload,
+      createdAt: order.created_at ? new Date(order.created_at) : new Date(),
+    });
+    const result = await sendNewOrderEmail(payload, pdf);
+    if (!result.sent) return { ok: false, error: result.reason ?? "Не удалось отправить" };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Не удалось отправить" };
+  }
+
+  await markOrderNotified(db, orderId);
+  revalidatePath("/admin/orders");
+  return { ok: true };
 }
 
 export type ProductInput = {
