@@ -1,9 +1,9 @@
 "use client";
 
-import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { useToast } from "@/store/toast";
 import Button from "./Button";
+import QuantityStepper from "./QuantityStepper";
 
 type Props = {
   product: {
@@ -24,27 +24,13 @@ export default function AddToCart({ product, size }: Props) {
 
   if (item) {
     return (
-      <div className={`flex items-center justify-between gap-2`}>
-        <Button
-          onClick={() => decrement(product.id)}
-          variant="icon"
-          className={`border border-gray-300 rounded-lg font-bold hover:bg-gray-50`}
-          size={size}
-        >
-          {item.quantity === 1 ? <Trash2Icon className="size-4" /> : <MinusIcon className="size-4" />}
-        </Button>
-        <span className={`${size === "lg" ? "text-base" : "text-sm"} font-medium w-6 text-center whitespace-nowrap`}>
-          {`${item.quantity} шт`}
-        </span>
-        <Button
-          onClick={() => increment(product.id)}
-          variant="icon"
-          className={`border border-gray-300 rounded-lg font-bold hover:bg-gray-50`}
-          size={size}
-        >
-          <PlusIcon className="size-4" />
-        </Button>
-      </div>
+      <QuantityStepper
+        quantity={item.quantity}
+        onDecrement={() => decrement(product.id)}
+        onIncrement={() => increment(product.id)}
+        label={product.name}
+        size={size}
+      />
     );
   }
 

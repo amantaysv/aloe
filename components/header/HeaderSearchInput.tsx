@@ -1,92 +1,40 @@
 "use client";
 
-import { SubmitEventHandler, useEffect, useMemo, useRef, useState } from "react";
+import { SubmitEventHandler, useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useOutsideClick } from "@/hooks/useOutsideClick";
+import { useProductAutocomplete } from "@/hooks/useProductAutocomplete";
 import { cn } from "@/lib/cn";
-import { createClient } from "@/lib/supabase-browser";
-import { searchProductsAutocomplete } from "@/services/product.service";
 import SearchInput from "../SearchInput";
-import AutocompleteDropdown, { type AutocompleteProduct } from "./AutocompleteDropdown";
+import AutocompleteDropdown from "./AutocompleteDropdown";
 
 export default function HeaderSearchInput({ className }: { className?: string }) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<AutocompleteProduct[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
+  // Remembering *which* query was dismissed keeps this derived: no effect syncing a boolean,
+  // and typing further re-opens the dropdown on its own.
+  const [dismissedFor, setDismissedFor] = useState<string | null>(null);
   const searchRef = useRef<HTMLFormElement>(null);
-  const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
 
-  useEffect(() => {
-    // clearTimeout only cancels a not-yet-fired timer; once the request is in flight a slow
-    // response for an earlier query would otherwise overwrite a newer one.
-    let cancelled = false;
+  const { results, loading } = useProductAutocomplete(query);
 
-    const timer = setTimeout(
-      async () => {
-        if (query.length < 2) {
-          setResults([]);
-          setOpen(false);
-          return;
-        }
-        setLoading(true);
-        try {
-          const data = await searchProductsAutocomplete(supabase, query);
-          if (cancelled) return;
-          setResults(data as AutocompleteProduct[]);
-          setOpen(true);
-        } finally {
-          if (!cancelled) setLoading(false);
-        }
-      },
-      query.length < 2 ? 0 : 300,
-    );
+  const close = useCallback(() => setDismissedFor(query), [query]);
+  useOutsideClick(searchRef, close);
 
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [query, supabase]);
-
-  useEffect(() => {
-    function handleOutsideClick(e: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
+  const open = query.length >= 2 && dismissedFor !== query;
 
   const handleSubmit: SubmitEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
     if (!query.trim()) return;
-    setOpen(false);
     setQuery("");
     router.push(`/search?q=${encodeURIComponent(query.trim())}`);
   };
 
   return (
     <form ref={searchRef} onSubmit={handleSubmit} className={cn("relative flex flex-1", className)}>
-      <SearchInput
-        searchPath="/search"
-        value={query}
-        onChange={setQuery}
-        inputProps={{
-          onFocus: () => {
-            if (results.length > 0 && query.length > 0) setOpen(true);
-          },
-        }}
-      />
+      <SearchInput searchPath="/search" value={query} onChange={setQuery} loading={loading} />
 
-      {open && (
-        <AutocompleteDropdown
-          results={results}
-          loading={loading}
-          onSelect={() => {
-            setOpen(false);
-            setQuery("");
-          }}
-        />
-      )}
+      {open && <AutocompleteDropdown results={results} loading={loading} onSelect={() => setQuery("")} />}
     </form>
   );
 }

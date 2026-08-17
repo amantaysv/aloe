@@ -1,6 +1,5 @@
 "use client";
 
-import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,6 +7,7 @@ import Button from "@/components/Button";
 import Currency from "@/components/Currency";
 import MainContainer from "@/components/MainContainer";
 import MobileHeader from "@/components/MobileHeader";
+import QuantityStepper from "@/components/QuantityStepper";
 import Title from "@/components/Title";
 import { useIsClient } from "@/hooks/useIsClient";
 import { useCart } from "@/store/cart";
@@ -20,7 +20,6 @@ export default function CartPage() {
   const total = useCart((s) => s.total);
   const clear = useCart((s) => s.clear);
   const isClient = useIsClient();
-
   // The cart store rehydrates from localStorage synchronously, so the server's empty-cart
   // markup never matches the first client render. Hold a placeholder until we're on the client.
   if (!isClient) {
@@ -33,7 +32,6 @@ export default function CartPage() {
       </>
     );
   }
-
   if (items.length === 0) {
     return (
       <>
@@ -47,7 +45,6 @@ export default function CartPage() {
       </>
     );
   }
-
   return (
     <>
       <MobileHeader title="Корзина">
@@ -75,21 +72,19 @@ export default function CartPage() {
                   <p className="text-sm text-green-600 font-medium md:font-bold">
                     {item.price} <Currency />
                   </p>
-                  <div className="flex items-center gap-1 md:gap-2 shrink-0 rounded-full bg-gray-200">
-                    <Button variant="icon" size="sm" onClick={() => decrement(item.id)} className="rounded-full">
-                      {item.quantity === 1 ? <Trash2Icon className="size-4" /> : <MinusIcon className="size-4" />}
-                    </Button>
-                    <span className="w-6 text-center text-sm">{item.quantity}</span>
-                    <Button variant="icon" size="sm" onClick={() => increment(item.id)} className="rounded-full">
-                      <PlusIcon className="size-4" />
-                    </Button>
-                  </div>
+                  <QuantityStepper
+                    quantity={item.quantity}
+                    onDecrement={() => decrement(item.id)}
+                    onIncrement={() => increment(item.id)}
+                    label={item.name}
+                    size="sm"
+                    variant="pill"
+                  />
                 </div>
               </div>
             </div>
           ))}
         </div>
-
         <div className="mt-6 md:border-t md:pt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-gray-500 text-sm">Итого:</p>
@@ -109,7 +104,6 @@ export default function CartPage() {
               Оформить заказ
             </Button>
           </div>
-
           <div className="md:hidden fixed bottom-20 left-0 right-0 px-8 flex">
             <Button variant="primary" size="lg" onClick={() => router.push("/checkout")} className="min-w-40 flex-1">
               Оформить заказ

@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Minus, Plus, Search, Trash2, X } from "lucide-react";
 import Button from "@/components/Button";
 import Currency from "@/components/Currency";
-import { createClient } from "@/lib/supabase-browser";
-import { searchProductsAutocomplete } from "@/services/product.service";
+import { useOutsideClick } from "@/hooks/useOutsideClick";
+import { useProductAutocomplete } from "@/hooks/useProductAutocomplete";
 import { updateOrderItems, type OrderItemInput } from "./actions";
 
 type Props = {
@@ -18,42 +18,21 @@ type Props = {
 export default function OrderItemsEditor({ orderId, items: initial, onCancel, onSaved }: Props) {
   const [items, setItems] = useState<OrderItemInput[]>(initial);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<OrderItemInput[]>([]);
-  const [open, setOpen] = useState(false);
+  const [dismissedFor, setDismissedFor] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const boxRef = useRef<HTMLDivElement>(null);
-  const supabase = useMemo(() => createClient(), []);
 
-  useEffect(() => {
-    // clearTimeout only cancels a not-yet-fired timer — guard the in-flight response too,
-    // otherwise a slow reply for an earlier query overwrites a newer one.
-    let cancelled = false;
+  const { results: suggestions } = useProductAutocomplete(query);
+  const results: OrderItemInput[] = useMemo(
+    () => suggestions.map((p) => ({ id: p.id, name: p.name, price: p.price, quantity: 1, image_url: p.image_url })),
+    [suggestions],
+  );
 
-    const timer = setTimeout(async () => {
-      if (query.length < 2) {
-        setResults([]);
-        return;
-      }
-      const data = await searchProductsAutocomplete(supabase, query);
-      if (cancelled) return;
-      setResults(data.map((p) => ({ id: p.id, name: p.name, price: p.price, quantity: 1, image_url: p.image_url })));
-      setOpen(true);
-    }, 300);
+  const close = useCallback(() => setDismissedFor(query), [query]);
+  useOutsideClick(boxRef, close);
 
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [query, supabase]);
-
-  useEffect(() => {
-    function handleOutsideClick(e: MouseEvent) {
-      if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
+  const open = query.length >= 2 && dismissedFor !== query;
 
   function addProduct(product: OrderItemInput) {
     setItems((prev) => {
@@ -62,7 +41,6 @@ export default function OrderItemsEditor({ orderId, items: initial, onCancel, on
       return [...prev, product];
     });
     setQuery("");
-    setOpen(false);
   }
 
   function setQuantity(id: number, quantity: number) {
@@ -131,7 +109,7 @@ export default function OrderItemsEditor({ orderId, items: initial, onCancel, on
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => results.length > 0 && setOpen(true)}
+          onFocus={() => setDismissedFor(null)}
           placeholder="Добавить товар..."
           className="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
         />
