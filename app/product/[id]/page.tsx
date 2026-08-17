@@ -118,12 +118,17 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     image: [product.image_url],
     description: product.description || product.seo_text || product.name,
     ...(brandInfo && { brand: { "@type": "Brand", name: brandInfo.name } }),
+    sku: String(product.id),
     offers: {
       "@type": "Offer",
       url: `${SITE_URL}/product/${product.id}`,
       priceCurrency: "KGS",
       price: product.price,
       availability: "https://schema.org/InStock",
+      itemCondition: "https://schema.org/NewCondition",
+      // No priceValidUntil: Google only warns about its absence, and every way to produce one
+      // here is either impure in render or a date we cannot actually stand behind. Add it once
+      // the schema carries a real price validity or stock field.
     },
   };
 

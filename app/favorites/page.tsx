@@ -5,7 +5,7 @@ import { requireAuth } from "@/lib/auth";
 import { getFavoriteProducts } from "@/services/favorites.service";
 
 export const metadata = {
-  title: "Избранное — Aloe.kg",
+  title: "Избранное",
   robots: { index: false, follow: true },
 };
 

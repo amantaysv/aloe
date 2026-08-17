@@ -2,7 +2,7 @@ import Link from "next/link";
 import { MainContainer, Title } from "@/components";
 
 export const metadata = {
-  title: "Страница не найдена — Aloe.kg",
+  title: "Страница не найдена",
   robots: { index: false, follow: true },
 };
 

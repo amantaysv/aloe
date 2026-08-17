@@ -1,7 +1,7 @@
 import { MainContainer, MobileHeader, Title } from "@/components";
 
 export const metadata = {
-  title: "О нас — Aloe.kg",
+  title: "О нас",
 };
 
 export default function AboutPage() {

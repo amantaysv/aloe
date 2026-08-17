@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Вход и регистрация — Aloe.kg",
+  title: "Вход и регистрация",
   robots: { index: false, follow: true },
 };
 

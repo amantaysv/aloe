@@ -4,7 +4,7 @@ import { getProfile } from "@/services/profile.service";
 import CheckoutForm from "./CheckoutForm";
 
 export const metadata = {
-  title: "Оформление заказа — Aloe.kg",
+  title: "Оформление заказа",
   robots: { index: false, follow: true },
 };
 

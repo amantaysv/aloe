@@ -3,7 +3,7 @@ import { MainContainer, MobileHeader, Title } from "@/components";
 import { getCachedBrands } from "@/lib/cached-queries";
 
 export const metadata = {
-  title: "Бренды — Aloe.kg",
+  title: "Бренды",
   description: "Все бренды бытовой химии и косметики, представленные в интернет-магазине Aloe.kg.",
 };
 

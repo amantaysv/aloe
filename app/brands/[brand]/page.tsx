@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
   if (!data) return {};
   const description = `Товары бренда ${data.name} в интернет-магазине Aloe.kg. Доставка по Бишкеку.`;
   return {
-    title: `${data.name} — Бренды — Aloe.kg`,
+    title: `${data.name} — Бренды`,
     description,
     alternates: { canonical: `/brands/${brand}` },
     openGraph: { title: data.name, description, url: `/brands/${brand}` },

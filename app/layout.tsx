@@ -17,7 +17,7 @@ const SITE_DESCRIPTION = "Интернет-магазин бытовой хим�
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Aloe.kg",
+  title: { default: "Aloe.kg — бытовая химия и косметика в Бишкеке", template: "%s — Aloe.kg" },
   description: SITE_DESCRIPTION,
   openGraph: {
     type: "website",
@@ -53,18 +53,18 @@ const organizationJsonLd = {
   url: SITE_URL,
 };
 
-export default async function RootLayout({
-  children,
-  modal,
-}: {
-  children: React.ReactNode;
-  modal: React.ReactNode;
-}) {
+export default async function RootLayout({ children, modal }: { children: React.ReactNode; modal: React.ReactNode }) {
   const categories = await getCachedCategories();
 
   return (
     <html lang="ru">
       <body className={`${geist.className} ${lobster.variable} min-h-screen flex flex-col`} suppressHydrationWarning>
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-100 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:shadow-lg focus:outline-2 focus:outline-green-600"
+        >
+          Перейти к содержимому
+        </a>
         <JsonLd data={websiteJsonLd} />
         <JsonLd data={organizationJsonLd} />
         <NextTopLoader color="#16a34a" showSpinner={false} />

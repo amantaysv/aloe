@@ -2,7 +2,7 @@ import Link from "next/link";
 import { MainContainer, Title } from "@/components";
 
 export const metadata = {
-  title: "Заказ оформлен — Aloe.kg",
+  title: "Заказ оформлен",
   robots: { index: false, follow: false },
 };
 

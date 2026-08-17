@@ -27,20 +27,16 @@ const specials: Array<{ href: string; label: string; image_url?: string | null }
   { href: "/brands", label: "Бренды", image_url: `${SPECIALS_BASE_URL}/brands.webp` },
 ];
 
-export async function generateMetadata({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ q?: string }> }): Promise<Metadata> {
   const { q } = await searchParams;
   if (q?.trim()) {
     return {
-      title: `${q} — поиск | Aloe.kg`,
+      title: `${q} — поиск`,
       robots: { index: false, follow: true },
     };
   }
   return {
-    title: "Каталог — Aloe.kg",
+    title: "Каталог",
     description: "Каталог бытовой химии и косметики: все категории товаров интернет-магазина Aloe.kg.",
     alternates: { canonical: "/catalog" },
   };
@@ -74,6 +70,7 @@ export default async function CatalogPage({
           <MobileSearchInput searchPath="/catalog" />
         </MobileHeader>
         <MainContainer>
+          <Title className="sr-only md:not-sr-only md:mb-4">Каталог товаров</Title>
           <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}>
             {specials.map((s) => (
               <Link

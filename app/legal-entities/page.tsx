@@ -2,7 +2,7 @@ import { CheckCircle2 } from "lucide-react";
 import { MainContainer, MobileHeader, Title } from "@/components";
 
 export const metadata = {
-  title: "Для юридических лиц — Aloe.kg",
+  title: "Для юридических лиц",
 };
 
 const conditions = [

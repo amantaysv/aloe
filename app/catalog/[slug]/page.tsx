@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const category = allCategories?.find((c) => c.slug === slug);
   if (!category || category.parent_id) return {};
   return {
-    title: `${category.name} — купить в Бишкеке | Aloe.kg`,
+    title: `${category.name} — купить в Бишкеке`,
     description: `${category.name}: широкий выбор товаров по выгодным ценам с доставкой по Бишкеку в интернет-магазине Aloe.kg.`,
     alternates: { canonical: `/catalog/${slug}` },
   };
@@ -68,6 +68,9 @@ export default async function CategoryPage({
   return (
     <>
       <MobileHeader title={category.name} withBackButton />
+      <h1 className="sr-only md:not-sr-only md:container md:mx-auto md:px-4 md:pt-2 md:text-2xl md:font-bold">
+        {category.name}
+      </h1>
 
       <SubcategoryFilter subcategories={visibleSubcategories} />
       <MainContainer>

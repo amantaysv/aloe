@@ -1,4 +1,5 @@
-import { BannerCarousel, Header, MainContainer, ProductCarousel } from "@/components";
+import type { Metadata } from "next";
+import { BannerCarousel, Header, MainContainer, ProductCarousel, Title } from "@/components";
 import {
   getCachedActiveBanners,
   getCachedCategoriesWithSlug,
@@ -6,6 +7,13 @@ import {
   getCachedPopularProducts,
   getCachedProductsByLabel,
 } from "@/lib/cached-queries";
+
+export const metadata: Metadata = {
+  title: { absolute: "Aloe.kg — бытовая химия и косметика с доставкой по Бишкеку" },
+  description:
+    "Интернет-магазин Aloe.kg: бытовая химия, косметика и товары для дома по выгодным ценам. Доставка по Бишкеку в день заказа.",
+  alternates: { canonical: "/" },
+};
 
 export default async function HomePage() {
   const [popular, newest, onSale, desktopBanners, mobileBanners, allCategories] = await Promise.all([
@@ -43,6 +51,8 @@ export default async function HomePage() {
     <>
       <Header className="block md:hidden" />
       <MainContainer className="flex flex-col gap-4 md:gap-8">
+        {/* The carousels below are h2s; without this the site's most important page had no h1. */}
+        <Title className="sr-only">Бытовая химия и косметика с доставкой по Бишкеку</Title>
         <div className="block md:hidden">
           <BannerCarousel banners={mobileBanners} />
         </div>

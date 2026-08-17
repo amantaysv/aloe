@@ -30,7 +30,7 @@ export default async function LabelProductsPage({
 
   return (
     <MainContainer>
-      <h2 className="text-lg font-semibold mb-4 text-center md:text-left">{title}</h2>
+      <h1 className="text-lg font-semibold mb-4 text-center md:text-left">{title}</h1>
 
       {products.length === 0 ? (
         <p className="text-gray-400 text-sm">{emptyText}</p>

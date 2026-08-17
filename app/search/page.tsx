@@ -16,14 +16,10 @@ import { getBrandsForSearch, searchProducts } from "@/services/product.service";
 
 const PAGE_SIZE = 24;
 
-export async function generateMetadata({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ q?: string }> }): Promise<Metadata> {
   const { q } = await searchParams;
   return {
-    title: q?.trim() ? `${q} — поиск | Aloe.kg` : "Поиск — Aloe.kg",
+    title: q?.trim() ? `${q} — поиск` : "Поиск",
     robots: { index: false, follow: true },
   };
 }

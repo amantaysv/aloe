@@ -1,7 +1,7 @@
 import { DeliveryContent, MainContainer, MobileHeader, Title } from "@/components";
 
 export const metadata = {
-  title: "Доставка и оплата — Aloe.kg",
+  title: "Доставка и оплата",
 };
 
 export default function DeliveryPage() {
