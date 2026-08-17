@@ -5,6 +5,7 @@ import { after } from "next/server";
 import { DELIVERY_OPTIONS, getDeliveryCost } from "@/lib/constants";
 import { generateInvoicePdf } from "@/lib/invoice";
 import { sendNewOrderEmail } from "@/lib/mailer";
+import { rateLimit } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { createClient } from "@/lib/supabase-server";
 import { insertOrder, markOrderNotified } from "@/services/order.service";
@@ -128,6 +129,11 @@ export async function quoteOrder({
   const lines = parseLines(items);
   if (!lines) return fail("Корзина повреждена. Обновите страницу и попробуйте ещё раз.");
 
+  // Read-only, and the checkout page re-quotes on every cart or delivery change, so this is much
+  // looser than createOrder — it only exists to bound a scripted loop.
+  const { allowed } = await rateLimit("quote-order", { limit: 60, windowSeconds: 60 });
+  if (!allowed) return fail("Слишком много запросов. Обновите страницу через минуту.");
+
   try {
     return { ok: true as const, quote: await buildQuote(createAdminClient(), lines, deliveryType) };
   } catch (err) {
@@ -157,6 +163,11 @@ export async function createOrder({
   if (!DELIVERY_OPTIONS.some((o) => o.id === deliveryType)) {
     return fail("Выберите способ доставки.");
   }
+
+  // A public endpoint that inserts, runs an RPC, renders a PDF and sends mail. Five orders a
+  // minute is well clear of any real customer, including a corrected re-submit.
+  const { allowed } = await rateLimit("create-order", { limit: 5, windowSeconds: 60 });
+  if (!allowed) return fail("Слишком много попыток. Подождите минуту и попробуйте снова.");
 
   const customerName = normalizeText(name, LIMITS.name);
   const customerPhone = normalizeText(phone, LIMITS.phone);

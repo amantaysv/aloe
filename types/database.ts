@@ -319,6 +319,27 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          bucket: string
+          hits: number
+          key: string
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          hits?: number
+          key: string
+          window_start?: string
+        }
+        Update: {
+          bucket?: string
+          hits?: number
+          key?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -327,6 +348,15 @@ export type Database = {
       increment_product_purchase_counts: {
         Args: { items: Json }
         Returns: undefined
+      }
+      rate_limit_hit: {
+        Args: {
+          p_bucket: string
+          p_key: string
+          p_limit: number
+          p_window: string
+        }
+        Returns: boolean
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
