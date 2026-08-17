@@ -12,6 +12,14 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   devIndicators: false,
+  // lib/invoice.ts resolves these at runtime via process.cwd(), which the file tracer
+  // cannot follow — without this the TTFs are missing from the serverless bundle and
+  // invoice generation throws in production.
+  outputFileTracingIncludes: {
+    "/checkout": ["./lib/fonts/**"],
+    "/admin/orders": ["./lib/fonts/**"],
+  },
+  poweredByHeader: false,
 };
 
 export default nextConfig;

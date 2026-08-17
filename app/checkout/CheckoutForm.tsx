@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Currency } from "@/components";
+import { useIsClient } from "@/hooks/useIsClient";
 import { DELIVERY_OPTIONS, FREE_DELIVERY_THRESHOLD, getDeliveryCost } from "@/lib/constants";
 import { useCart } from "@/store/cart";
 import { createOrder } from "./actions";
@@ -19,7 +20,10 @@ type Props = {
 
 export default function CheckoutForm({ initial }: Props) {
   const router = useRouter();
-  const { items, total, clear } = useCart();
+  const items = useCart((s) => s.items);
+  const total = useCart((s) => s.total);
+  const clear = useCart((s) => s.clear);
+  const isClient = useIsClient();
   const [name, setName] = useState(initial?.name ?? "");
   const [phone, setPhone] = useState(initial?.phone ?? "");
   const [address, setAddress] = useState(initial?.address ?? "");
@@ -27,6 +31,12 @@ export default function CheckoutForm({ initial }: Props) {
   const [deliveryType, setDeliveryType] = useState<string>(DELIVERY_OPTIONS[0].id);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // The cart store rehydrates from localStorage synchronously, so the server's empty-cart
+  // markup never matches the first client render. Hold a placeholder until we're on the client.
+  if (!isClient) {
+    return <div className="py-16 h-96" aria-busy="true" />;
+  }
 
   if (items.length === 0) {
     return (
@@ -47,28 +57,28 @@ export default function CheckoutForm({ initial }: Props) {
     }
     setLoading(true);
     setError("");
-    const result = await createOrder({
-      name: name.trim(),
-      phone: phone.trim(),
-      address: address.trim(),
-      comment: comment.trim(),
-      items: items.map((i) => ({
-        id: i.id,
-        name: i.name,
-        price: i.price,
-        quantity: i.quantity,
-        image_url: i.image_url,
-      })),
-      total: total(),
-      deliveryType,
-    });
-    if (!result.ok) {
-      setError(result.error);
+    try {
+      // Only ids and quantities go to the server — it resolves prices and the total itself.
+      const result = await createOrder({
+        name: name.trim(),
+        phone: phone.trim(),
+        address: address.trim(),
+        comment: comment.trim(),
+        items: items.map((i) => ({ id: i.id, quantity: i.quantity })),
+        deliveryType,
+      });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      clear();
+      router.push(`/checkout/success?id=${result.orderId}`);
+    } catch {
+      // The order may well have been created — never invite a blind retry.
+      setError("Не удалось получить подтверждение. Проверьте «Мои заказы» перед повторной попыткой.");
+    } finally {
       setLoading(false);
-      return;
     }
-    clear();
-    router.push(`/checkout/success?id=${result.orderId}`);
   }
 
   const orderTotal = total();

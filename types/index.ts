@@ -21,8 +21,44 @@ export type Product = {
   published: boolean;
 };
 
+export type CartItem = {
+  id: number;
+  name: string;
+  price: number;
+  image_url: string;
+  quantity: number;
+};
+
+/**
+ * A cart item frozen into an order. Same shape as `CartItem`, but every field here was
+ * resolved server-side at checkout — never trust a client-supplied price with this type.
+ */
+export type OrderItem = CartItem;
+
 export type ProductRow = Product & { brands: { name: string } | null };
 
-export function withBrandName(rows: ProductRow[]): Product[] {
-  return rows.map((p) => ({ ...p, brand_name: p.brands?.name ?? null }));
+/**
+ * Exactly what a product card renders. List queries select these columns and nothing else —
+ * `description` and `seo_text` are long free text and otherwise dominate every grid payload,
+ * which is also what pushes cached category pages past the 2 MB data-cache entry limit.
+ * The detail page still loads the full `Product`.
+ */
+export type ProductListItem = {
+  id: number;
+  name: string;
+  price: number;
+  old_price?: number | null;
+  image_url: string;
+  category_id: number;
+  label?: "new" | "sale" | null;
+  brand_id?: number | null;
+  brand_name?: string | null;
+};
+
+export type ProductListRow = Omit<ProductListItem, "brand_name"> & { brands: { name: string } | null };
+
+export function withBrandName<T extends { brands?: { name: string } | null }>(
+  rows: T[],
+): Array<Omit<T, "brands"> & { brand_name: string | null }> {
+  return rows.map(({ brands, ...rest }) => ({ ...rest, brand_name: brands?.name ?? null }));
 }

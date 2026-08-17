@@ -1,3 +1,5 @@
+import "server-only";
+import fs from "fs";
 import path from "path";
 import PDFDocument from "pdfkit";
 
@@ -23,18 +25,38 @@ export type InvoiceData = {
 
 const FONTS_DIR = path.join(process.cwd(), "lib/fonts");
 
+// Read once per process rather than per invoice, and hand pdfkit a Buffer instead of a path.
+// `next.config.ts` traces these files into the serverless bundle via outputFileTracingIncludes;
+// resolving them lazily here keeps a missing font from breaking module load.
+let fonts: { regular: Buffer; bold: Buffer } | null = null;
+
+function loadFonts() {
+  if (!fonts) {
+    fonts = {
+      regular: fs.readFileSync(path.join(FONTS_DIR, "Roboto-Regular.ttf")),
+      bold: fs.readFileSync(path.join(FONTS_DIR, "Roboto-Bold.ttf")),
+    };
+  }
+  return fonts;
+}
+
+const PAGE_BOTTOM = 780;
+
 export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
+  const { regular, bold } = loadFonts();
+
   // font: false skips pdfkit's default Helvetica setup, which reads an .afm file from
   // disk — that file isn't traced into the Next.js serverless bundle. We register our
   // own (Cyrillic-capable) fonts below instead.
   const doc = new PDFDocument({ size: "A4", margin: 40, font: false as unknown as string });
-  doc.registerFont("Regular", path.join(FONTS_DIR, "Roboto-Regular.ttf"));
-  doc.registerFont("Bold", path.join(FONTS_DIR, "Roboto-Bold.ttf"));
+  doc.registerFont("Regular", regular);
+  doc.registerFont("Bold", bold);
 
   const chunks: Buffer[] = [];
   doc.on("data", (chunk) => chunks.push(chunk));
-  const done = new Promise<Buffer>((resolve) => {
+  const done = new Promise<Buffer>((resolve, reject) => {
     doc.on("end", () => resolve(Buffer.concat(chunks)));
+    doc.on("error", reject);
   });
 
   doc.font("Bold").fontSize(18).text("Aloe.kg", { continued: false });
@@ -84,11 +106,22 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
   doc.font("Regular").fontSize(10);
   for (const item of data.items) {
     const rowHeight = doc.heightOfString(item.name, { width: 270 }) + 6;
+    if (y + rowHeight > PAGE_BOTTOM) {
+      doc.addPage();
+      y = doc.page.margins.top;
+      doc.font("Regular").fontSize(10);
+    }
     doc.text(item.name, col.name, y, { width: 270 });
     doc.text(String(item.quantity), col.qty, y);
     doc.text(`${item.price} сом`, col.price, y);
     doc.text(`${item.price * item.quantity} сом`, col.sum, y);
     y += rowHeight;
+  }
+
+  // Keep the totals block intact rather than splitting it across the page boundary.
+  if (y + 64 > PAGE_BOTTOM) {
+    doc.addPage();
+    y = doc.page.margins.top;
   }
 
   doc

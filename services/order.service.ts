@@ -1,12 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { OrderItem } from "@/types";
 
-type CartItem = {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  image_url: string;
-};
+/**
+ * `.or()` takes a raw PostgREST filter expression, so anything interpolated into it can
+ * rewrite the filter tree. Strip the characters that carry meaning there.
+ */
+function escapeOrFilterValue(value: string): string {
+  return value.replace(/[,().:*"\\]/g, " ").trim();
+}
 
 export async function getUserOrders(supabase: SupabaseClient, userId: string) {
   const { data } = await supabase
@@ -25,7 +26,8 @@ export async function getAdminOrders(
   const from = (page - 1) * pageSize;
 
   let query = supabase.from("orders").select("*", { count: "exact" }).order("created_at", { ascending: false });
-  if (q) query = query.or(`customer_name.ilike.%${q}%,customer_phone.ilike.%${q}%`);
+  const safeQ = escapeOrFilterValue(q);
+  if (safeQ) query = query.or(`customer_name.ilike.%${safeQ}%,customer_phone.ilike.%${safeQ}%`);
   if (statuses.length > 0) query = query.in("status", statuses);
 
   const { data, count } = await query.range(from, from + pageSize - 1);
@@ -49,7 +51,7 @@ export async function insertOrder(
     phone: string;
     address: string;
     comment: string;
-    items: CartItem[];
+    items: OrderItem[];
     total: number;
     deliveryType: string;
     deliveryCost: number;
