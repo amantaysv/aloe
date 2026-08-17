@@ -23,7 +23,7 @@ export default async function OrdersPage({
 
   return (
     <AdminOrders
-      orders={orders as Parameters<typeof AdminOrders>[0]["orders"]}
+      orders={orders}
       page={currentPage}
       totalPages={Math.ceil(total / PAGE_SIZE)}
       total={total}

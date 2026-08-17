@@ -9,10 +9,5 @@ export default async function BannersPage() {
     getAllBanners(supabase, "mobile"),
   ]);
 
-  return (
-    <AdminBannersTabbed
-      desktopBanners={desktopBanners as Parameters<typeof AdminBannersTabbed>[0]["desktopBanners"]}
-      mobileBanners={mobileBanners as Parameters<typeof AdminBannersTabbed>[0]["mobileBanners"]}
-    />
-  );
+  return <AdminBannersTabbed desktopBanners={desktopBanners} mobileBanners={mobileBanners} />;
 }

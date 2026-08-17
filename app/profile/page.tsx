@@ -12,12 +12,6 @@ export default async function ProfilePage() {
 
   const [orders, profile] = await Promise.all([getUserOrders(supabase, user.id), getProfile(supabase, user.id)]);
 
-  const initial = {
-    name: profile?.name ?? "",
-    phone: profile?.phone ?? "",
-    address: profile?.address ?? "",
-  };
-
   return (
     <>
       <MobileHeader title="Мой профиль">
@@ -53,7 +47,7 @@ export default async function ProfilePage() {
           <LogoutButton />
         </div>
 
-        <ProfileTabs initial={initial} orders={orders as Parameters<typeof ProfileTabs>[0]["orders"]} />
+        <ProfileTabs initial={profile} orders={orders} />
       </MainContainer>
     </>
   );

@@ -31,3 +31,24 @@ git add supabase/ && git commit -m "chore: baseline Supabase schema"
 `sql/001-products-name-trgm.sql` — аддитивное изменение, безопасно применять на живой базе.
 Сейчас `ilike '%q%'` не может использовать btree, поэтому каждое нажатие клавиши в
 автоподсказке и каждый поиск — последовательное сканирование всей таблицы товаров.
+
+## Регенерация типов
+
+`types/database.ts` сгенерирован из схемы и коммитится в репозиторий. После любой миграции:
+
+```bash
+npm run db:types
+npm run typecheck
+```
+
+## Колонки, которым стоит добавить NOT NULL
+
+Генерация типов вскрыла разрыв между схемой и допущениями кода. Эти колонки nullable в базе,
+хотя приложение считает их обязательными, и сейчас значения приводятся на границе:
+
+- `products.price`, `products.image_url`, `products.category_id`, `products.published`, `products.category`
+- `banners.active`, `banners.sort_order`
+- `orders.created_at`, `orders.status`
+
+Миграция с `NOT NULL DEFAULT` убрала бы приведения и сделала типы честными. Требует проверки,
+что в существующих строках нет `NULL` — отдельная задача, не делалась.

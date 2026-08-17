@@ -34,12 +34,8 @@ const ICONS = {
   telo: HandHeart,
 };
 
-type Category = {
-  id: number;
-  name: string;
-  slug: keyof typeof ICONS;
-  parent_id: number | null;
-};
+// slug is plain text in the schema; ICONS is looked up defensively below.
+type Category = { id: number; name: string; slug: string; parent_id: number | null };
 
 const specials = [
   { href: "/popular", label: "Популярное", icon: Star },
@@ -116,7 +112,7 @@ export default function CategoryNav({ categories }: { categories: Category[] }) 
               href={`/catalog/${category.slug}`}
               label={category.name}
               active={activeParentSlug === category.slug}
-              Icon={ICONS[category.slug]}
+              Icon={ICONS[category.slug as keyof typeof ICONS]}
             />
           ))}
         </div>

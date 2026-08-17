@@ -2,7 +2,7 @@
 
 import { revalidatePath, updateTag } from "next/cache";
 import { DELIVERY_OPTIONS, ORDER_STATUS } from "@/lib/constants";
-import { generateInvoicePdf } from "@/lib/invoice";
+import { generateInvoicePdf, type InvoiceItem } from "@/lib/invoice";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { createClient } from "@/lib/supabase-server";
 import { getAdminBrands } from "@/services/brand.service";
@@ -63,9 +63,9 @@ export async function updateOrderStatus(orderId: number, status: string) {
 export type OrderItemInput = {
   id: number;
   name: string;
-  price: number;
+  price: number | null;
   quantity: number;
-  image_url: string;
+  image_url: string | null;
 };
 
 export async function updateOrderItems(
@@ -78,7 +78,7 @@ export async function updateOrderItems(
   const { data: order, error: fetchError } = await db.from("orders").select("delivery_cost").eq("id", orderId).single();
   if (fetchError || !order) return { ok: false, error: "Заказ не найден" };
 
-  const itemsTotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const itemsTotal = items.reduce((sum, i) => sum + (i.price ?? 0) * i.quantity, 0);
   const total = itemsTotal + (order.delivery_cost ?? 0);
 
   const { error } = await db.from("orders").update({ items, total }).eq("id", orderId);
@@ -100,14 +100,14 @@ export async function downloadInvoice(orderId: number): Promise<{ ok: true; base
 
   const pdf = await generateInvoicePdf({
     orderId: String(order.id),
-    createdAt: new Date(order.created_at),
+    createdAt: new Date(order.created_at ?? Date.now()),
     name: order.customer_name ?? "",
     phone: order.customer_phone ?? "",
     address: order.customer_address ?? "",
     comment: order.comment ?? "",
     deliveryLabel: DELIVERY_OPTIONS.find((o) => o.id === order.delivery_type)?.label ?? order.delivery_type ?? "—",
     deliveryCost: order.delivery_cost ?? 0,
-    items: order.items,
+    items: order.items as InvoiceItem[],
     itemsTotal,
     total: order.total,
   });

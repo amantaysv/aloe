@@ -3,14 +3,14 @@
 import { Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { Button, Currency } from "@/components";
-import type { Product } from "@/types";
+import type { ProductRecord } from "@/types";
 
 type Props = {
-  products: Product[];
+  products: ProductRecord[];
   selectedIds: Set<number>;
   onToggle: (id: number) => void;
   onToggleAll: () => void;
-  onEdit: (product: Product) => void;
+  onEdit: (product: ProductRecord) => void;
   onDelete: (id: number) => void;
 };
 

@@ -1,3 +1,7 @@
+import type { Database } from "@/types/database";
+
+type Tables = Database["public"]["Tables"];
+
 export type Brand = {
   id: number;
   name: string;
@@ -62,3 +66,23 @@ export function withBrandName<T extends { brands?: { name: string } | null }>(
 ): Array<Omit<T, "brands"> & { brand_name: string | null }> {
   return rows.map(({ brands, ...rest }) => ({ ...rest, brand_name: brands?.name ?? null }));
 }
+
+/**
+ * Derived from the generated schema rather than hand-written, so a renamed or newly-nullable
+ * column fails the build instead of surfacing at runtime. `orders.items` is jsonb, typed here as
+ * what checkout actually writes into it.
+ */
+/**
+ * A raw products row, exactly as stored. The admin list and edit drawer work with these; the
+ * storefront uses `Product`/`ProductListItem`, which assume the display-critical columns are
+ * present. Several of them (price, image_url, category_id, published) are nullable in the
+ * schema and arguably should carry NOT NULL — see supabase/README.md.
+ */
+export type ProductRecord = Tables["products"]["Row"];
+
+export type Category = Tables["categories"]["Row"];
+export type Banner = Tables["banners"]["Row"];
+export type Profile = Tables["profiles"]["Row"];
+/** What profile.service selects and ProfileForm edits. */
+export type ProfileFields = Pick<Profile, "name" | "phone" | "address">;
+export type Order = Omit<Tables["orders"]["Row"], "items"> & { items: OrderItem[] };

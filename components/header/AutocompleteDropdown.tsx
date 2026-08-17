@@ -8,9 +8,9 @@ import Currency from "../Currency";
 export type AutocompleteProduct = {
   id: number;
   name: string;
-  price: number;
-  image_url: string;
-  category_id: string;
+  price: number | null;
+  image_url: string | null;
+  category_id: number | null;
 };
 
 export default function AutocompleteDropdown({
@@ -46,7 +46,7 @@ export default function AutocompleteDropdown({
           className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 text-left"
         >
           <div className="relative w-10 h-10 shrink-0 bg-gray-100 rounded">
-            <Image src={p.image_url} alt={p.name} fill sizes="40px" className="object-contain p-1" unoptimized />
+            <Image src={p.image_url ?? ""} alt={p.name} fill sizes="40px" className="object-contain p-1" unoptimized />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm truncate">{p.name}</p>

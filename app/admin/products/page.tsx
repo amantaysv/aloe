@@ -49,7 +49,7 @@ export default async function ProductsPage({
 
   return (
     <AdminProducts
-      products={products as Parameters<typeof AdminProducts>[0]["products"]}
+      products={products}
       page={currentPage}
       totalPages={totalPages}
       total={total}
@@ -59,7 +59,7 @@ export default async function ProductsPage({
       category={category}
       sort={sort}
       pageSize={pageSizeParam}
-      categories={categories as Parameters<typeof AdminProducts>[0]["categories"]}
+      categories={categories}
     />
   );
 }

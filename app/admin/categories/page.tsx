@@ -10,10 +10,5 @@ export default async function CategoriesPage() {
     getProductCategoryIds(supabase),
   ]);
 
-  return (
-    <AdminCategories
-      categories={categories as Parameters<typeof AdminCategories>[0]["categories"]}
-      usedCategoryIds={usedCategoryIds}
-    />
-  );
+  return <AdminCategories categories={categories} usedCategoryIds={usedCategoryIds} />;
 }

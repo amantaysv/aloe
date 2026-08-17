@@ -42,7 +42,7 @@ export const getCachedPopularProducts = unstable_cache(
 );
 
 export const getCachedHomePageCategoryProducts = unstable_cache(
-  (groups: Array<{ topId: string; allIds: string[] }>, limitPerCategory?: number) =>
+  (groups: Array<{ topId: number; allIds: number[] }>, limitPerCategory?: number) =>
     getHomePageCategoryProducts(supabase, groups, limitPerCategory),
   ["home-category-products"],
   { revalidate: 60, tags: ["products"] },
@@ -66,7 +66,7 @@ export const getCachedProductsByBrand = unstable_cache(
 );
 
 export const getCachedSubcategorySection = unstable_cache(
-  (categoryIds: string[], sort: SortValue, brandIds?: number[]) =>
+  (categoryIds: number[], sort: SortValue, brandIds?: number[]) =>
     getSubcategorySection(supabase, categoryIds, sort, brandIds),
   ["subcategory-section"],
   { revalidate: 60, tags: ["products"] },

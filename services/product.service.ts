@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ProductListItem, ProductListRow } from "@/types";
 import { withBrandName } from "@/types";
+import type { Database } from "@/types/database";
 
 /**
  * The only columns a product card needs. Selecting `*` here pulls `description` and `seo_text`
@@ -39,7 +40,7 @@ const ADMIN_ALL_CAP = 5000;
 export type SortValue = "name" | "price_asc" | "price_desc";
 export type AdminProductsSort = "id-desc" | "name-asc" | "price-asc" | "price-desc" | "purchase-count-desc";
 
-export async function getProductsByLabel(supabase: SupabaseClient, label: "new" | "sale", limit = 10) {
+export async function getProductsByLabel(supabase: SupabaseClient<Database>, label: "new" | "sale", limit = 10) {
   const { data, count } = await supabase
     .from("products")
     .select(LIST_COLUMNS, COUNT)
@@ -50,7 +51,7 @@ export async function getProductsByLabel(supabase: SupabaseClient, label: "new" 
   return toList(data, count);
 }
 
-export async function getPopularProducts(supabase: SupabaseClient, limit = 10) {
+export async function getPopularProducts(supabase: SupabaseClient<Database>, limit = 10) {
   const { data, count } = await supabase
     .from("products")
     .select(LIST_COLUMNS, COUNT)
@@ -63,7 +64,7 @@ export async function getPopularProducts(supabase: SupabaseClient, limit = 10) {
 }
 
 export async function getPopularProductsPaginated(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   options: { page: number; pageSize?: number },
 ) {
   const { page, pageSize = 20 } = options;
@@ -85,8 +86,8 @@ export async function getPopularProductsPaginated(
  * PostgREST's max-rows (which also made `total` wrong).
  */
 export async function getHomePageCategoryProducts(
-  supabase: SupabaseClient,
-  groups: Array<{ topId: string; allIds: string[] }>,
+  supabase: SupabaseClient<Database>,
+  groups: Array<{ topId: number; allIds: number[] }>,
   limitPerCategory = 10,
 ) {
   return Promise.all(
@@ -105,11 +106,16 @@ export async function getHomePageCategoryProducts(
   );
 }
 
-export async function getProduct(supabase: SupabaseClient, id: string) {
+export async function getProduct(supabase: SupabaseClient<Database>, id: number) {
   return supabase.from("products").select("*, brands(name, slug)").eq("id", id).eq("published", true).single();
 }
 
-export async function getRelatedProducts(supabase: SupabaseClient, categoryId: string, excludeId: string, limit = 4) {
+export async function getRelatedProducts(
+  supabase: SupabaseClient<Database>,
+  categoryId: number,
+  excludeId: number,
+  limit = 4,
+) {
   const { data } = await supabase
     .from("products")
     .select(LIST_COLUMNS)
@@ -122,8 +128,8 @@ export async function getRelatedProducts(supabase: SupabaseClient, categoryId: s
 }
 
 export async function getSubcategorySection(
-  supabase: SupabaseClient,
-  categoryIds: string[],
+  supabase: SupabaseClient<Database>,
+  categoryIds: number[],
   sort: SortValue,
   brandIds: number[] = [],
 ) {
@@ -141,7 +147,7 @@ export async function getSubcategorySection(
 }
 
 export async function searchProducts(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   query: string,
   options: { brandIds?: number[]; page: number; pageSize?: number },
 ) {
@@ -168,7 +174,7 @@ export async function searchProducts(
  * and pulled one row per matching product just to dedupe brands in JS, so a broad query scanned
  * and transferred the whole matching set a second time.
  */
-export async function getBrandsForSearch(supabase: SupabaseClient, query: string, limit = 1000) {
+export async function getBrandsForSearch(supabase: SupabaseClient<Database>, query: string, limit = 1000) {
   const { data } = await supabase
     .from("products")
     .select("brands(id, name)")
@@ -181,7 +187,7 @@ export async function getBrandsForSearch(supabase: SupabaseClient, query: string
 }
 
 export async function getProductsByBrand(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   brandId: number,
   options: { page: number; pageSize?: number },
 ) {
@@ -198,7 +204,7 @@ export async function getProductsByBrand(
 }
 
 export async function getProductsByLabelPaginated(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   label: string,
   options: { page: number; pageSize?: number },
 ) {
@@ -214,7 +220,7 @@ export async function getProductsByLabelPaginated(
   return toList(data, count);
 }
 
-export async function searchProductsAutocomplete(supabase: SupabaseClient, query: string, limit = 6) {
+export async function searchProductsAutocomplete(supabase: SupabaseClient<Database>, query: string, limit = 6) {
   const { data } = await supabase
     .from("products")
     .select("id, name, price, image_url, category_id")
@@ -226,7 +232,7 @@ export async function searchProductsAutocomplete(supabase: SupabaseClient, query
 }
 
 export async function getAdminProducts(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   options: {
     q?: string;
     label?: string;
@@ -266,7 +272,7 @@ export async function getAdminProducts(
  * only the first 1000 products' worth of ids, and the admin UI used the result to decide whether
  * a category or brand was safe to delete — so an in-use one could be reported as unused.
  */
-async function distinctIds(supabase: SupabaseClient, column: "category_id" | "brand_id"): Promise<number[]> {
+async function distinctIds(supabase: SupabaseClient<Database>, column: "category_id" | "brand_id"): Promise<number[]> {
   const pageSize = 1000;
   const ids = new Set<number>();
   for (let from = 0; ; from += pageSize) {
@@ -290,11 +296,11 @@ async function distinctIds(supabase: SupabaseClient, column: "category_id" | "br
   return [...ids];
 }
 
-export async function getProductCategoryIds(supabase: SupabaseClient) {
+export async function getProductCategoryIds(supabase: SupabaseClient<Database>) {
   return distinctIds(supabase, "category_id");
 }
 
-export async function getProductBrandIds(supabase: SupabaseClient) {
+export async function getProductBrandIds(supabase: SupabaseClient<Database>) {
   return distinctIds(supabase, "brand_id");
 }
 

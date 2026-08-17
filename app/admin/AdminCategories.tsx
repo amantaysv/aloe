@@ -13,6 +13,7 @@ import {
 import Image from "next/image";
 import { Button } from "@/components";
 import { useToast } from "@/store/toast";
+import type { Category } from "@/types";
 import {
   deleteCategory,
   reorderSubcategories,
@@ -23,15 +24,6 @@ import {
 import { Field, adminInputCls as inp } from "./admin-ui";
 import AdminDrawer from "./AdminDrawer";
 import { useDragReorder } from "./useDragReorder";
-
-type Category = {
-  id: number;
-  name: string;
-  parent_id: number | null;
-  slug: string;
-  image_url?: string | null;
-  sort_order: number;
-};
 
 const empty: CategoryInput = { name: "", parent_id: null, slug: "", image_url: null };
 

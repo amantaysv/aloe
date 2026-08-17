@@ -27,7 +27,7 @@ export default async function HomePage() {
 
   const topCategories = allCategories.filter((c) => !c.parent_id);
 
-  const subsByParent = new Map<string, string[]>();
+  const subsByParent = new Map<number, number[]>();
   for (const c of allCategories) {
     if (c.parent_id) {
       if (!subsByParent.has(c.parent_id)) subsByParent.set(c.parent_id, []);

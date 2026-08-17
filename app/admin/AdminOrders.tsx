@@ -4,24 +4,11 @@ import { useState } from "react";
 import { Download, Pencil, Search, X } from "lucide-react";
 import { Button, Currency, Pagination } from "@/components";
 import { DELIVERY_OPTIONS, ORDER_STATUS } from "@/lib/constants";
+import type { Order } from "@/types";
 import { downloadInvoice, type OrderItemInput } from "./actions";
 import OrderItemsEditor from "./OrderItemsEditor";
 import OrderStatusSelect from "./OrderStatusSelect";
 import { useAdminListNav, useDebouncedSearch } from "./useAdminListNav";
-
-type Order = {
-  id: number;
-  created_at: string;
-  total: number;
-  status: string;
-  customer_name: string | null;
-  customer_phone: string | null;
-  customer_address: string | null;
-  comment: string | null;
-  delivery_type: string | null;
-  delivery_cost: number | null;
-  items: OrderItemInput[];
-};
 
 type Props = {
   orders: Order[];
@@ -139,13 +126,15 @@ export default function AdminOrders({
 
       <div className="space-y-4">
         {orders.map((order) => {
-          const date = new Date(order.created_at).toLocaleString("ru-RU", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          });
+          const date = order.created_at
+            ? new Date(order.created_at).toLocaleString("ru-RU", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "—";
 
           return (
             <div key={order.id} className="border border-gray-300 rounded-lg p-4 hover:shadow-sm transition-shadow">

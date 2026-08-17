@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button, Pagination } from "@/components";
-import type { Product } from "@/types";
+import type { ProductRecord } from "@/types";
 import {
   bulkUpdateProducts,
   deleteProduct,
@@ -38,7 +38,7 @@ const empty: ProductInput = {
 export type SortBy = "id-desc" | "name-asc" | "price-asc" | "price-desc" | "purchase-count-desc";
 
 type Props = {
-  products: Product[];
+  products: ProductRecord[];
   page: number;
   totalPages: number;
   total: number;
@@ -98,21 +98,23 @@ export default function AdminProducts({
     loadBrands();
   }
 
-  function openEdit(p: Product) {
+  function openEdit(p: ProductRecord) {
     loadBrands();
+    // ProductInput requires these; the columns are nullable in the schema, so fall back
+    // rather than write null into a field the storefront treats as present.
     setEditing({
       id: p.id,
       name: p.name,
-      price: p.price,
+      price: p.price ?? 0,
       old_price: p.old_price ?? null,
-      image_url: p.image_url,
-      category: p.category,
-      category_id: p.category_id,
-      label: p.label ?? null,
+      image_url: p.image_url ?? "",
+      category: p.category ?? "",
+      category_id: p.category_id ?? 0,
+      label: p.label === "new" || p.label === "sale" ? p.label : null,
       description: p.description ?? null,
       brand_id: p.brand_id ?? null,
       seo_text: p.seo_text ?? null,
-      published: p.published,
+      published: p.published ?? false,
     });
     setError("");
   }

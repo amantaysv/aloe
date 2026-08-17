@@ -6,31 +6,12 @@ import { Button, Currency, Pagination } from "@/components";
 import { ORDER_STATUS } from "@/lib/constants";
 import { useCart } from "@/store/cart";
 import { useToast } from "@/store/toast";
+import type { Order, ProfileFields } from "@/types";
 import ProfileForm from "./ProfileForm";
-
-type Order = {
-  id: number;
-  created_at: string;
-  total: number;
-  status: string;
-  items: {
-    id: number;
-    name: string;
-    quantity: number;
-    price: number;
-    image_url: string;
-  }[];
-};
-
-type Profile = {
-  name: string;
-  phone: string;
-  address: string;
-};
 
 const PAGE_SIZE = 10;
 
-export default function ProfileTabs({ initial, orders }: { initial: Profile; orders: Order[] }) {
+export default function ProfileTabs({ initial, orders }: { initial: ProfileFields | null; orders: Order[] }) {
   const [tab, setTab] = useState<"profile" | "orders">("orders");
   const [page, setPage] = useState(1);
   const { add } = useCart();
@@ -67,7 +48,11 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
         ))}
       </div>
 
-      {tab === "profile" && <ProfileForm initial={initial} />}
+      {tab === "profile" && (
+        <ProfileForm
+          initial={{ name: initial?.name ?? "", phone: initial?.phone ?? "", address: initial?.address ?? "" }}
+        />
+      )}
 
       {tab === "orders" && (
         <>
@@ -77,13 +62,13 @@ export default function ProfileTabs({ initial, orders }: { initial: Profile; ord
             <>
               <div className="flex flex-col gap-4">
                 {paginated.map((order) => {
-                  const s = ORDER_STATUS[order.status] ?? ORDER_STATUS.new;
+                  const s = (order.status && ORDER_STATUS[order.status]) || ORDER_STATUS.new;
                   return (
                     <div key={order.id} className="border border-gray-300 rounded-xl p-4">
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <p className="text-xs text-gray-400">
-                            {new Date(order.created_at).toLocaleDateString("ru-RU", {
+                            {new Date(order.created_at ?? 0).toLocaleDateString("ru-RU", {
                               day: "numeric",
                               month: "long",
                               year: "numeric",

@@ -8,7 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components";
 
-type Banner = { id: number; image_url: string; link?: string | null };
+type Banner = Pick<import("@/types").Banner, "id" | "image_url" | "link">;
 
 export default function BannerCarousel({ banners }: { banners: Banner[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [

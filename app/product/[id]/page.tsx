@@ -21,7 +21,7 @@ import { getProduct, getRelatedProducts } from "@/services/product.service";
 import type { ProductRow } from "@/types";
 import { withBrandName } from "@/types";
 
-const getCachedProduct = cache((id: string) => getProduct(supabase, id));
+const getCachedProduct = cache((id: string) => getProduct(supabase, Number(id)));
 
 export const revalidate = 60;
 
@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       title: product.name,
       description,
       url: `/product/${id}`,
-      images: [{ url: product.image_url }],
+      images: product.image_url ? [{ url: product.image_url }] : undefined,
     },
   };
 }
@@ -66,7 +66,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const product = withBrandName([rawProduct as unknown as ProductRow])[0];
 
   const [related, allCategories] = await Promise.all([
-    getRelatedProducts(supabase, String(product.category_id), id),
+    getRelatedProducts(supabase, product.category_id, Number(id)),
     getCachedCategoriesWithSlug(),
   ]);
 

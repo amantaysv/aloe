@@ -7,5 +7,5 @@ export default async function BrandsPage() {
   const { db: supabase } = await requireAdmin();
   const [brands, usedBrandIds] = await Promise.all([getBrands(supabase), getProductBrandIds(supabase)]);
 
-  return <AdminBrands brands={brands as Parameters<typeof AdminBrands>[0]["brands"]} usedBrandIds={usedBrandIds} />;
+  return <AdminBrands brands={brands} usedBrandIds={usedBrandIds} />;
 }

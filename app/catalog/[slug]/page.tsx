@@ -42,7 +42,7 @@ export default async function CategoryPage({
   const sections = await Promise.all(
     subcategories.map(async (s) => {
       const subSubcategories = allCategories.filter((c) => c.parent_id === s.id);
-      const categoryIds = [String(s.id), ...subSubcategories.map((c) => String(c.id))];
+      const categoryIds = [s.id, ...subSubcategories.map((c) => c.id)];
       const { products, total } = await getCachedSubcategorySection(categoryIds, validSort);
       return { sub: s, subSubcategories, products, total };
     }),

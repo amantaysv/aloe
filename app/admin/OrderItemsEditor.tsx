@@ -73,7 +73,7 @@ export default function OrderItemsEditor({ orderId, items: initial, onCancel, on
     setItems((prev) => prev.filter((i) => i.id !== id));
   }
 
-  const itemsTotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const itemsTotal = items.reduce((sum, i) => sum + (i.price ?? 0) * i.quantity, 0);
 
   async function handleSave() {
     if (items.length === 0) {
@@ -115,7 +115,7 @@ export default function OrderItemsEditor({ orderId, items: initial, onCancel, on
               </Button>
             </div>
             <span className="text-gray-500 shrink-0 w-20 text-right">
-              {item.price * item.quantity} <Currency />
+              {(item.price ?? 0) * item.quantity} <Currency />
             </span>
             <Button type="button" onClick={() => removeItem(item.id)} className="text-red-400 hover:text-red-600">
               <Trash2 className="w-3.5 h-3.5" />

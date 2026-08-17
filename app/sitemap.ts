@@ -23,7 +23,7 @@ const STATIC_PAGES: Array<{
 
 async function getAllPublishedProducts() {
   const pageSize = 1000;
-  const rows: { id: number; created_at: string; category_id: number; brand_id: number | null }[] = [];
+  const rows: { id: number; created_at: string | null; category_id: number | null; brand_id: number | null }[] = [];
   for (let from = 0; ; from += pageSize) {
     const { data } = await supabase
       .from("products")
@@ -48,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Only entities that actually have published products. BrandPage calls notFound() when a brand
   // has none, and CategoryPage when no subcategory section is non-empty — submitting those filled
   // Search Console with "submitted URL not found (404)", which discredits the whole sitemap.
-  const productCategoryIds = new Set(products.map((p) => p.category_id));
+  const productCategoryIds = new Set(products.map((p) => p.category_id).filter((id): id is number => id != null));
   const productBrandIds = new Set(products.map((p) => p.brand_id).filter((id): id is number => id != null));
 
   /** A category counts as non-empty if it, or anything beneath it, holds a published product. */
@@ -84,7 +84,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const productUrls: MetadataRoute.Sitemap = products.map((p) => ({
     url: `${SITE_URL}/product/${p.id}`,
-    lastModified: p.created_at,
+    lastModified: p.created_at ?? undefined,
     changeFrequency: "weekly",
     priority: 0.6,
   }));

@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 
 /**
  * Service-role client: bypasses RLS entirely. Never construct this without an admin check
@@ -11,7 +12,7 @@ import { createClient } from "@supabase/supabase-js";
  * refresh timer on would keep a process-wide token store on a client shared across requests.
  */
 export function createAdminClient() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+  return createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }

@@ -9,7 +9,7 @@ import { getProduct } from "@/services/product.service";
 import type { ProductRow } from "@/types";
 import { withBrandName } from "@/types";
 
-const getCachedProduct = cache((id: string) => getProduct(supabase, id));
+const getCachedProduct = cache((id: string) => getProduct(supabase, Number(id)));
 
 export default async function ProductModalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

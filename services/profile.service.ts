@@ -1,12 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 
-export async function getProfile(supabase: SupabaseClient, userId: string) {
+export async function getProfile(supabase: SupabaseClient<Database>, userId: string) {
   const { data } = await supabase.from("profiles").select("name, phone, address").eq("id", userId).single();
   return data;
 }
 
 export async function saveProfile(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   userId: string,
   data: { name: string; phone: string; address: string },
 ) {

@@ -5,13 +5,25 @@ import { CheckIcon, EyeIcon, EyeOffIcon, GripVerticalIcon, ImagePlusIcon, Loader
 import Image from "next/image";
 import { Button } from "@/components";
 import { useToast } from "@/store/toast";
-import { deleteBanner, reorderBanners, uploadBannerImage, upsertBanner } from "./actions";
+import type { Banner } from "@/types";
+import { deleteBanner, reorderBanners, uploadBannerImage, upsertBanner, type BannerInput } from "./actions";
 import { useDragReorder } from "./useDragReorder";
 
-type Banner = { id: number; image_url: string; sort_order: number; active: boolean; link?: string | null };
+/** banners.active and banners.sort_order are nullable in the schema; BannerInput is not. */
+function toBannerInput(banner: Banner, overrides: Partial<BannerInput> = {}): BannerInput {
+  return {
+    id: banner.id,
+    image_url: banner.image_url,
+    sort_order: banner.sort_order ?? 0,
+    active: banner.active ?? false,
+    link: banner.link,
+    type: banner.type === "mobile" ? "mobile" : "desktop",
+    ...overrides,
+  };
+}
 
 export default function AdminBanners({ banners: initial, type }: { banners: Banner[]; type: "desktop" | "mobile" }) {
-  const [banners, setBanners] = useState(() => [...initial].sort((a, b) => a.sort_order - b.sort_order));
+  const [banners, setBanners] = useState(() => [...initial].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)));
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [links, setLinks] = useState<Record<number, string>>(() =>
@@ -41,7 +53,10 @@ export default function AdminBanners({ banners: initial, type }: { banners: Bann
       show(result.error, "error");
       return;
     }
-    setBanners((prev) => [...prev, { id: result.id, image_url: upload.url, sort_order, active: true, link: null }]);
+    setBanners((prev) => [
+      ...prev,
+      { id: result.id, image_url: upload.url, sort_order, active: true, link: null, type, created_at: null },
+    ]);
     setLinks((prev) => ({ ...prev, [result.id]: "" }));
     show("Баннер добавлен", "success");
   }
@@ -53,7 +68,7 @@ export default function AdminBanners({ banners: initial, type }: { banners: Bann
   }
 
   async function toggleActive(banner: Banner) {
-    const result = await upsertBanner({ ...banner, active: !banner.active });
+    const result = await upsertBanner(toBannerInput(banner, { active: !banner.active }));
     if (!result.ok) {
       show(result.error, "error");
       return;
@@ -179,7 +194,7 @@ export default function AdminBanners({ banners: initial, type }: { banners: Bann
                   onClick={async () => {
                     const link = (links[b.id] ?? "").trim() || null;
                     setSavingLink((prev) => ({ ...prev, [b.id]: true }));
-                    const result = await upsertBanner({ ...b, link });
+                    const result = await upsertBanner(toBannerInput(b, { link }));
                     setSavingLink((prev) => ({ ...prev, [b.id]: false }));
                     if (result.ok) {
                       setBanners((prev) => prev.map((x) => (x.id === b.id ? { ...x, link } : x)));

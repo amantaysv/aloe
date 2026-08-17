@@ -3,11 +3,10 @@
 import { useMemo, useState } from "react";
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components";
+import type { Brand } from "@/types";
 import { deleteBrand, upsertBrand, type BrandInput } from "./actions";
 import { Field, adminInputCls as inp } from "./admin-ui";
 import AdminDrawer from "./AdminDrawer";
-
-type Brand = { id: number; name: string; slug: string };
 
 const empty: BrandInput = { name: "", slug: "" };
 

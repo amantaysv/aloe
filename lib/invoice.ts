@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import PDFDocument from "pdfkit";
 
-type InvoiceItem = {
+export type InvoiceItem = {
   name: string;
   price: number;
   quantity: number;
