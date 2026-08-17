@@ -4,7 +4,11 @@ import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, Currency, MainContainer, MobileHeader, Title } from "@/components";
+import Button from "@/components/Button";
+import Currency from "@/components/Currency";
+import MainContainer from "@/components/MainContainer";
+import MobileHeader from "@/components/MobileHeader";
+import Title from "@/components/Title";
 import { useIsClient } from "@/hooks/useIsClient";
 import { useCart } from "@/store/cart";
 

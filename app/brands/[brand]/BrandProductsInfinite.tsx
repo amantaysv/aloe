@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ProductCard, ProductGrid } from "@/components";
+import ProductCard from "@/components/ProductCard";
+import ProductGrid from "@/components/ProductGrid";
 import type { ProductListItem } from "@/types";
 import { loadMoreBrandProducts } from "./actions";
 

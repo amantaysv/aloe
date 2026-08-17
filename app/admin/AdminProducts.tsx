@@ -3,7 +3,8 @@
 import { useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Button, Pagination } from "@/components";
+import Button from "@/components/Button";
+import Pagination from "@/components/Pagination";
 import type { ProductRecord } from "@/types";
 import {
   bulkUpdateProducts,

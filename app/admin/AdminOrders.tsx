@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { Download, Pencil, Search, X } from "lucide-react";
-import { Button, Currency, Pagination } from "@/components";
+import Button from "@/components/Button";
+import Currency from "@/components/Currency";
+import Pagination from "@/components/Pagination";
 import { DELIVERY_OPTIONS, ORDER_STATUS } from "@/lib/constants";
 import type { Order } from "@/types";
 import { downloadInvoice, type OrderItemInput } from "./actions";

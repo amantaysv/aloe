@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef } from "react";
 import { XIcon } from "lucide-react";
-import { Button } from "@/components";
+import Button from "@/components/Button";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 

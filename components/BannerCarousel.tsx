@@ -6,7 +6,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components";
+import Button from "./Button";
 
 type Banner = Pick<import("@/types").Banner, "id" | "image_url" | "link">;
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Button } from "@/components";
+import Button from "@/components/Button";
 import { saveProfile } from "./actions";
 
 type Props = {

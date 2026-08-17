@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { CheckIcon, EyeIcon, EyeOffIcon, GripVerticalIcon, ImagePlusIcon, Loader2Icon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
-import { Button } from "@/components";
+import Button from "@/components/Button";
 import { useToast } from "@/store/toast";
 import type { Banner } from "@/types";
 import { deleteBanner, reorderBanners, uploadBannerImage, upsertBanner, type BannerInput } from "./actions";

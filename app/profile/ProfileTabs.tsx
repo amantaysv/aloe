@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Currency, Pagination } from "@/components";
+import Button from "@/components/Button";
+import Currency from "@/components/Currency";
+import Pagination from "@/components/Pagination";
 import { ORDER_STATUS } from "@/lib/constants";
 import { useCart } from "@/store/cart";
 import { useToast } from "@/store/toast";

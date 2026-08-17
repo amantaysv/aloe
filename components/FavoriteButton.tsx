@@ -2,9 +2,9 @@
 
 import { Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components";
 import { useFavorites } from "@/store/favorites";
 import { useToast } from "@/store/toast";
+import Button from "./Button";
 
 export default function FavoriteButton({ productId }: { productId: number }) {
   const isFav = useFavorites((s) => s.ids.includes(productId));

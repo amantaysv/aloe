@@ -2,7 +2,8 @@
 
 import { Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { Button, Currency } from "@/components";
+import Button from "@/components/Button";
+import Currency from "@/components/Currency";
 import type { ProductRecord } from "@/types";
 
 type Props = {

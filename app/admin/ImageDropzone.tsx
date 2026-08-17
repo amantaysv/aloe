@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { ImagePlus, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { Button } from "@/components";
+import Button from "@/components/Button";
 
 type Props = {
   imageUrl: string;

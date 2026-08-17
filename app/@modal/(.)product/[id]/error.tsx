@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Button } from "@/components";
+import Button from "@/components/Button";
 import ProductModal from "@/components/ProductModal";
 
 /**

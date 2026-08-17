@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
-import { Button } from "@/components";
+import Button from "@/components/Button";
 import type { Brand } from "@/types";
 import { deleteBrand, upsertBrand, type BrandInput } from "./actions";
 import { Field, adminInputCls as inp } from "./admin-ui";

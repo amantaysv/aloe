@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components";
+import Button from "@/components/Button";
 import type { SortBy } from "./AdminProducts";
 
 const LABEL_FILTERS = [

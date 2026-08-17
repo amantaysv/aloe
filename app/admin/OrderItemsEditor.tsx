@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Minus, Plus, Search, Trash2, X } from "lucide-react";
-import { Button, Currency } from "@/components";
+import Button from "@/components/Button";
+import Currency from "@/components/Currency";
 import { createClient } from "@/lib/supabase-browser";
 import { searchProductsAutocomplete } from "@/services/product.service";
 import { updateOrderItems, type OrderItemInput } from "./actions";

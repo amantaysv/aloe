@@ -2,7 +2,9 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { Button, MainContainer, Title } from "@/components";
+import Button from "@/components/Button";
+import MainContainer from "@/components/MainContainer";
+import Title from "@/components/Title";
 
 export default function CheckoutError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {

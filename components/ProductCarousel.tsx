@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components";
 import type { ProductListItem } from "@/types";
+import Button from "./Button";
 import ProductCard from "./ProductCard";
 import SeeAllProducts from "./SeeAllProducts";
 

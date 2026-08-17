@@ -3,7 +3,9 @@
 import { Suspense, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, MainContainer, Title } from "@/components";
+import Button from "@/components/Button";
+import MainContainer from "@/components/MainContainer";
+import Title from "@/components/Title";
 import { createClient } from "@/lib/supabase-browser";
 
 const ERROR_MAP: Record<string, string> = {

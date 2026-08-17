@@ -11,7 +11,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import Image from "next/image";
-import { Button } from "@/components";
+import Button from "@/components/Button";
 import { useToast } from "@/store/toast";
 import type { Category } from "@/types";
 import {

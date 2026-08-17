@@ -2,7 +2,7 @@
 
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components";
+import Button from "@/components/Button";
 import { createClient } from "@/lib/supabase-browser";
 import { useCart } from "@/store/cart";
 import { useFavorites } from "@/store/favorites";
