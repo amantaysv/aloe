@@ -1,6 +1,20 @@
 import "server-only";
+import tls from "tls";
 import nodemailer from "nodemailer";
 import type { OrderItem } from "@/types";
+
+/**
+ * The mail server at SMTP_HOST (mail.aloe.kg) presents a certificate issued for *.hoster.kg —
+ * same machine, name the certificate does not cover. `mail.hoster.kg` resolves to a *different*
+ * address, so SMTP_HOST cannot simply be changed.
+ *
+ * Node checks the certificate name against `host`, not `servername`, so setting `servername` alone
+ * does nothing here — that mistake silently stopped every order notification. Overriding
+ * `checkServerIdentity` keeps the CA chain verification intact (rejectUnauthorized stays on) and
+ * only relaxes the name binding to the one the hoster actually certifies. Verified: a deliberately
+ * wrong name still fails, so this is a narrowed check rather than a bypass.
+ */
+const SMTP_CERT_NAME = process.env.SMTP_TLS_SERVERNAME || "mail.hoster.kg";
 
 // TODO: switch back to SITE_URL (aloe.kg) once the domain points at this deployment
 const ADMIN_ORDERS_URL = "https://aloe-next.vercel.app/admin/orders";
@@ -34,7 +48,7 @@ type NewOrderEmailData = {
 };
 
 function getTransport() {
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_TLS_SERVERNAME } = process.env;
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
   if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
     // Loud, because this is the only new-order notification channel: a rotated password or a
     // dropped env var otherwise lets orders pile up unnoticed with nothing in the logs.
@@ -52,12 +66,11 @@ function getTransport() {
     port: Number(SMTP_PORT),
     secure: Number(SMTP_PORT) === 465,
     auth: { user: SMTP_USER, pass: SMTP_PASS },
-    // The certificate is issued for *.hoster.kg rather than mail.aloe.kg — same server, mismatched
-    // name. `rejectUnauthorized: false` used to paper over that by accepting ANY certificate,
-    // which let anyone on the path capture these SMTP credentials and every customer's name,
-    // phone and address. Verifying against the name the cert actually covers fixes the mismatch
-    // without giving up verification.
-    tls: { servername: SMTP_TLS_SERVERNAME || SMTP_HOST },
+    // See SMTP_CERT_NAME above. `rejectUnauthorized` stays at its default of true, so the CA chain
+    // is still verified — only the hostname is checked against the name the certificate covers.
+    tls: {
+      checkServerIdentity: (_host, cert) => tls.checkServerIdentity(SMTP_CERT_NAME, cert),
+    },
   });
 }
 
