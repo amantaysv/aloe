@@ -127,6 +127,10 @@ function VirtualizedProducts({ sections, initialSectionId }: { sections: Section
 
     const update = () => {
       frame = null;
+      // Re-measured here, not just on resize: the sticky subcategory bar switches between
+      // flex-wrap and flex-nowrap as a *result* of scrolling, which changes the height above the
+      // container and desynced a cached offset. The read is once per frame either way.
+      measureTop();
       const relPos = window.scrollY + 220 - containerDocTop;
       const measurements = (
         virtualizer as unknown as { getMeasurements: () => Array<{ start: number }> }
