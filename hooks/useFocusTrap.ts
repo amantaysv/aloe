@@ -43,10 +43,15 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active = true) 
       const last = items[items.length - 1];
       const activeEl = document.activeElement;
 
-      if (e.shiftKey && (activeEl === first || !container.contains(activeEl))) {
+      // Both directions need the escaped-focus check. Only Shift+Tab had it, so once focus left
+      // the overlay a forward Tab walked into the page behind the backdrop — which happens
+      // routinely, because the modal's Suspense fallback unmounts and restores focus outside.
+      const escaped = !container.contains(activeEl);
+
+      if (e.shiftKey && (activeEl === first || escaped)) {
         e.preventDefault();
         last.focus();
-      } else if (!e.shiftKey && activeEl === last) {
+      } else if (!e.shiftKey && (activeEl === last || escaped)) {
         e.preventDefault();
         first.focus();
       }
@@ -55,7 +60,15 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active = true) 
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      previouslyFocused?.focus?.({ preventScroll: true });
+
+      // Only restore if the opener is still in the document and focus is still ours to move.
+      // Calling focus() on a detached node is a no-op that silently drops focus to <body>, and
+      // stealing it back would fight a user who has deliberately moved on. AdminDrawer hits this:
+      // saving re-renders the row whose button opened it.
+      const stillInside = container.contains(document.activeElement);
+      if (previouslyFocused?.isConnected && stillInside) {
+        previouslyFocused.focus({ preventScroll: true });
+      }
     };
   }, [ref, active]);
 }
