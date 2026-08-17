@@ -1,20 +1,16 @@
-import { cache } from "react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { AddToCart, Currency, FavoriteButton, ProductDescription } from "@/components";
 import ProductModal from "@/components/ProductModal";
+import { getCachedProduct } from "@/lib/cached-queries";
 import { LABEL_MAP } from "@/lib/constants";
-import { supabase } from "@/lib/supabase";
-import { getProduct } from "@/services/product.service";
 import type { ProductRow } from "@/types";
 import { withBrandName } from "@/types";
-
-const getCachedProduct = cache((id: string) => getProduct(supabase, Number(id)));
 
 export default async function ProductModalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const { data: rawProduct } = await getCachedProduct(id);
+  const rawProduct = await getCachedProduct(Number(id));
 
   if (!rawProduct) notFound();
 

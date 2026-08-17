@@ -1,4 +1,3 @@
-import { cache } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,14 +13,11 @@ import {
   ProductDescription,
   Title,
 } from "@/components";
-import { getCachedCategoriesWithSlug } from "@/lib/cached-queries";
+import { getCachedCategoriesWithSlug, getCachedProduct, getCachedRelatedProducts } from "@/lib/cached-queries";
 import { LABEL_MAP, SITE_URL } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
-import { getProduct, getRelatedProducts } from "@/services/product.service";
 import type { ProductRow } from "@/types";
 import { withBrandName } from "@/types";
-
-const getCachedProduct = cache((id: string) => getProduct(supabase, Number(id)));
 
 export const revalidate = 60;
 
@@ -37,7 +33,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const { data: product } = await getCachedProduct(id);
+  const product = await getCachedProduct(Number(id));
   if (!product) return {};
   const title = `${product.name} — купить в Бишкеке | Aloe.kg`;
   const description =
@@ -58,7 +54,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const { data: rawProduct } = await getCachedProduct(id);
+  const rawProduct = await getCachedProduct(Number(id));
 
   if (!rawProduct) notFound();
 
@@ -66,7 +62,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const product = withBrandName([rawProduct as unknown as ProductRow])[0];
 
   const [related, allCategories] = await Promise.all([
-    getRelatedProducts(supabase, product.category_id, Number(id)),
+    getCachedRelatedProducts(product.category_id, Number(id)),
     getCachedCategoriesWithSlug(),
   ]);
 

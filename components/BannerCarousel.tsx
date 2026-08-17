@@ -10,6 +10,16 @@ import Button from "./Button";
 
 type Banner = Pick<import("@/types").Banner, "id" | "image_url" | "link">;
 
+/**
+ * Images are lazy rather than `priority`. The homepage renders both the desktop and the mobile
+ * set and hides one with CSS, but `priority` emits a <link rel="preload"> that fires regardless
+ * of `display:none` — so every visit preloaded ~55 KB for the breakpoint it would never show.
+ * Lazy lets the browser skip the hidden set entirely; the visible one loads on layout instead of
+ * via preload, which trades a little LCP latency for markedly less bandwidth contention.
+ *
+ * The clean fix is a single responsive banner set, but desktop/mobile are separate sets by
+ * design in the admin, so that is a content decision rather than a code one.
+ */
 export default function BannerCarousel({ banners }: { banners: Banner[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
     Autoplay({ delay: 4000, stopOnMouseEnter: true, stopOnInteraction: false }),
@@ -44,7 +54,7 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
                     alt={`Баннер ${i + 1}`}
                     fill
                     className="object-cover"
-                    priority={i === 0}
+                    loading="lazy"
                     sizes="(max-width: 768px) 100vw, 1200px"
                   />
                 </Link>
@@ -54,7 +64,7 @@ export default function BannerCarousel({ banners }: { banners: Banner[] }) {
                   alt={`Баннер ${i + 1}`}
                   fill
                   className="object-cover"
-                  priority={i === 0}
+                  loading="lazy"
                   sizes="(max-width: 768px) 100vw, 1200px"
                 />
               )}

@@ -6,8 +6,12 @@ import { getCategories, getCategoriesWithSlug } from "@/services/category.servic
 import {
   getHomePageCategoryProducts,
   getPopularProducts,
+  getPopularProductsPaginated,
+  getProduct,
   getProductsByBrand,
   getProductsByLabel,
+  getProductsByLabelPaginated,
+  getRelatedProducts,
   getSubcategorySection,
   type SortValue,
 } from "@/services/product.service";
@@ -69,5 +73,39 @@ export const getCachedSubcategorySection = unstable_cache(
   (categoryIds: number[], sort: SortValue, brandIds?: number[]) =>
     getSubcategorySection(supabase, categoryIds, sort, brandIds),
   ["subcategory-section"],
+  { revalidate: 60, tags: ["products"] },
+);
+
+/**
+ * Product detail, shared by /product/[id] and the quick-view modal. The modal previously wrapped
+ * the query in React `cache()`, which only dedupes within a single request — so every card click,
+ * the most frequent interaction in the app, was a fresh Supabase round trip. Returns the row or
+ * null rather than the PostgrestResponse, which is neither useful nor cheap to cache.
+ */
+export const getCachedProduct = unstable_cache(
+  async (id: number) => {
+    const { data } = await getProduct(supabase, id);
+    return data;
+  },
+  ["product"],
+  { revalidate: 60, tags: ["products"] },
+);
+
+export const getCachedRelatedProducts = unstable_cache(
+  (categoryId: number, excludeId: number) => getRelatedProducts(supabase, categoryId, excludeId),
+  ["related-products"],
+  { revalidate: 60, tags: ["products"] },
+);
+
+/** /new and /sale queried Supabase directly on every request, unlike the homepage carousels. */
+export const getCachedProductsByLabelPaginated = unstable_cache(
+  (label: string, page: number, pageSize: number) => getProductsByLabelPaginated(supabase, label, { page, pageSize }),
+  ["products-by-label-paginated"],
+  { revalidate: 60, tags: ["products"] },
+);
+
+export const getCachedPopularProductsPaginated = unstable_cache(
+  (page: number, pageSize: number) => getPopularProductsPaginated(supabase, { page, pageSize }),
+  ["popular-products-paginated"],
   { revalidate: 60, tags: ["products"] },
 );
