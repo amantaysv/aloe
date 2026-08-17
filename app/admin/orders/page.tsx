@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase-server";
+import { requireAdmin } from "@/lib/auth";
 import { getAdminOrders, getOrderStatusCounts } from "@/services/order.service";
 import AdminOrders from "../AdminOrders";
 
@@ -9,7 +9,7 @@ export default async function OrdersPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const supabase = await createClient();
+  const { db: supabase } = await requireAdmin();
   const sp = await searchParams;
 
   const currentPage = Math.max(1, parseInt(sp.page ?? "1") || 1);

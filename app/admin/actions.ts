@@ -1,9 +1,9 @@
 "use server";
 
-import { createClient as createSupabase } from "@supabase/supabase-js";
 import { revalidatePath, updateTag } from "next/cache";
-import { DELIVERY_OPTIONS } from "@/lib/constants";
+import { DELIVERY_OPTIONS, ORDER_STATUS } from "@/lib/constants";
 import { generateInvoicePdf } from "@/lib/invoice";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { createClient } from "@/lib/supabase-server";
 import { getAdminBrands } from "@/services/brand.service";
 
@@ -15,12 +15,47 @@ async function assertAdmin() {
   if (!user || user.app_metadata?.role !== "admin") throw new Error("Unauthorized");
 }
 
-function adminDb() {
-  return createSupabase(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+const adminDb = createAdminClient;
+
+/**
+ * The storage buckets are public, so the stored Content-Type decides whether an object is
+ * rendered as an image or executed as a document. Neither `file.type` nor `file.name` can be
+ * trusted for that — an `.svg` served as `image/svg+xml` is stored XSS on the Supabase origin.
+ */
+const ALLOWED_IMAGE_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/avif": "avif",
+};
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+async function uploadImage(
+  bucket: "product-images" | "banners" | "categories",
+  formData: FormData,
+): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+  const file = formData.get("file") as File | null;
+  if (!file || !file.size) return { ok: false, error: "Файл не выбран" };
+
+  const ext = ALLOWED_IMAGE_TYPES[file.type];
+  if (!ext) return { ok: false, error: "Допустимы только JPEG, PNG, WebP и AVIF" };
+  if (file.size > MAX_IMAGE_BYTES) return { ok: false, error: "Файл больше 5 МБ" };
+
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const db = adminDb();
+  const { error } = await db.storage.from(bucket).upload(path, buffer, { contentType: file.type });
+  if (error) return { ok: false, error: error.message };
+
+  const { data } = db.storage.from(bucket).getPublicUrl(path);
+  return { ok: true, url: data.publicUrl };
 }
 
-export async function updateOrderStatus(orderId: string, status: string) {
+export async function updateOrderStatus(orderId: number, status: string) {
   await assertAdmin();
+  if (!(status in ORDER_STATUS)) throw new Error(`Unknown order status: ${status}`);
   const { error } = await adminDb().from("orders").update({ status }).eq("id", orderId);
   if (error) throw new Error(error.message);
 }
@@ -40,11 +75,7 @@ export async function updateOrderItems(
   await assertAdmin();
   const db = adminDb();
 
-  const { data: order, error: fetchError } = await db
-    .from("orders")
-    .select("delivery_cost")
-    .eq("id", orderId)
-    .single();
+  const { data: order, error: fetchError } = await db.from("orders").select("delivery_cost").eq("id", orderId).single();
   if (fetchError || !order) return { ok: false, error: "Заказ не найден" };
 
   const itemsTotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
@@ -74,7 +105,7 @@ export async function downloadInvoice(orderId: number): Promise<{ ok: true; base
     phone: order.customer_phone ?? "",
     address: order.customer_address ?? "",
     comment: order.comment ?? "",
-    deliveryLabel: DELIVERY_OPTIONS.find((o) => o.id === order.delivery_type)?.label ?? (order.delivery_type ?? "—"),
+    deliveryLabel: DELIVERY_OPTIONS.find((o) => o.id === order.delivery_type)?.label ?? order.delivery_type ?? "—",
     deliveryCost: order.delivery_cost ?? 0,
     items: order.items,
     itemsTotal,
@@ -126,6 +157,8 @@ export async function deleteProduct(id: number): Promise<{ ok: true } | { ok: fa
   const { error } = await adminDb().from("products").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
   updateTag("products");
+  // The product's own ISR page would keep serving for up to `revalidate` seconds otherwise.
+  revalidatePath(`/product/${id}`);
   return { ok: true };
 }
 
@@ -195,16 +228,7 @@ export async function uploadCategoryImage(
   formData: FormData,
 ): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
   await assertAdmin();
-  const file = formData.get("file") as File | null;
-  if (!file || !file.size) return { ok: false, error: "Файл не выбран" };
-  const ext = file.name.split(".").pop() ?? "jpg";
-  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const db = adminDb();
-  const { error } = await db.storage.from("categories").upload(path, buffer, { contentType: file.type });
-  if (error) return { ok: false, error: error.message };
-  const { data } = db.storage.from("categories").getPublicUrl(path);
-  return { ok: true, url: data.publicUrl };
+  return uploadImage("categories", formData);
 }
 
 export async function deleteCategory(id: number): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -247,10 +271,12 @@ export async function upsertBanner(
     const { id, ...fields } = data;
     const { error } = await db.from("banners").update(fields).eq("id", id);
     if (error) return { ok: false, error: error.message };
+    updateTag("banners");
     return { ok: true, id };
   }
   const { data: row, error } = await db.from("banners").insert(data).select("id").single();
   if (error) return { ok: false, error: error.message };
+  updateTag("banners");
   return { ok: true, id: row.id };
 }
 
@@ -258,6 +284,7 @@ export async function deleteBanner(id: number): Promise<{ ok: true } | { ok: fal
   await assertAdmin();
   const { error } = await adminDb().from("banners").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
+  updateTag("banners");
   return { ok: true };
 }
 
@@ -271,6 +298,7 @@ export async function reorderBanners(
   );
   const failed = results.find((r) => r.error);
   if (failed?.error) return { ok: false, error: failed.error.message };
+  updateTag("banners");
   return { ok: true };
 }
 
@@ -278,16 +306,7 @@ export async function uploadBannerImage(
   formData: FormData,
 ): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
   await assertAdmin();
-  const file = formData.get("file") as File | null;
-  if (!file || !file.size) return { ok: false, error: "Файл не выбран" };
-  const ext = file.name.split(".").pop() ?? "jpg";
-  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const db = adminDb();
-  const { error } = await db.storage.from("banners").upload(path, buffer, { contentType: file.type });
-  if (error) return { ok: false, error: error.message };
-  const { data } = db.storage.from("banners").getPublicUrl(path);
-  return { ok: true, url: data.publicUrl };
+  return uploadImage("banners", formData);
 }
 
 export async function getBrands(): Promise<
@@ -312,10 +331,14 @@ export async function upsertBrand(data: BrandInput): Promise<{ ok: true; id: num
   if (data.id) {
     const { error } = await db.from("brands").update(fields).eq("id", data.id);
     if (error) return { ok: false, error: error.message };
+    // Product cards embed brands(name), so their cached payloads go stale too.
+    updateTag("brands");
+    updateTag("products");
     return { ok: true, id: data.id };
   }
   const { data: row, error } = await db.from("brands").insert(fields).select("id").single();
   if (error) return { ok: false, error: error.message };
+  updateTag("brands");
   return { ok: true, id: row.id };
 }
 
@@ -323,6 +346,8 @@ export async function deleteBrand(id: number): Promise<{ ok: true } | { ok: fals
   await assertAdmin();
   const { error } = await adminDb().from("brands").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
+  updateTag("brands");
+  updateTag("products");
   return { ok: true };
 }
 
@@ -330,17 +355,5 @@ export async function uploadProductImage(
   formData: FormData,
 ): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
   await assertAdmin();
-  const file = formData.get("file") as File | null;
-  if (!file || !file.size) return { ok: false, error: "Файл не выбран" };
-
-  const ext = file.name.split(".").pop() ?? "jpg";
-  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-
-  const db = adminDb();
-  const { error } = await db.storage.from("product-images").upload(path, buffer, { contentType: file.type });
-  if (error) return { ok: false, error: error.message };
-
-  const { data } = db.storage.from("product-images").getPublicUrl(path);
-  return { ok: true, url: data.publicUrl };
+  return uploadImage("product-images", formData);
 }

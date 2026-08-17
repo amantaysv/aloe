@@ -1,15 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { ORDER_STATUS } from "@/lib/constants";
 import { updateOrderStatus } from "./actions";
 
-const STATUSES = [
-  { value: "new", label: "Новый" },
-  { value: "confirmed", label: "Подтверждён" },
-  { value: "processing", label: "В доставке" },
-  { value: "delivered", label: "Доставлен" },
-  { value: "cancelled", label: "Отменён" },
-];
+// Derived from ORDER_STATUS so the options here can't drift from what the server accepts.
+const STATUSES = Object.entries(ORDER_STATUS).map(([value, { label }]) => ({ value, label }));
 
 export default function OrderStatusSelect({
   orderId,
@@ -28,7 +24,7 @@ export default function OrderStatusSelect({
     setSaving(true);
     setError(false);
     try {
-      await updateOrderStatus(String(orderId), next);
+      await updateOrderStatus(orderId, next);
       onStatusChange?.(orderId, next);
     } catch {
       setError(true);

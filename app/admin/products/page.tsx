@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase-server";
+import { requireAdmin } from "@/lib/auth";
 import { getAdminCategories } from "@/services/category.service";
 import { getAdminProducts, type AdminProductsSort } from "@/services/product.service";
 import AdminProducts from "../AdminProducts";
@@ -10,7 +10,7 @@ export default async function ProductsPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const supabase = await createClient();
+  const { db: supabase } = await requireAdmin();
   const sp = await searchParams;
 
   const currentPage = Math.max(1, parseInt(sp.page ?? "1") || 1);
