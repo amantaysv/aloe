@@ -47,7 +47,8 @@ export async function getAdminOrders(
   if (safeQ) query = query.or(`customer_name.ilike.%${safeQ}%,customer_phone.ilike.%${safeQ}%`);
   if (statuses.length > 0) query = query.in("status", statuses);
 
-  const { data, count } = await query.range(from, from + pageSize - 1);
+  const { data, count, error } = await query.range(from, from + pageSize - 1);
+  if (error) console.error(`[admin-orders] ${error.message}`);
   return { orders: (data ?? []) as Order[], total: count ?? 0 };
 }
 

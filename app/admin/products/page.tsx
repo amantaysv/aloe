@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/lib/auth";
-import { getAdminCategories } from "@/services/category.service";
+import { getCategories } from "@/services/category.service";
 import { getAdminProducts, type AdminProductsSort } from "@/services/product.service";
 import AdminProducts from "../AdminProducts";
 
@@ -25,7 +25,7 @@ export default async function ProductsPage({
 
   const [{ products, total }, allCategories] = await Promise.all([
     getAdminProducts(supabase, { q, label, published, categoryId, sort, page: currentPage, pageSize }),
-    getAdminCategories(supabase),
+    getCategories(supabase),
   ]);
 
   const totalPages = pageSize === "all" ? 1 : Math.ceil(total / pageSize);

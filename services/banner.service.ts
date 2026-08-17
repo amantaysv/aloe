@@ -1,17 +1,25 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { soft } from "@/lib/db";
 import type { Database } from "@/types/database";
 
+/** `soft`: a storefront with no banners still works, so an outage here should not take the page. */
 export async function getActiveBanners(supabase: SupabaseClient<Database>, type: "desktop" | "mobile") {
-  const { data } = await supabase
-    .from("banners")
-    .select("id, image_url, link")
-    .eq("active", true)
-    .eq("type", type)
-    .order("sort_order");
-  return data ?? [];
+  return soft(
+    `banners-${type}`,
+    await supabase
+      .from("banners")
+      .select("id, image_url, link")
+      .eq("active", true)
+      .eq("type", type)
+      .order("sort_order"),
+    [],
+  );
 }
 
 export async function getAllBanners(supabase: SupabaseClient<Database>, type: "desktop" | "mobile") {
-  const { data } = await supabase.from("banners").select("*").eq("type", type).order("sort_order");
-  return data ?? [];
+  return soft(
+    `all-banners-${type}`,
+    await supabase.from("banners").select("*").eq("type", type).order("sort_order"),
+    [],
+  );
 }

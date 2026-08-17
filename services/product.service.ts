@@ -1,4 +1,5 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
+import { strict } from "@/lib/db";
 import type { ProductListItem, ProductListRow } from "@/types";
 import { withBrandName } from "@/types";
 import type { Database } from "@/types/database";
@@ -16,7 +17,11 @@ const LIST_COLUMNS = "id, name, price, old_price, image_url, category_id, label,
  */
 const COUNT: { count: "exact" } = { count: "exact" };
 
-function toList(data: unknown, count: number | null): { products: ProductListItem[]; total: number } {
+function toList(
+  label: string,
+  { data, count, error }: { data: unknown; count: number | null; error: PostgrestError | null },
+): { products: ProductListItem[]; total: number } {
+  if (error) console.error(`[${label}] ${error.message}`);
   return { products: withBrandName((data ?? []) as unknown as ProductListRow[]), total: count ?? 0 };
 }
 
@@ -41,18 +46,18 @@ export type SortValue = "name" | "price_asc" | "price_desc";
 export type AdminProductsSort = "id-desc" | "name-asc" | "price-asc" | "price-desc" | "purchase-count-desc";
 
 export async function getProductsByLabel(supabase: SupabaseClient<Database>, label: "new" | "sale", limit = 10) {
-  const { data, count } = await supabase
+  const res = await supabase
     .from("products")
     .select(LIST_COLUMNS, COUNT)
     .eq("published", true)
     .eq("label", label)
     .order("id", { ascending: false })
     .limit(limit);
-  return toList(data, count);
+  return toList("products-by-label", res);
 }
 
 export async function getPopularProducts(supabase: SupabaseClient<Database>, limit = 10) {
-  const { data, count } = await supabase
+  const res = await supabase
     .from("products")
     .select(LIST_COLUMNS, COUNT)
     .eq("published", true)
@@ -60,7 +65,7 @@ export async function getPopularProducts(supabase: SupabaseClient<Database>, lim
     .order("purchase_count", { ascending: false })
     .order("id")
     .limit(limit);
-  return toList(data, count);
+  return toList("popular-products", res);
 }
 
 export async function getPopularProductsPaginated(
@@ -68,7 +73,7 @@ export async function getPopularProductsPaginated(
   options: { page: number; pageSize?: number },
 ) {
   const { page, pageSize = 20 } = options;
-  const { data, count } = await supabase
+  const res = await supabase
     .from("products")
     .select(LIST_COLUMNS, COUNT)
     .eq("published", true)
@@ -76,7 +81,7 @@ export async function getPopularProductsPaginated(
     .order("purchase_count", { ascending: false })
     .order("id")
     .range(...range(page, pageSize));
-  return toList(data, count);
+  return toList("popular-paginated", res);
 }
 
 /**
@@ -93,14 +98,14 @@ export async function getHomePageCategoryProducts(
   return Promise.all(
     groups.map(async ({ topId, allIds }) => {
       if (allIds.length === 0) return { topId, products: [], total: 0 };
-      const { data, count } = await supabase
+      const res = await supabase
         .from("products")
         .select(LIST_COLUMNS, COUNT)
         .eq("published", true)
         .in("category_id", allIds)
         .order("name")
         .limit(limitPerCategory);
-      const { products, total } = toList(data, count);
+      const { products, total } = toList("home-category-products", res);
       return { topId, products, total };
     }),
   );
@@ -116,7 +121,7 @@ export async function getRelatedProducts(
   excludeId: number,
   limit = 4,
 ) {
-  const { data } = await supabase
+  const res = await supabase
     .from("products")
     .select(LIST_COLUMNS)
     .eq("published", true)
@@ -124,7 +129,8 @@ export async function getRelatedProducts(
     .neq("id", excludeId)
     .order("id")
     .limit(limit);
-  return withBrandName((data ?? []) as unknown as ProductListRow[]);
+  if (res.error) console.error(`[related-products] ${res.error.message}`);
+  return withBrandName((res.data ?? []) as unknown as ProductListRow[]);
 }
 
 /**
@@ -152,13 +158,11 @@ export async function getCategoryProducts(
   let query = supabase.from("products").select(LIST_COLUMNS).eq("published", true).in("category_id", categoryIds);
   if (brandIds.length > 0) query = query.in("brand_id", brandIds);
 
-  const { data, error } = await query.order(orderCol, { ascending }).order("id");
-  if (error) {
-    console.error("[products] category products failed:", error.message);
-    return byCategory;
-  }
+  // strict: the category page calls notFound() when no section has products, so swallowing an
+  // error here would turn an outage into a 404 that then gets cached for 60 seconds.
+  const data = strict("category-products", await query.order(orderCol, { ascending }).order("id"));
 
-  for (const row of withBrandName((data ?? []) as unknown as ProductListRow[])) {
+  for (const row of withBrandName(data as unknown as ProductListRow[])) {
     const bucket = byCategory.get(row.category_id);
     if (bucket) bucket.push(row);
     else byCategory.set(row.category_id, [row]);
@@ -185,8 +189,8 @@ export async function searchProducts(
 
   if (brandIds.length > 0) q = q.in("brand_id", brandIds);
 
-  const { data, count } = await q;
-  return toList(data, count);
+  const res = await q;
+  return toList("search", res);
 }
 
 /**
@@ -195,7 +199,7 @@ export async function searchProducts(
  * and transferred the whole matching set a second time.
  */
 export async function getBrandsForSearch(supabase: SupabaseClient<Database>, query: string, limit = 1000) {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("products")
     .select("brands(id, name)")
     .eq("published", true)
@@ -203,6 +207,7 @@ export async function getBrandsForSearch(supabase: SupabaseClient<Database>, que
     .not("brand_id", "is", null)
     .order("brand_id")
     .limit(limit);
+  if (error) console.error(`[brands-for-search] ${error.message}`);
   return extractUniqueBrands(data);
 }
 
@@ -212,7 +217,7 @@ export async function getProductsByBrand(
   options: { page: number; pageSize?: number },
 ) {
   const { page, pageSize = 24 } = options;
-  const { data, count } = await supabase
+  const res = await supabase
     .from("products")
     .select(LIST_COLUMNS, COUNT)
     .eq("published", true)
@@ -220,7 +225,7 @@ export async function getProductsByBrand(
     .order("name")
     .order("id")
     .range(...range(page, pageSize));
-  return toList(data, count);
+  return toList("products-by-brand", res);
 }
 
 export async function getProductsByLabelPaginated(
@@ -229,7 +234,7 @@ export async function getProductsByLabelPaginated(
   options: { page: number; pageSize?: number },
 ) {
   const { page, pageSize = 20 } = options;
-  const { data, count } = await supabase
+  const res = await supabase
     .from("products")
     .select(LIST_COLUMNS, COUNT)
     .eq("published", true)
@@ -237,17 +242,18 @@ export async function getProductsByLabelPaginated(
     .order("name")
     .order("id")
     .range(...range(page, pageSize));
-  return toList(data, count);
+  return toList("label-paginated", res);
 }
 
 export async function searchProductsAutocomplete(supabase: SupabaseClient<Database>, query: string, limit = 6) {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("products")
     .select("id, name, price, image_url, category_id")
     .eq("published", true)
     .ilike("name", `%${escapeLike(query)}%`)
     .order("id")
     .limit(limit);
+  if (error) console.error(`[autocomplete] ${error.message}`);
   return data ?? [];
 }
 
@@ -283,7 +289,8 @@ export async function getAdminProducts(
   // of every product in one response.
   query = pageSize === "all" ? query.range(0, ADMIN_ALL_CAP - 1) : query.range(...range(page, pageSize));
 
-  const { data, count } = await query;
+  const { data, count, error } = await query;
+  if (error) console.error(`[admin-products] ${error.message}`);
   return { products: data ?? [], total: count ?? 0 };
 }
 
