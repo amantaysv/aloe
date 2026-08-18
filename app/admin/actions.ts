@@ -38,8 +38,8 @@ const ALLOWED_IMAGE_TYPES: Record<string, string> = {
 };
 
 /**
- * Product photos are re-encoded server-side, so the upload accepts the untouched original
- * straight off a phone. Keep this under `experimental.serverActions.bodySizeLimit` in
+ * Product photos and banners are re-encoded server-side, so the upload accepts the untouched
+ * original straight off a phone. Keep this under `experimental.serverActions.bodySizeLimit` in
  * next.config.ts — beyond that Next rejects the request before the action ever runs.
  */
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
@@ -50,6 +50,14 @@ const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
  */
 const PRODUCT_FULL = { width: 1200, quality: 82 };
 const PRODUCT_THUMB = { width: 500, quality: 76 };
+
+/**
+ * The homepage renders the desktop and the mobile set as separate carousels, so each upload only
+ * ever has to cover one breakpoint: desktop spans the `container` (≤1536px, minus padding), mobile
+ * spans the viewport (≤~500px CSS, doubled for retina). One file per banner, no thumbnail pair.
+ */
+const BANNER_DESKTOP = { width: 1600, quality: 82 };
+const BANNER_MOBILE = { width: 1000, quality: 80 };
 
 function encodeWebp(input: Buffer, { width, quality }: { width: number; quality: number }) {
   return (
@@ -71,7 +79,7 @@ async function uploadImage(
 
   const ext = ALLOWED_IMAGE_TYPES[file.type];
   if (!ext) return { ok: false, error: "Допустимы только JPEG, PNG, WebP и AVIF" };
-  if (file.size > MAX_IMAGE_BYTES) return { ok: false, error: "Файл больше 5 МБ" };
+  if (file.size > MAX_IMAGE_BYTES) return { ok: false, error: "Файл больше 15 МБ" };
 
   const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
@@ -476,9 +484,30 @@ export async function reorderBanners(
 
 export async function uploadBannerImage(
   formData: FormData,
+  type: "desktop" | "mobile",
 ): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
   await assertAdmin();
-  return uploadImage("banners", formData);
+
+  const file = formData.get("file") as File | null;
+  if (!file || !file.size) return { ok: false, error: "Файл не выбран" };
+  if (!ALLOWED_IMAGE_TYPES[file.type]) return { ok: false, error: "Допустимы только JPEG, PNG, WebP и AVIF" };
+  if (file.size > MAX_IMAGE_BYTES) return { ok: false, error: "Файл больше 15 МБ" };
+
+  let body: Buffer;
+  try {
+    body = await encodeWebp(Buffer.from(await file.arrayBuffer()), type === "mobile" ? BANNER_MOBILE : BANNER_DESKTOP);
+  } catch {
+    return { ok: false, error: "Не удалось обработать изображение — возможно, файл повреждён" };
+  }
+
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.webp`;
+  const db = adminDb();
+  const { error } = await db.storage
+    .from("banners")
+    .upload(path, body, { contentType: "image/webp", cacheControl: "2592000" });
+  if (error) return { ok: false, error: error.message };
+
+  return { ok: true, url: db.storage.from("banners").getPublicUrl(path).data.publicUrl };
 }
 
 export async function getBrands(): Promise<

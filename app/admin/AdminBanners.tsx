@@ -39,7 +39,7 @@ export default function AdminBanners({ banners: initial, type }: { banners: Bann
     setUploading(true);
     const fd = new FormData();
     fd.append("file", file);
-    const upload = await uploadBannerImage(fd);
+    const upload = await uploadBannerImage(fd, type);
     if (!upload.ok) {
       setUploading(false);
       show(upload.error, "error");

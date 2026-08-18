@@ -306,6 +306,11 @@ SUPABASE_SERVICE_ROLE_KEY       # server-only, used in admin actions + guest che
 
 Both are WebP (q76 / q82). `uploadProductImage()` produces the pair with `sharp` from a single admin upload — it stores `thumb/<name>.webp` alongside `<name>.webp` and returns both URLs, so the two columns are always written together. Consumers read `thumbnail_url || image_url`; the fallback covers rows predating the backfill. Because uploads are re-encoded server-side, the action accepts originals up to 15 MB, which is also why `experimental.serverActions.bodySizeLimit` is raised — the 1 MB default rejected phone photos before the action ever ran.
 
+Banners are re-encoded the same way: `uploadBannerImage(formData, type)` takes the `desktop`/`mobile`
+tab it was uploaded from and writes a single WebP — ≤1600px q82 for desktop, ≤1000px q80 for mobile —
+because the homepage renders the two sets as separate carousels, so neither file has to cover the
+other's breakpoint. Category images are still stored as uploaded (`uploadImage()`).
+
 **Primary color:** `#16a34a` (green-600)
 
 ## Scripts
