@@ -1,5 +1,12 @@
 export const SITE_URL = "https://aloe.kg";
 
+/**
+ * The previous shop (Joomla + JoomShopping). It served aloe.kg until this site replaced it and
+ * stays online at this subdomain, so customers who relied on it are not cut off mid-transition.
+ * Old product links on the main domain are 301d instead — see app/catalog/product/view/[...path].
+ */
+export const LEGACY_SITE_URL = "https://old.aloe.kg";
+
 export const LABEL_MAP = {
   new: { text: "Новинка", cls: "bg-blue-500" },
   sale: { text: "Акция", cls: "bg-orange-500" },
