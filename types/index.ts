@@ -12,7 +12,10 @@ export type Product = {
   id: number;
   name: string;
   price: number;
+  /** Large image (≤1200px) for the detail page and quick-view modal. */
   image_url: string;
+  /** Small card variant (≤500px). Null on rows not backfilled yet — fall back to `image_url`. */
+  thumbnail_url?: string | null;
   category: string;
   category_id: number;
   label?: "new" | "sale" | null;
@@ -53,6 +56,7 @@ export type ProductListItem = {
   price: number;
   old_price?: number | null;
   image_url: string;
+  thumbnail_url?: string | null;
   category_id: number;
   label?: "new" | "sale" | null;
   brand_id?: number | null;

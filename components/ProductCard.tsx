@@ -31,6 +31,9 @@ function ProductBadge({ label }: { label: ProductListItem["label"] }) {
 
 function ProductCard({ product: p, className = "", href, priority = false }: Props) {
   const productHref = href ?? `/product/${p.id}`;
+  // The card never renders above ~300px, so it takes the small variant; the detail page and the
+  // quick-view modal load `image_url`. Rows predating the thumbnail backfill fall back to it.
+  const cardImage = p.thumbnail_url || p.image_url;
 
   return (
     // `relative` so FavoriteButton can sit over the image from outside the <Link>: a <button>
@@ -41,7 +44,7 @@ function ProductCard({ product: p, className = "", href, priority = false }: Pro
       <Link className="flex-1 flex flex-col" href={productHref}>
         <div className="relative p-2 aspect-square shadow-xs rounded-lg">
           <Image
-            src={p.image_url}
+            src={cardImage}
             alt={p.name}
             fill
             className="object-contain p-2"
@@ -72,7 +75,9 @@ function ProductCard({ product: p, className = "", href, priority = false }: Pro
           id: p.id,
           name: p.name,
           price: p.price,
-          image_url: p.image_url,
+          // Cart rows render at ~64px. The order record itself is re-resolved from the DB in
+          // `createOrder`, so this only affects what the cart displays.
+          image_url: cardImage,
         }}
       />
     </div>

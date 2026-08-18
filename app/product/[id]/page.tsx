@@ -106,6 +106,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     product.old_price && product.old_price > product.price
       ? Math.round(((product.old_price - product.price) / product.old_price) * 100)
       : null;
+  // This page shows the large image; cart rows are ~64px.
+  const cartImage = product.thumbnail_url || product.image_url;
 
   const productJsonLd = {
     "@context": "https://schema.org",
@@ -201,7 +203,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 id: product.id,
                 name: product.name,
                 price: product.price,
-                image_url: product.image_url,
+                image_url: cartImage,
               }}
               size="lg"
             />
@@ -229,7 +231,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 id: product.id,
                 name: product.name,
                 price: product.price,
-                image_url: product.image_url,
+                image_url: cartImage,
               }}
               size="lg"
             />

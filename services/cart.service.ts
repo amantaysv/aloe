@@ -12,13 +12,13 @@ type CartItem = {
 type CartRow = {
   product_id: number;
   quantity: number;
-  products: { name: string; price: number; image_url: string } | null;
+  products: { name: string; price: number; image_url: string; thumbnail_url: string | null } | null;
 };
 
 export async function loadCart(supabase: SupabaseClient<Database>, userId: string): Promise<CartItem[]> {
   const { data, error } = await supabase
     .from("cart_items")
-    .select("product_id, quantity, products(name, price, image_url)")
+    .select("product_id, quantity, products(name, price, image_url, thumbnail_url)")
     .eq("user_id", userId);
 
   if (error) {
@@ -32,7 +32,8 @@ export async function loadCart(supabase: SupabaseClient<Database>, userId: strin
       id: r.product_id,
       name: r.products!.name,
       price: r.products!.price,
-      image_url: r.products!.image_url,
+      // Cart rows are ~64px — match what ProductCard puts in the local cart.
+      image_url: r.products!.thumbnail_url || r.products!.image_url,
       quantity: r.quantity,
     }));
 }

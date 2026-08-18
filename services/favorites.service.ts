@@ -4,7 +4,8 @@ import { withBrandName } from "@/types";
 import type { Database } from "@/types/database";
 
 /** Mirrors LIST_COLUMNS in product.service.ts — the favorites grid renders the same card. */
-const FAVORITE_PRODUCT_COLUMNS = "id, name, price, old_price, image_url, category_id, label, brand_id, brands(name)";
+const FAVORITE_PRODUCT_COLUMNS =
+  "id, name, price, old_price, image_url, thumbnail_url, category_id, label, brand_id, brands(name)";
 
 export async function loadFavoriteIds(supabase: SupabaseClient<Database>, userId: string) {
   const { data, error } = await supabase.from("favorites").select("product_id").eq("user_id", userId);
