@@ -241,6 +241,7 @@ export type Database = {
           published: boolean | null
           purchase_count: number
           seo_text: string | null
+          thumbnail_url: string | null
         }
         Insert: {
           brand_id?: number | null
@@ -259,6 +260,7 @@ export type Database = {
           published?: boolean | null
           purchase_count?: number
           seo_text?: string | null
+          thumbnail_url?: string | null
         }
         Update: {
           brand_id?: number | null
@@ -277,6 +279,7 @@ export type Database = {
           published?: boolean | null
           purchase_count?: number
           seo_text?: string | null
+          thumbnail_url?: string | null
         }
         Relationships: [
           {
