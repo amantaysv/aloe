@@ -43,3 +43,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# old-site scraper credentials + scraped data
+.env.joomla
+scripts/joomla/data/
