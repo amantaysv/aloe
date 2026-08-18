@@ -29,7 +29,7 @@ export default async function ProductModalPage({ params }: { params: Promise<{ i
   return (
     <ProductModal>
       <div className="grid sm:grid-cols-2 gap-6 px-4 pb-4 md:px-6 md:pb-6">
-        <div className="sticky top-0  aspect-square bg-gray-50 rounded-xl overflow-hidden">
+        <div className="relative md:sticky md:top-0 aspect-square bg-gray-50 rounded-xl overflow-hidden">
           <Image
             src={product.image_url}
             alt={product.name}
