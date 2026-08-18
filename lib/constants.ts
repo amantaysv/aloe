@@ -57,3 +57,14 @@ export const ORDER_STATUS: Record<string, { label: string; cls: string }> = {
   delivered: { label: "Доставлен", cls: "bg-green-100 text-green-700" },
   cancelled: { label: "Отменён", cls: "bg-red-100 text-red-700" },
 };
+
+/**
+ * What a zero `delivery_cost` means depends on which option was chosen: the two city zones can be
+ * free over the threshold, but "regions" is quoted by phone and "urgent" is settled with the
+ * courier — printing "бесплатно" for those would promise something the shop never agreed to.
+ */
+export function deliveryFreeNote(id: string | null): string {
+  if (id === "regions") return "по договорённости";
+  if (id === "urgent") return "оплата курьеру";
+  return "бесплатно";
+}

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import Currency from "@/components/Currency";
 import Pagination from "@/components/Pagination";
-import { ORDER_STATUS } from "@/lib/constants";
+import { deliveryFreeNote, ORDER_STATUS } from "@/lib/constants";
 import { useCart } from "@/store/cart";
 import { useToast } from "@/store/toast";
 import type { Order, ProfileFields } from "@/types";
@@ -102,6 +102,22 @@ export default function ProfileTabs({
                             </span>
                           </li>
                         ))}
+                        {/* Without this line the sum of the items never matches "Итого" on any
+                            order that was charged for delivery. */}
+                        {order.delivery_type && (
+                          <li className="flex justify-between text-gray-500">
+                            <span>Доставка</span>
+                            <span>
+                              {order.delivery_cost > 0 ? (
+                                <>
+                                  {order.delivery_cost.toLocaleString("ru-RU")} <Currency />
+                                </>
+                              ) : (
+                                deliveryFreeNote(order.delivery_type)
+                              )}
+                            </span>
+                          </li>
+                        )}
                       </ul>
 
                       <div className="flex justify-between items-center border-t border-gray-300 pt-2">
