@@ -27,6 +27,7 @@ const empty: ProductInput = {
   price: 0,
   old_price: null,
   image_url: "",
+  thumbnail_url: null,
   category: "",
   category_id: 0,
   label: null,
@@ -109,6 +110,7 @@ export default function AdminProducts({
       price: p.price ?? 0,
       old_price: p.old_price ?? null,
       image_url: p.image_url ?? "",
+      thumbnail_url: p.thumbnail_url ?? null,
       category: p.category ?? "",
       category_id: p.category_id ?? 0,
       label: p.label === "new" || p.label === "sale" ? p.label : null,
@@ -140,7 +142,8 @@ export default function AdminProducts({
       setError(result.error);
       return;
     }
-    set("image_url", result.url);
+    // One upload, two derivatives — set both together so a card never points at the large file.
+    setEditing((prev) => (prev ? { ...prev, image_url: result.url, thumbnail_url: result.thumbnailUrl } : prev));
   }
 
   async function save() {

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath, updateTag } from "next/cache";
+import sharp from "sharp";
 import { DELIVERY_OPTIONS, getDeliveryCost, ORDER_STATUS } from "@/lib/constants";
 import { generateInvoicePdf, type InvoiceItem } from "@/lib/invoice";
 import { sendNewOrderEmail } from "@/lib/mailer";
@@ -36,7 +37,30 @@ const ALLOWED_IMAGE_TYPES: Record<string, string> = {
   "image/avif": "avif",
 };
 
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+/**
+ * Product photos are re-encoded server-side, so the upload accepts the untouched original
+ * straight off a phone. Keep this under `experimental.serverActions.bodySizeLimit` in
+ * next.config.ts — beyond that Next rejects the request before the action ever runs.
+ */
+const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
+
+/**
+ * Cards render at ~300px and the detail page at ~700px, so one file cannot serve both without
+ * wasting bandwidth on every grid. Every product upload is stored twice at these sizes.
+ */
+const PRODUCT_FULL = { width: 1200, quality: 82 };
+const PRODUCT_THUMB = { width: 500, quality: 76 };
+
+function encodeWebp(input: Buffer, { width, quality }: { width: number; quality: number }) {
+  return (
+    sharp(input)
+      // Phone photos carry EXIF orientation; bake it in before resizing.
+      .rotate()
+      .resize(width, width, { fit: "inside", withoutEnlargement: true })
+      .webp({ quality })
+      .toBuffer()
+  );
+}
 
 async function uploadImage(
   bucket: "product-images" | "banners" | "categories",
@@ -196,6 +220,7 @@ export type ProductInput = {
   price: number;
   old_price?: number | null;
   image_url: string;
+  thumbnail_url?: string | null;
   category: string;
   category_id: number;
   label?: "new" | "sale" | null;
@@ -498,9 +523,47 @@ export async function deleteBrand(id: number): Promise<{ ok: true } | { ok: fals
   return { ok: true };
 }
 
+/**
+ * Unlike banners and category tiles, a product photo is stored as two derivatives: the large one
+ * for `products.image_url` (detail page, quick-view modal) and a small one for
+ * `products.thumbnail_url` (card grids, carousels, cart rows).
+ */
 export async function uploadProductImage(
   formData: FormData,
-): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+): Promise<{ ok: true; url: string; thumbnailUrl: string } | { ok: false; error: string }> {
   await assertAdmin();
-  return uploadImage("product-images", formData);
+
+  const file = formData.get("file") as File | null;
+  if (!file || !file.size) return { ok: false, error: "Файл не выбран" };
+  if (!ALLOWED_IMAGE_TYPES[file.type]) return { ok: false, error: "Допустимы только JPEG, PNG, WebP и AVIF" };
+  if (file.size > MAX_IMAGE_BYTES) return { ok: false, error: "Файл больше 15 МБ" };
+
+  const input = Buffer.from(await file.arrayBuffer());
+
+  let full: Buffer;
+  let thumb: Buffer;
+  try {
+    [full, thumb] = await Promise.all([encodeWebp(input, PRODUCT_FULL), encodeWebp(input, PRODUCT_THUMB)]);
+  } catch {
+    return { ok: false, error: "Не удалось обработать изображение — возможно, файл повреждён" };
+  }
+
+  const base = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const db = adminDb();
+
+  for (const [path, body] of [
+    [`${base}.webp`, full],
+    [`thumb/${base}.webp`, thumb],
+  ] as const) {
+    const { error } = await db.storage
+      .from("product-images")
+      .upload(path, body, { contentType: "image/webp", cacheControl: "2592000" });
+    if (error) return { ok: false, error: error.message };
+  }
+
+  return {
+    ok: true,
+    url: db.storage.from("product-images").getPublicUrl(`${base}.webp`).data.publicUrl,
+    thumbnailUrl: db.storage.from("product-images").getPublicUrl(`thumb/${base}.webp`).data.publicUrl,
+  };
 }
