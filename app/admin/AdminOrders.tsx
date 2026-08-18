@@ -163,12 +163,12 @@ export default function AdminOrders({
 
           return (
             <div key={order.id} className="border border-gray-300 rounded-lg p-4 hover:shadow-sm transition-shadow">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="space-y-0.5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                <div className="min-w-0 space-y-0.5">
                   <p className="font-mono text-xs text-gray-400">#{order.id}</p>
                   <p className="text-xs text-gray-400">{date}</p>
                   {!(order.notified_at || notified[order.id]) && (
-                    <p className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-1">
+                    <div className="my-1.5 flex w-fit flex-wrap items-center gap-x-2 gap-y-0.5 rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs text-amber-700">
                       {/* "not confirmed", not "not sent": rows predating this tracking are NULL
                           too, and some of those were in fact emailed. */}
                       <span>Отправка письма не подтверждена</span>
@@ -180,11 +180,11 @@ export default function AdminOrders({
                       >
                         {resending === order.id ? "Отправляем..." : "Отправить"}
                       </Button>
-                    </p>
+                    </div>
                   )}
-                  <p className="font-semibold mt-1">{order.customer_name ?? "—"}</p>
+                  <p className="mt-1 font-semibold break-words">{order.customer_name ?? "—"}</p>
                   <p className="text-sm text-gray-600">{order.customer_phone ?? "—"}</p>
-                  <p className="text-sm text-gray-600">{order.customer_address ?? "—"}</p>
+                  <p className="text-sm break-words text-gray-600">{order.customer_address ?? "—"}</p>
                   {order.delivery_type && (
                     <p className="text-sm text-gray-500">
                       🚚 {DELIVERY_OPTIONS.find((o) => o.id === order.delivery_type)?.label ?? order.delivery_type}
@@ -200,7 +200,10 @@ export default function AdminOrders({
                   )}
                   {order.comment && <p className="text-sm text-gray-400 italic">💬 {order.comment}</p>}
                 </div>
-                <div className="text-right shrink-0">
+                {/* Narrow screens: one wrapping row so the total, the status select and the
+                    invoice link stay left-aligned under the customer block instead of floating
+                    in a shrink-to-fit right-aligned column. */}
+                <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 sm:flex-col sm:items-end">
                   <p className="text-xl font-bold text-green-600">
                     {order.total} <Currency />
                   </p>
@@ -212,7 +215,7 @@ export default function AdminOrders({
                   <Button
                     type="button"
                     onClick={() => handleDownloadInvoice(order.id)}
-                    className="mt-2 inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
+                    className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
                   >
                     <Download className="w-3.5 h-3.5" /> Накладная
                   </Button>
@@ -233,9 +236,9 @@ export default function AdminOrders({
                 <div className="mt-3 border-t border-gray-300 pt-3">
                   <div className="space-y-1">
                     {(order.items || []).map((item, i) => (
-                      <div key={i} className="flex justify-between text-sm">
-                        <span className="text-gray-700 flex-1 line-clamp-1">{item.name}</span>
-                        <span className="text-gray-500 shrink-0 ml-4">
+                      <div key={i} className="flex justify-between gap-4 text-sm">
+                        <span className="min-w-0 flex-1 truncate text-gray-700">{item.name}</span>
+                        <span className="shrink-0 text-gray-500">
                           {item.quantity} × {item.price} <Currency />
                         </span>
                       </div>
