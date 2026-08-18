@@ -71,24 +71,25 @@ Note: "popular" is no longer a manually-set admin label. `products.purchase_coun
 
 ### products
 
-| column         | type        | notes                                             |
-| -------------- | ----------- | ------------------------------------------------- |
-| id             | int         | PK                                                |
-| external_id    | text        | unused — dropped from `Product` type & admin UI   |
-| name           | text        |                                                   |
-| price          | numeric     |                                                   |
-| old_price      | numeric     | nullable                                          |
-| image_url      | text        |                                                   |
-| product_url    | text        | unused — dropped from `Product` type & admin UI   |
-| category       | text        | string label                                      |
-| category_id    | int         | FK → categories.id                                |
-| label          | text        | `new` \| `sale` \| null                           |
-| description    | text        | nullable                                          |
-| brand_id       | int         | FK → brands.id                                    |
-| seo_text       | text        | nullable                                          |
-| purchase_count | int         | incremented on checkout; drives "popular" ranking |
-| published      | boolean     |                                                   |
-| created_at     | timestamptz |                                                   |
+| column         | type        | notes                                                                                                            |
+| -------------- | ----------- | ---------------------------------------------------------------------------------------------------------------- |
+| id             | int         | PK                                                                                                               |
+| external_id    | text        | JoomShopping `product_id` on the old site — the join key for the sync scripts (not in `Product` or the admin UI) |
+| name           | text        |                                                                                                                  |
+| price          | numeric     |                                                                                                                  |
+| old_price      | numeric     | nullable                                                                                                         |
+| image_url      | text        | large variant (≤1200px WebP) — detail page & modal                                                               |
+| thumbnail_url  | text        | nullable — small variant (≤500px WebP) for cards; fall back to `image_url`                                       |
+| product_url    | text        | unused — dropped from `Product` type & admin UI                                                                  |
+| category       | text        | string label                                                                                                     |
+| category_id    | int         | FK → categories.id                                                                                               |
+| label          | text        | `new` \| `sale` \| null                                                                                          |
+| description    | text        | nullable                                                                                                         |
+| brand_id       | int         | FK → brands.id                                                                                                   |
+| seo_text       | text        | nullable                                                                                                         |
+| purchase_count | int         | incremented on checkout; drives "popular" ranking                                                                |
+| published      | boolean     |                                                                                                                  |
+| created_at     | timestamptz |                                                                                                                  |
 
 ### categories
 
@@ -172,7 +173,8 @@ type Product = {
   id: number;
   name: string;
   price: number;
-  image_url: string;
+  image_url: string; // large (≤1200px)
+  thumbnail_url?: string | null; // small (≤500px), null → use image_url
   category: string;
   category_id: number;
   label?: "new" | "sale" | null;
@@ -295,7 +297,14 @@ SUPABASE_SERVICE_ROLE_KEY       # server-only, used in admin actions + guest che
 
 **Product quick-view modal:** `ProductCard` links to `/product/[id]` normally; the `@modal` parallel route (`app/@modal/(.)product/[id]/page.tsx`) intercepts that soft navigation and renders it inside `ProductModal` instead, so browsing stays on the originating grid/carousel while the URL still updates. See "Quick-view modal" note under App Routes.
 
-**Image optimization is intentionally disabled** — `next.config.ts` sets `images.unoptimized: true` (Vercel Hobby plan quota on Image Optimization source images; product images are pre-compressed offline before upload). Do not re-enable without checking the plan/hosting situation first.
+**Image optimization is intentionally disabled** — `next.config.ts` sets `images.unoptimized: true` (Vercel Hobby plan quota on Image Optimization source images). Do not re-enable without checking the plan/hosting situation first. Because nothing resizes at request time, **the browser downloads exactly the bytes that were uploaded**, so every product photo is stored at two sizes instead:
+
+| column          | size    | rendered by                                                                        |
+| --------------- | ------- | ---------------------------------------------------------------------------------- |
+| `thumbnail_url` | ≤ 500px | `ProductCard` (grids, carousels, brand pages), cart rows, autocomplete, admin list |
+| `image_url`     | ≤1200px | `/product/[id]`, the quick-view modal, OG/JSON-LD metadata, order snapshots        |
+
+Both are WebP (q76 / q82). `uploadProductImage()` produces the pair with `sharp` from a single admin upload — it stores `thumb/<name>.webp` alongside `<name>.webp` and returns both URLs, so the two columns are always written together. Consumers read `thumbnail_url || image_url`; the fallback covers rows predating the backfill. Because uploads are re-encoded server-side, the action accepts originals up to 15 MB, which is also why `experimental.serverActions.bodySizeLimit` is raised — the 1 MB default rejected phone photos before the action ever ran.
 
 **Primary color:** `#16a34a` (green-600)
 
@@ -308,4 +317,46 @@ npm run start       # start production server
 npm run lint        # ESLint
 npm run format      # Prettier write
 npm run format:check
+npm run typecheck   # tsc --noEmit
+npm run test        # vitest run
+npm run db:types    # regenerate types/database.ts from the linked Supabase project
 ```
+
+### Old-site sync (`scripts/joomla/`)
+
+aloe.kg still runs the previous store (Joomla + JoomShopping) as production, so the catalogue there
+keeps moving while this site is built. These scripts pull from it. Credentials live in
+`scripts/joomla/.env.joomla` (git-ignored, see `lib.mjs` for the keys); scraped output lands in
+`scripts/joomla/data/` (also git-ignored). Products are matched on `products.external_id`.
+
+```bash
+node backups/backup-db.mjs                        # always first — dumps categories + products
+node scripts/joomla/scrape-products.mjs           # admin product list → data/joomla-products.json
+node scripts/joomla/diff-products.mjs             # vs Supabase → data/diff.json + a report
+node scripts/joomla/sync-products.mjs --execute   # apply name/price/published, insert new, unpublish gone
+node scripts/joomla/reimage-products.mjs          # rebuild both image variants from the originals
+```
+
+`reimage-products.mjs` reads JoomShopping's `full_<name>` file — the untouched original upload — and
+writes `<id>.webp` + `thumb/<id>.webp`. It is resumable (`data/reimage-state.json`) and skips any
+product whose current image came from the new admin, so manual re-uploads are never overwritten.
+
+Two maintenance scripts finish the job for anything the old site cannot supply:
+
+```bash
+node scripts/normalize-product-images.mjs --execute  # any row not yet a WebP pair → build it from the file in Storage
+node scripts/prune-orphan-images.mjs                 # list bucket objects nothing references (--execute deletes)
+```
+
+`normalize-product-images.mjs` is the one to run after a bulk import or whenever
+`image_url`/`thumbnail_url` disagree; it leaves existing WebP rows alone so nothing is re-encoded
+twice. `prune-orphan-images.mjs` checks `orders.items` as well as both product columns, because an
+order freezes its line items' image URLs and those files must outlive the product. It also holds
+back admin-uploaded originals (`<epoch-ms>-<rand>.<ext>`) unless `--originals` is passed —
+normalizing a product leaves its original unreferenced, but that file is the only high-quality
+source left for re-encoding it.
+
+Two things are deliberately never synced from the old site: **`category_id`/`category`** (the tree was
+reorganized in `scripts/migrate-categories.mjs` and no longer maps 1:1) and products **without an
+`external_id`** (created in the new admin). Deletions on the old site unpublish here rather than
+delete, because `orders.items` references the row.
